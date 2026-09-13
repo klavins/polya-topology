@@ -17,8 +17,8 @@ reference: |-
     obtain ⟨y, δ, hy⟩ := hT
     refine ⟨x, max ε (M.dist x y + δ), ?_⟩
     rintro z (hz | hz)
-    · exact M.ball_mono x (le_max_left _ _) (hx hz)
-    · exact M.ball_mono x (le_max_right _ _) (M.ball_subset_ball x y δ (hy hz))
+    · exact M.ball_mono (le_max_left _ _) (hx hz)
+    · exact M.ball_mono (le_max_right _ _) (M.ball_subset_ball x y δ (hy hz))
 spec: |-
   example : ∀ {X : Type u} (M : Metric X) (S T : Set X)
       (hS : M.IsBounded S) (hT : M.IsBounded T), M.IsBounded (S ∪ T) := _root_.GeneralTopology.Metric.isBounded_union
@@ -34,10 +34,10 @@ preamble: |
   def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  theorem Metric.mem_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ) :
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
       y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
-  theorem Metric.ball_mono {X : Type u} (M : Metric X) (x : X) {ε δ : ℝ} (h : ε ≤ δ) :
+  theorem Metric.ball_mono {X : Type u} (M : Metric X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
       M.ball x ε ⊆ M.ball x δ :=
     fun _ hy => lt_of_lt_of_le hy h
 
@@ -60,7 +60,7 @@ namespace: GeneralTopology
 seq: 12
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@8b81090
+  source: extract@8c3087a
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 318
   closure_rounds: 1

@@ -22,7 +22,7 @@ stub: |-
 reference: |-
   structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
     norm : V → ℝ
-    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
     smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
     triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
 spec: |-
@@ -33,14 +33,14 @@ spec: |-
     ⟨by simp [N.eq_zero], by apply N.smul, by apply N.triangle⟩
 preamble: |
   universe u
-description: 'Define the structure `Norm V` for a real vector space `V`, with four fields in this order: `norm`, of type `V → ℝ`; then `eq_zero`, `smul` and `triangle`, carrying the three conditions above, each quantified over the vectors and scalars it mentions.'
+description: 'Define the structure `Norm V` for a real vector space `V`, with four fields in this order: `norm`, of type `V → ℝ`; then `eq_zero`, `smul` and `triangle`, carrying the three conditions above. Bind the vector implicitly in `eq_zero`, whose statement fixes it; `smul` and `triangle` take their scalar and vectors explicitly, since a proof using them chooses what to put there.'
 stub_names:
 - Norm
 namespace: GeneralTopology
 seq: 13
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@8b81090
+  source: extract@8c3087a
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 347
   closure_rounds: 1

@@ -33,7 +33,7 @@ preamble: |
 
   structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
     norm : V → ℝ
-    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
     smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
     triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
 
@@ -56,7 +56,7 @@ namespace: GeneralTopology
 seq: 17
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@8b81090
+  source: extract@8c3087a
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 447
   closure_rounds: 1

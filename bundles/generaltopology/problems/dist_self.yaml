@@ -7,11 +7,11 @@ statement: |-
   Nothing is quantified away when a statement about all pairs is used on the pair `x, x`. The condition was stated for every `x` and every `y`, and `y` may be `x`.
 concepts:
 - metric_space
-stub: 'theorem Metric.dist_self {X : Type u} (M : Metric X) (x : X) : M.dist x x = 0 := sorry'
+stub: 'theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 := sorry'
 reference: |-
-  theorem Metric.dist_self {X : Type u} (M : Metric X) (x : X) : M.dist x x = 0 :=
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
     M.eq_zero.mpr rfl
-spec: 'example : ∀ {X : Type u} (M : Metric X) (x : X), M.dist x x = 0 := _root_.GeneralTopology.Metric.dist_self'
+spec: 'example : ∀ {X : Type u} (M : Metric X) {x : X}, M.dist x x = 0 := _root_.GeneralTopology.Metric.dist_self'
 preamble: |
   universe u
   namespace GeneralTopology
@@ -30,7 +30,7 @@ namespace: GeneralTopology
 seq: 1
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@8b81090
+  source: extract@8c3087a
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 57
   closure_rounds: 1

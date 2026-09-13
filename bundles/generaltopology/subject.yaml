@@ -529,12 +529,12 @@ edges:
 - - real_line
   - open_ball
 provenance:
-  source: extract@8b81090
+  source: extract@8c3087a
   module: PolyaTopology.GeneralTopology
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: 32fbc3e80ec7b3ea4d9d9388eac643c5f0023644
+  commit: a0a9a7d9f95f44df0a93738f0b9535273c889abe
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

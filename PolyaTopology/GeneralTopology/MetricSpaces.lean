@@ -65,7 +65,7 @@ Nothing is quantified away when a statement about all pairs is used on the pair 
 @description
 Show that `M.dist x x = 0`. If `h` is an equivalence then `h.mpr` is its right-to-left direction, and the equality it wants is `rfl`.
 -/
-theorem Metric.dist_self {X : Type u} (M : Metric X) (x : X) : M.dist x x = 0 :=
+theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
   M.eq_zero.mpr rfl
 
 /--
@@ -84,7 +84,7 @@ Show that `0 ≤ M.dist x y`. Begin with `M.triangle x y x` and rewrite the dist
 -/
 theorem Metric.nonneg {X : Type u} (M : Metric X) (x y : X) : 0 ≤ M.dist x y := by
   have h := M.triangle x y x
-  rw [M.dist_self x] at h
+  rw [M.dist_self] at h
   have e : M.dist y x = M.dist x y := M.symm
   rw [e] at h
   linarith
@@ -155,7 +155,7 @@ Define `Metric.ball`, and then prove `Metric.mem_ball`, which says that `y` lies
 def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
   {y | M.dist x y < ε}
 
-theorem Metric.mem_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ) :
+theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
     y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
 /-! @end -/
@@ -222,7 +222,7 @@ Two balls about the same centre are nested, the one of smaller radius inside the
 @description
 Show that `M.ball x ε ⊆ M.ball x δ` when `ε ≤ δ`. A containment is a function taking a point and a proof of membership to a proof of membership, so the whole proof can be written as `fun _ hy => ...`; `lt_of_lt_of_le` chains a strict inequality with a weak one.
 -/
-theorem Metric.ball_mono {X : Type u} (M : Metric X) (x : X) {ε δ : ℝ} (h : ε ≤ δ) :
+theorem Metric.ball_mono {X : Type u} (M : Metric X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
     M.ball x ε ⊆ M.ball x δ :=
   fun _ hy => lt_of_lt_of_le hy h
 
@@ -332,8 +332,8 @@ theorem Metric.isBounded_union {X : Type u} (M : Metric X) (S T : Set X)
   obtain ⟨y, δ, hy⟩ := hT
   refine ⟨x, max ε (M.dist x y + δ), ?_⟩
   rintro z (hz | hz)
-  · exact M.ball_mono x (le_max_left _ _) (hx hz)
-  · exact M.ball_mono x (le_max_right _ _) (M.ball_subset_ball x y δ (hy hz))
+  · exact M.ball_mono (le_max_left _ _) (hx hz)
+  · exact M.ball_mono (le_max_right _ _) (M.ball_subset_ball x y δ (hy hz))
 
 /-!
 @concept normed_space
@@ -359,12 +359,12 @@ A real vector space is a set whose elements can be added and scaled by real numb
 
 A type `V` is a real vector space in Lean when it carries `[AddCommGroup V]` and `[Module ℝ V]`, which give it `+`, `0`, negation, and the scaling `c • v`.
 @description
-Define the structure `Norm V` for a real vector space `V`, with four fields in this order: `norm`, of type `V → ℝ`; then `eq_zero`, `smul` and `triangle`, carrying the three conditions above, each quantified over the vectors and scalars it mentions.
+Define the structure `Norm V` for a real vector space `V`, with four fields in this order: `norm`, of type `V → ℝ`; then `eq_zero`, `smul` and `triangle`, carrying the three conditions above. Bind the vector implicitly in `eq_zero`, whose statement fixes it; `smul` and `triangle` take their scalar and vectors explicitly, since a proof using them chooses what to put there.
 -/
 
 structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
   norm : V → ℝ
-  eq_zero : ∀ v, norm v = 0 ↔ v = 0
+  eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
   smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
   triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
 
@@ -393,7 +393,7 @@ Prove both. For the first, apply the right-to-left direction of `N.eq_zero` at `
 -/
 
 theorem Norm.zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : N.norm 0 = 0 :=
-  (N.eq_zero 0).mpr rfl
+  N.eq_zero.mpr rfl
 
 theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
     N.norm (-v) = N.norm v := by
@@ -486,7 +486,7 @@ This is the ball one draws when asking what a norm looks like, and every other b
 Show that `v ∈ N.toMetric.ball 0 ε` exactly when `N.norm v < ε`. Rewrite with `Metric.mem_ball`, use `show` to restate the distance as the length it is, and rewrite that with `zero_sub` and `N.neg`.
 -/
 theorem Norm.mem_ball_zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V)
-    (v : V) (ε : ℝ) : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := by
+    {v : V} {ε : ℝ} : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := by
   rw [Metric.mem_ball]
   show N.norm (0 - v) < ε ↔ N.norm v < ε
   rw [zero_sub, N.neg]
@@ -508,7 +508,7 @@ Define `absNorm`, the absolute value as a norm on `ℝ`, and show that the metri
 
 def absNorm : Norm ℝ where
   norm x := |x|
-  eq_zero x := abs_eq_zero
+  eq_zero {x} := abs_eq_zero
   smul c x := by rw [smul_eq_mul, abs_mul]
   triangle x y := abs_add_le x y
 
@@ -601,7 +601,7 @@ Define `taxicab`, the norm on `ℝ × ℝ` sending `v` to `|v.1| + |v.2|`. Non-d
 
 def taxicab : Norm (ℝ × ℝ) where
   norm v := |v.1| + |v.2|
-  eq_zero v := by rw [abs_add_abs_eq_zero, prod_eq_zero]
+  eq_zero {v} := by rw [abs_add_abs_eq_zero, prod_eq_zero]
   smul c v := by
     show |c * v.1| + |c * v.2| = |c| * (|v.1| + |v.2|)
     rw [abs_mul, abs_mul]
@@ -672,7 +672,7 @@ Define `supNorm`, the norm on `ℝ × ℝ` sending `v` to `max |v.1| |v.2|`. Non
 
 def supNorm : Norm (ℝ × ℝ) where
   norm v := max |v.1| |v.2|
-  eq_zero v := by rw [max_abs_eq_zero, prod_eq_zero]
+  eq_zero {v} := by rw [max_abs_eq_zero, prod_eq_zero]
   smul c v := by
     show max |c * v.1| |c * v.2| = |c| * max |v.1| |v.2|
     rw [abs_mul, abs_mul, mul_max_of_nonneg _ _ (abs_nonneg c)]

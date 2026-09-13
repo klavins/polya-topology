@@ -9,16 +9,16 @@ concepts:
 - norm_metric
 stub: |-
   theorem Norm.mem_ball_zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V)
-      (v : V) (ε : ℝ) : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := sorry
+      {v : V} {ε : ℝ} : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := sorry
 reference: |-
   theorem Norm.mem_ball_zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V)
-      (v : V) (ε : ℝ) : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := by
+      {v : V} {ε : ℝ} : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := by
     rw [Metric.mem_ball]
     show N.norm (0 - v) < ε ↔ N.norm v < ε
     rw [zero_sub, N.neg]
 spec: |-
   example : ∀ {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V)
-      (v : V) (ε : ℝ), v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := _root_.GeneralTopology.Norm.mem_ball_zero
+      {v : V} {ε : ℝ}, v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := _root_.GeneralTopology.Norm.mem_ball_zero
 preamble: |
   universe u
   namespace GeneralTopology
@@ -31,12 +31,12 @@ preamble: |
   def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  theorem Metric.mem_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ) :
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
       y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
   structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
     norm : V → ℝ
-    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
     smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
     triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
 
@@ -68,7 +68,7 @@ namespace: GeneralTopology
 seq: 18
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@8b81090
+  source: extract@8c3087a
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 477
   closure_rounds: 1

@@ -57,13 +57,37 @@ passes — **every structure definition problem carries a `/-- @spec -/` naming 
 so does every `where`-bodied `def`, which has no single body to compare and is an extraction
 ERROR without one.
 
-Fields are stated the way later problems will use them, since the reference is the context those
-problems see. `Metric.symm` and `Metric.eq_zero` bind their points **implicitly**, so a proof can
-write `M.symm` or `M.eq_zero.mpr rfl` and let Lean read the points off the statement;
-`Metric.triangle` binds its three points **explicitly**, because the middle one is a genuine
-choice and is never fixed by the goal. Construction uses named binders — `symm {x y} :=
-abs_sub_comm x y` — since a bare `eq_zero := by rw [...]` never introduces the implicit points
-and the rewrite fails.
+## Binders
+
+Bind a variable implicitly wherever that makes the proofs downstream read better, and the call
+sites decide it, not taste. A fact used **backwards** — rewritten into a goal, matched against
+one by `exact`, `apply` or `simp`, or having `.mp`/`.mpr` taken — has its variables fixed by the
+statement it lands in, so naming them is noise. A fact used **forwards** — instantiated into a
+`have` for `linarith`, or applied to a chosen witness — has to be given its arguments, and
+implicit binders would force `@` or a type ascription instead.
+
+The test is mechanical: look at every use in the subject, and if none of them passes the
+argument, make it implicit. Here that put the line between
+
+```
+implicit   Metric.symm  Metric.eq_zero  Metric.dist_self  Metric.mem_ball
+           Metric.ball_mono (the centre)  Norm.eq_zero  Norm.mem_ball_zero
+explicit   Metric.triangle x y x   Norm.smul (-1) v   Norm.triangle v (-v)
+           Norm.neg (v - w)   Metric.ball_subset_ball x y δ   Metric.nonneg x y
+```
+
+Everything on the first line is only ever written bare; everything on the second chooses one of
+its arguments — the detour of a triangle inequality, the scalar of a scaling, the instance to
+rewrite backwards — and implicit binders there cost more than they save. A declaration nothing
+uses yet keeps explicit binders until something does.
+
+For a structure's fields this matters most, since the reference is the context every later
+problem compiles against. Say in the description which fields are implicit, or every student
+guesses. Construction uses named binders — `symm {x y} := abs_sub_comm x y` — because a bare
+`eq_zero := by rw [...]` never introduces the implicit points and the rewrite fails on a goal
+still under its binders.
+
+## Specs
 
 A spec must accept every *correct* encoding, not just the reference's. A student who binds the
 points explicitly, or who writes non-degeneracy as `x = y ↔ dist x y = 0`, has not made a

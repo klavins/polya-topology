@@ -20,7 +20,7 @@ preamble: |
   namespace GeneralTopology
   structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
     norm : V → ℝ
-    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
     smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
     triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
 
@@ -48,7 +48,7 @@ preamble: |
 
   def taxicab : Norm (ℝ × ℝ) where
     norm v := |v.1| + |v.2|
-    eq_zero v := by rw [abs_add_abs_eq_zero, prod_eq_zero]
+    eq_zero {v} := by rw [abs_add_abs_eq_zero, prod_eq_zero]
     smul c v := by
       show |c * v.1| + |c * v.2| = |c| * (|v.1| + |v.2|)
       rw [abs_mul, abs_mul]
@@ -79,7 +79,7 @@ preamble: |
 
   def supNorm : Norm (ℝ × ℝ) where
     norm v := max |v.1| |v.2|
-    eq_zero v := by rw [max_abs_eq_zero, prod_eq_zero]
+    eq_zero {v} := by rw [max_abs_eq_zero, prod_eq_zero]
     smul c v := by
       show max |c * v.1| |c * v.2| = |c| * max |v.1| |v.2|
       rw [abs_mul, abs_mul, mul_max_of_nonneg _ _ (abs_nonneg c)]
@@ -98,7 +98,7 @@ namespace: GeneralTopology
 seq: 28
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@8b81090
+  source: extract@8c3087a
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 708
   closure_rounds: 1
