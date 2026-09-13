@@ -8,9 +8,9 @@ statement: |-
   ```lean
   def someMetric : Metric ℝ where
     dist x y := ...
-    symm x y := ...
+    symm {x y} := ...
     triangle x y z := ...
-    eq_zero x y := ...
+    eq_zero {x y} := ...
   ```
   The first field is a definition; the other three are proofs, written as terms or opened with `by`.
 concepts:
@@ -19,18 +19,18 @@ stub: 'def line : Metric ℝ := sorry'
 reference: |-
   def line : Metric ℝ where
     dist x y := |x - y|
-    symm x y := abs_sub_comm x y
+    symm {x y} := abs_sub_comm x y
     triangle x y z := abs_sub_le x y z
-    eq_zero x y := by rw [abs_eq_zero, sub_eq_zero]
+    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
 spec: 'example (x y : ℝ) : _root_.GeneralTopology.line.dist x y = |x - y| := rfl'
 preamble: |
   universe u
   namespace GeneralTopology
   structure Metric (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ x y, dist x y = dist y x
+    symm : ∀ {x y}, dist x y = dist y x
     triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
   end GeneralTopology
   open GeneralTopology
@@ -41,8 +41,8 @@ namespace: GeneralTopology
 seq: 3
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@f1eff20
+  source: extract@8b81090
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
-  line: 99
+  line: 101
   closure_rounds: 1
   check_kind: definition

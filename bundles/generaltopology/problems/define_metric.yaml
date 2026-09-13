@@ -4,13 +4,13 @@ title: The Definition of a Metric Space
 statement: |-
   What must a rule satisfy to deserve the name of a distance? Three things, and each of them holds for distance on a map.
 
-  *Symmetry*: the distance from `x` to `y` is the distance from `y` to `x`. A distance belongs to an unordered pair of points, not to a journey with a direction.
+  *Symmetry*: the distance from `x` to `y` is the distance from `y` to `x`. A distance belongs to an unordered pair, not to a journey with a direction.
 
-  *The triangle inequality*: going from `x` to `z` by way of `y` is never shorter than going directly, so `d x z ≤ d x y + d y z`. In the plane it says that one side of a triangle is at most the sum of the other two.
+  *The triangle inequality*: going from `x` to `z` by way of `y` is never shorter than going directly, so `d x z ≤ d x y + d y z`. In the plane: one side of a triangle is at most the sum of the other two.
 
   *Non-degeneracy*: `d x y = 0` exactly when `x = y`.
 
-  A structure gathers data and the conditions on it under one name, so a term of type `Metric X` is a distance function together with proofs of all three.
+  A structure gathers data and the conditions on it under one name, so a term of type `Metric X` is a distance function with proofs of all three. Braces mark a variable Lean is to infer, so a field stated `∀ {x y}, …` is used as just `M.symm`.
 concepts:
 - metric_space
 stub: |-
@@ -22,25 +22,25 @@ stub: |-
 reference: |-
   structure Metric (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ x y, dist x y = dist y x
+    symm : ∀ {x y}, dist x y = dist y x
     triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 spec: |-
   example (X : Type) (M : _root_.GeneralTopology.Metric X) (x y z : X) :
       M.dist x y = M.dist y x
         ∧ M.dist x z ≤ M.dist x y + M.dist y z
         ∧ (M.dist x y = 0 ↔ x = y) :=
-    ⟨M.symm x y, M.triangle x y z, M.eq_zero x y⟩
+    ⟨by apply M.symm, by apply M.triangle, by simp [M.eq_zero]⟩
 preamble: |
   universe u
-description: 'Define the structure `Metric X` for a type `X`, with four fields in this order: `dist`, of type `X → X → ℝ`; then `symm`, `triangle` and `eq_zero`, each quantified over the points it mentions, carrying the three conditions above.'
+description: 'Define the structure `Metric X` for a type `X`, with four fields in this order: `dist`, of type `X → X → ℝ`; then `symm`, `triangle` and `eq_zero`, carrying the three conditions above. Bind the points implicitly in `symm` and `eq_zero`, explicitly in `triangle`, whose middle point is never fixed by the goal.'
 stub_names:
 - Metric
 namespace: GeneralTopology
 seq: 0
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@f1eff20
+  source: extract@8b81090
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 23
   closure_rounds: 1

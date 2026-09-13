@@ -57,6 +57,23 @@ passes — **every structure definition problem carries a `/-- @spec -/` naming 
 so does every `where`-bodied `def`, which has no single body to compare and is an extraction
 ERROR without one.
 
+Fields are stated the way later problems will use them, since the reference is the context those
+problems see. `Metric.symm` and `Metric.eq_zero` bind their points **implicitly**, so a proof can
+write `M.symm` or `M.eq_zero.mpr rfl` and let Lean read the points off the statement;
+`Metric.triangle` binds its three points **explicitly**, because the middle one is a genuine
+choice and is never fixed by the goal. Construction uses named binders — `symm {x y} :=
+abs_sub_comm x y` — since a bare `eq_zero := by rw [...]` never introduces the implicit points
+and the rewrite fails.
+
+A spec must accept every *correct* encoding, not just the reference's. A student who binds the
+points explicitly, or who writes non-degeneracy as `x = y ↔ dist x y = 0`, has not made a
+mistake, and a spec that rejects them is the spec's bug. Two tactics do the work:
+`by apply M.symm` accepts either binder style, and `by simp [M.eq_zero]` accepts an `↔` either
+way round and either binder style with it. Do not use `first | exact … | exact …` — the unused
+branches raise `linter.unusedTactic`, and warnings become errors under publish. Before
+publishing a structure, compile its spec against variants of every field shape plus one wrong
+definition, which must still fail.
+
 ## Proofs
 
 No proof runs past fifteen lines. When one would, the way out is a lemma of its own, given its

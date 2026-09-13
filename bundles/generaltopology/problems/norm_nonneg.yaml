@@ -44,8 +44,8 @@ namespace: GeneralTopology
 seq: 15
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@f1eff20
+  source: extract@8b81090
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
-  line: 405
+  line: 407
   closure_rounds: 1
   check_kind: theorem

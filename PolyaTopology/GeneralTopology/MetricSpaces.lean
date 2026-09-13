@@ -27,29 +27,29 @@ Distance is the first thing one measures about a pair of points, and a great dea
 @preamble
 What must a rule satisfy to deserve the name of a distance? Three things, and each of them holds for distance on a map.
 
-*Symmetry*: the distance from `x` to `y` is the distance from `y` to `x`. A distance belongs to an unordered pair of points, not to a journey with a direction.
+*Symmetry*: the distance from `x` to `y` is the distance from `y` to `x`. A distance belongs to an unordered pair, not to a journey with a direction.
 
-*The triangle inequality*: going from `x` to `z` by way of `y` is never shorter than going directly, so `d x z ≤ d x y + d y z`. In the plane it says that one side of a triangle is at most the sum of the other two.
+*The triangle inequality*: going from `x` to `z` by way of `y` is never shorter than going directly, so `d x z ≤ d x y + d y z`. In the plane: one side of a triangle is at most the sum of the other two.
 
 *Non-degeneracy*: `d x y = 0` exactly when `x = y`.
 
-A structure gathers data and the conditions on it under one name, so a term of type `Metric X` is a distance function together with proofs of all three.
+A structure gathers data and the conditions on it under one name, so a term of type `Metric X` is a distance function with proofs of all three. Braces mark a variable Lean is to infer, so a field stated `∀ {x y}, …` is used as just `M.symm`.
 @description
-Define the structure `Metric X` for a type `X`, with four fields in this order: `dist`, of type `X → X → ℝ`; then `symm`, `triangle` and `eq_zero`, each quantified over the points it mentions, carrying the three conditions above.
+Define the structure `Metric X` for a type `X`, with four fields in this order: `dist`, of type `X → X → ℝ`; then `symm`, `triangle` and `eq_zero`, carrying the three conditions above. Bind the points implicitly in `symm` and `eq_zero`, explicitly in `triangle`, whose middle point is never fixed by the goal.
 -/
 
 structure Metric (X : Type u) where
   dist : X → X → ℝ
-  symm : ∀ x y, dist x y = dist y x
+  symm : ∀ {x y}, dist x y = dist y x
   triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-  eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+  eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
 /-- @spec -/
 example (X : Type) (M : Metric X) (x y z : X) :
     M.dist x y = M.dist y x
       ∧ M.dist x z ≤ M.dist x y + M.dist y z
       ∧ (M.dist x y = 0 ↔ x = y) :=
-  ⟨M.symm x y, M.triangle x y z, M.eq_zero x y⟩
+  ⟨by apply M.symm, by apply M.triangle, by simp [M.eq_zero]⟩
 
 /-! @end -/
 
@@ -66,7 +66,7 @@ Nothing is quantified away when a statement about all pairs is used on the pair 
 Show that `M.dist x x = 0`. If `h` is an equivalence then `h.mpr` is its right-to-left direction, and the equality it wants is `rfl`.
 -/
 theorem Metric.dist_self {X : Type u} (M : Metric X) (x : X) : M.dist x x = 0 :=
-  (M.eq_zero x x).mpr rfl
+  M.eq_zero.mpr rfl
 
 /--
 @problem dist_nonneg
@@ -80,11 +80,13 @@ Take two points `x` and `y`, and consider the journey from `x` back to `x` by wa
 
 The argument is worth a second look, because it is the standard use of the triangle inequality: take the detour that returns to where it started, and read the inequality backwards.
 @description
-Show that `0 ≤ M.dist x y`. Begin with `M.triangle x y x`, rewrite the distance from `x` to itself with the previous problem and the distance from `y` to `x` with symmetry, and let `linarith` do the arithmetic.
+Show that `0 ≤ M.dist x y`. Begin with `M.triangle x y x` and rewrite the distance from `x` to itself with the previous problem. Then name the symmetry you need — `have e : M.dist y x = M.dist x y := M.symm`, the points being implicit — rewrite with it, and let `linarith` do the arithmetic.
 -/
 theorem Metric.nonneg {X : Type u} (M : Metric X) (x y : X) : 0 ≤ M.dist x y := by
   have h := M.triangle x y x
-  rw [M.dist_self x, M.symm y x] at h
+  rw [M.dist_self x] at h
+  have e : M.dist y x = M.dist x y := M.symm
+  rw [e] at h
   linarith
 
 /-!
@@ -107,9 +109,9 @@ To give a term of a structure type is to give each of its fields, which Lean wri
 ```lean
 def someMetric : Metric ℝ where
   dist x y := ...
-  symm x y := ...
+  symm {x y} := ...
   triangle x y z := ...
-  eq_zero x y := ...
+  eq_zero {x y} := ...
 ```
 The first field is a definition; the other three are proofs, written as terms or opened with `by`.
 @description
@@ -118,9 +120,9 @@ Define `line`, the real numbers with `dist x y = |x - y|`. Three fields are the 
 
 def line : Metric ℝ where
   dist x y := |x - y|
-  symm x y := abs_sub_comm x y
+  symm {x y} := abs_sub_comm x y
   triangle x y z := abs_sub_le x y z
-  eq_zero x y := by rw [abs_eq_zero, sub_eq_zero]
+  eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
 
 /-- @spec -/
 example (x y : ℝ) : line.dist x y = |x - y| := rfl
@@ -371,7 +373,7 @@ example (V : Type) [AddCommGroup V] [Module ℝ V] (N : Norm V) (c : ℝ) (v w :
     (N.norm v = 0 ↔ v = 0)
       ∧ N.norm (c • v) = |c| * N.norm v
       ∧ N.norm (v + w) ≤ N.norm v + N.norm w :=
-  ⟨N.eq_zero v, N.smul c v, N.triangle v w⟩
+  ⟨by simp [N.eq_zero], by apply N.smul, by apply N.triangle⟩
 
 /-! @end -/
 
@@ -458,12 +460,12 @@ Define `Norm.toMetric`, the metric induced by a norm. For the triangle inequalit
 
 def Norm.toMetric {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : Metric V where
   dist v w := N.norm (v - w)
-  symm v w := N.sub_comm v w
+  symm {v w} := N.sub_comm v w
   triangle u v w := by
     have h := N.triangle (u - v) (v - w)
     rw [sub_add_sub_cancel] at h
     exact h
-  eq_zero v w := by rw [N.eq_zero, sub_eq_zero]
+  eq_zero {v w} := by rw [N.eq_zero, sub_eq_zero]
 
 /-- @spec -/
 example (V : Type) [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V) :

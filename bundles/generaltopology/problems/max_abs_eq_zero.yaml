@@ -33,8 +33,8 @@ namespace: GeneralTopology
 seq: 24
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@f1eff20
+  source: extract@8b81090
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
-  line: 619
+  line: 621
   closure_rounds: 1
   check_kind: theorem
