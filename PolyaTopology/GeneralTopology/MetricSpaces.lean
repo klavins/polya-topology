@@ -523,7 +523,6 @@ example (x : ℝ) : absNorm.norm x = |x| := rfl
 @concept plane_norms
 @title Two Norms on the Plane
 @kind definition
-@goal
 
 On the line there is one reasonable length. On the plane there are many, and which to measure with is a real choice. Setting two of them side by side asks what a metric space keeps and what it throws away: two lengths can disagree everywhere and still call the same sets near, and that is the observation topology is built on.
 -/

@@ -1,0 +1,58 @@
+slug: define_codiscrete
+kind: definition
+title: The Codiscrete Topology
+statement: |-
+  Now the other extreme: call open only what must be, the whole set and the empty set. This is the *codiscrete* topology, the coarsest there is.
+
+  With the two facts in hand there is nothing left to check — which is the same shape as the metric topology, where three theorems came first and the construction was a matter of naming them.
+concepts:
+- extreme_topologies
+stub: 'def codiscrete (X : Type u) : Topology X := sorry'
+reference: |-
+  def codiscrete (X : Type u) : Topology X where
+    IsOpen := fun U => U = ∅ ∨ U = Set.univ
+    univ := Or.inr rfl
+    inter := trivial_inter
+    sUnion := trivial_sUnion
+spec: 'example (X : Type) (U : Set X) : (_root_.GeneralTopology.codiscrete X).IsOpen U ↔ (U = ∅ ∨ U = Set.univ) := Iff.rfl'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
+      (hV : V = ∅ ∨ V = Set.univ) : U ∩ V = ∅ ∨ U ∩ V = Set.univ := by
+    rcases hU with rfl | rfl
+    · left; exact Set.empty_inter V
+    · rcases hV with rfl | rfl
+      · left; exact Set.inter_empty _
+      · right; exact Set.inter_self _
+
+  theorem trivial_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ U = Set.univ) : ⋃₀ F = ∅ ∨ ⋃₀ F = Set.univ := by
+    by_cases hu : (Set.univ : Set X) ∈ F
+    · exact Or.inr (Set.Subset.antisymm (Set.subset_univ _) (Set.subset_sUnion_of_mem hu))
+    · refine Or.inl (Set.sUnion_eq_empty.mpr ?_)
+      intro U hUF
+      rcases h U hUF with rfl | rfl
+      · rfl
+      · exact absurd hUF hu
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `codiscrete X`, whose `IsOpen U` is `U = ∅ ∨ U = Set.univ`. The whole space is open on the right of the disjunction, and the other two fields are the two theorems above.
+stub_names:
+- codiscrete
+namespace: GeneralTopology
+seq: 46
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/BasicExamples.lean
+  line: 80
+  closure_rounds: 1
+  check_kind: definition

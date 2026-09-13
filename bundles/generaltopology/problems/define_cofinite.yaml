@@ -1,0 +1,56 @@
+slug: define_cofinite
+kind: definition
+title: The Cofinite Topology
+statement: With the two facts proved, the topology assembles. Only the whole space is left, and its complement is empty, which is finite.
+concepts:
+- cofinite_topology
+stub: 'def cofinite (X : Type u) : Topology X := sorry'
+reference: |-
+  def cofinite (X : Type u) : Topology X where
+    IsOpen := fun U => U = ∅ ∨ Uᶜ.Finite
+    univ := Or.inr (by rw [Set.compl_univ]; exact Set.finite_empty)
+    inter := cofinite_inter
+    sUnion := cofinite_sUnion
+spec: 'example (X : Type) (U : Set X) : (_root_.GeneralTopology.cofinite X).IsOpen U ↔ (U = ∅ ∨ Uᶜ.Finite) := Iff.rfl'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem cofinite_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ Uᶜ.Finite)
+      (hV : V = ∅ ∨ Vᶜ.Finite) : U ∩ V = ∅ ∨ (U ∩ V)ᶜ.Finite := by
+    rcases hU with rfl | hu
+    · left; exact Set.empty_inter V
+    · rcases hV with rfl | hv
+      · left; exact Set.inter_empty U
+      · right; rw [Set.compl_inter]; exact hu.union hv
+
+  theorem cofinite_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ Uᶜ.Finite) : ⋃₀ F = ∅ ∨ (⋃₀ F)ᶜ.Finite := by
+    by_cases he : ∃ U ∈ F, U ≠ ∅
+    · obtain ⟨U, hUF, hne⟩ := he
+      refine Or.inr (((h U hUF).resolve_left hne).subset ?_)
+      exact Set.compl_subset_compl.mpr (Set.subset_sUnion_of_mem hUF)
+    · refine Or.inl (Set.sUnion_eq_empty.mpr ?_)
+      intro U hUF
+      by_contra hne
+      exact he ⟨U, hUF, hne⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `cofinite X`, whose `IsOpen U` is `U = ∅ ∨ Uᶜ.Finite`. For the whole space, `Set.compl_univ` and `Set.finite_empty`; the other two fields are the two theorems above.
+stub_names:
+- cofinite
+namespace: GeneralTopology
+seq: 51
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/BasicExamples.lean
+  line: 219
+  closure_rounds: 1
+  check_kind: definition

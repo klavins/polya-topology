@@ -1,0 +1,46 @@
+slug: define_topology
+kind: definition
+title: The Definition of a Topological Space
+statement: |-
+  A *topology* on a set `X` names some of its subsets open, subject to three conditions — the three facts that were just proved about a metric space, and nothing more.
+
+  The whole set is open. The intersection of two open sets is open. The union of any collection of open sets is open, the collection being a `Set (Set X)` and the union `⋃₀ F`.
+
+  Two and any number are not the same condition, and the asymmetry is the point: intersecting needs a smallest radius, and only finitely many radii are sure to have one.
+concepts:
+- topological_space
+stub: |-
+  structure Topology (X : Type u) where
+    IsOpen : sorry
+    univ : sorry
+    inter : sorry
+    sUnion : sorry
+reference: |-
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+spec: |-
+  example (X : Type) (T : _root_.GeneralTopology.Topology X) (U V : Set X) (F : Set (Set X)) :
+      T.IsOpen Set.univ
+        ∧ (T.IsOpen U → T.IsOpen V → T.IsOpen (U ∩ V))
+        ∧ ((∀ W ∈ F, T.IsOpen W) → T.IsOpen (⋃₀ F)) := by
+    refine ⟨T.univ, fun _ _ => ?_, fun _ => ?_⟩
+    · apply T.inter <;> assumption
+    · apply T.sUnion
+      assumption
+preamble: |
+  universe u
+description: 'Define the structure `Topology X`, with a field `IsOpen : Set X → Prop` and then `univ`, `inter` and `sUnion` carrying the three conditions. Bind the sets implicitly in `inter` and `sUnion`, since a proof using them names the hypotheses rather than the sets.'
+stub_names:
+- Topology
+namespace: GeneralTopology
+seq: 36
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/TopologicalSpaces.lean
+  line: 130
+  closure_rounds: 1
+  check_kind: definition

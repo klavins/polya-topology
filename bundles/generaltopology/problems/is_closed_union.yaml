@@ -1,0 +1,43 @@
+slug: is_closed_union
+kind: theorem
+title: The Union of Two Closed Sets
+statement: 'Each condition on the open sets says something about the closed ones, with the roles of union and intersection exchanged, because complementing exchanges them: `(C ∪ D)ᶜ = Cᶜ ∩ Dᶜ`. So the union of two closed sets is closed, matching the intersection of two open ones, and — though it is not proved here — an intersection of any number of closed sets is closed.'
+concepts:
+- closed_sets
+stub: |-
+  theorem Topology.isClosed_union {X : Type u} (T : Topology X) {C D : Set X}
+      (hC : T.IsClosed C) (hD : T.IsClosed D) : T.IsClosed (C ∪ D) := sorry
+reference: |-
+  theorem Topology.isClosed_union {X : Type u} (T : Topology X) {C D : Set X}
+      (hC : T.IsClosed C) (hD : T.IsClosed D) : T.IsClosed (C ∪ D) := by
+    show T.IsOpen _
+    rw [Set.compl_union]
+    exact T.inter hC hD
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) {C D : Set X}
+      (hC : T.IsClosed C) (hD : T.IsClosed D), T.IsClosed (C ∪ D) := _root_.GeneralTopology.Topology.isClosed_union
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `C ∪ D` is closed when `C` and `D` are. `show T.IsOpen _`, rewrite with `Set.compl_union`, and the intersection condition finishes it.
+stub_names:
+- Topology.isClosed_union
+namespace: GeneralTopology
+seq: 40
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/TopologicalSpaces.lean
+  line: 242
+  closure_rounds: 1
+  check_kind: theorem

@@ -1,0 +1,48 @@
+slug: define_nbhd
+kind: example
+title: The Definition of a Neighbourhood
+statement: A set `N` is a *neighbourhood* of a point `x` when some open set `U` has `x ∈ U ⊆ N`. A neighbourhood need not itself be open — it must only contain an open set around the point — and an open set is a neighbourhood of each of its own points, itself being the `U` required.
+concepts:
+- neighbourhoods
+stub: |-
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop := sorry
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U := sorry
+reference: |-
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+spec: |-
+  example {X : Type u} (T : Topology X) (x : X) (N : Set X) : _root_.GeneralTopology.Topology.IsNbhd T x N ↔ (∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N) := by unfold _root_.GeneralTopology.Topology.IsNbhd; first | exact Iff.rfl | grind
+  example : ∀ {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U), T.IsNbhd x U := _root_.GeneralTopology.Topology.nbhd_of_isOpen
+  example (X : Type) (T : Topology X) (x : X) (N : Set X) :
+      T.IsNbhd x N ↔ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N := Iff.rfl
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Topology.IsNbhd`, and then show that an open set is a neighbourhood of any of its points. The witness for the second is the set itself, with `subset_rfl` for the containment.
+stub_names:
+- Topology.IsNbhd
+- Topology.nbhd_of_isOpen
+namespace: GeneralTopology
+seq: 41
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/TopologicalSpaces.lean
+  line: 266
+  closure_rounds: 1
+  check_kind: mixed

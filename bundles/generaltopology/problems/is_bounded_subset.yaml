@@ -39,7 +39,7 @@ namespace: GeneralTopology
 seq: 11
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@04c27a9
+  source: extract@332492a
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 303
   closure_rounds: 1

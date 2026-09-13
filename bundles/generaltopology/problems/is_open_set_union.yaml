@@ -1,0 +1,51 @@
+slug: is_open_set_union
+kind: theorem
+title: A Union of Open Sets, However Many
+statement: |-
+  Here the number of sets does not matter at all. A point of the union lies in one of them, that one is open, so it supplies a ball around the point — and the ball, being inside that one set, is inside the union.
+
+  A collection of sets is itself a set: `F : Set (Set X)`. Its union is `⋃₀ F`, the points belonging to at least one member, and `x ∈ ⋃₀ F` unfolds to `∃ U, U ∈ F ∧ x ∈ U`.
+concepts:
+- open_sets
+stub: |-
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := sorry
+reference: |-
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
+    intro x hx
+    obtain ⟨U, hUF, hxU⟩ := hx
+    obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
+    exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
+spec: |-
+  example : ∀ {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U), M.IsOpenSet (⋃₀ F) := _root_.GeneralTopology.Metric.isOpenSet_sUnion
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+    ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `⋃₀ F` is open when every member of `F` is. Take the membership apart for the set the point came from, get a ball from that set's openness, and offer the same ball; a point of it lies in that member, hence in the union.
+stub_names:
+- Metric.isOpenSet_sUnion
+namespace: GeneralTopology
+seq: 35
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/TopologicalSpaces.lean
+  line: 103
+  closure_rounds: 1
+  check_kind: theorem

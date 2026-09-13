@@ -1,0 +1,52 @@
+slug: define_is_closed
+kind: example
+title: The Definition of a Closed Set
+statement: |-
+  A subset `C` of a topological space is *closed* when its complement `Cᶜ` is open. Nothing else is required, and nothing else is meant: closed is a name for a property of the complement.
+
+  Since the whole space is open, the empty set is closed; since the empty set is open, the whole space is closed. Both are therefore open and closed at once, which is why "closed" must not be read as "not open".
+concepts:
+- closed_sets
+stub: |-
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := sorry
+
+  theorem Topology.isClosed_univ {X : Type u} (T : Topology X) : T.IsClosed (Set.univ : Set X) := sorry
+reference: |-
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  theorem Topology.isClosed_univ {X : Type u} (T : Topology X) : T.IsClosed (Set.univ : Set X) := by
+    show T.IsOpen _
+    rw [Set.compl_univ]
+    exact T.empty
+spec: |-
+  example {X : Type u} (T : Topology X) (C : Set X) : _root_.GeneralTopology.Topology.IsClosed T C ↔ (T.IsOpen Cᶜ) := by unfold _root_.GeneralTopology.Topology.IsClosed; first | exact Iff.rfl | grind
+  example : ∀ {X : Type u} (T : Topology X), T.IsClosed (Set.univ : Set X) := _root_.GeneralTopology.Topology.isClosed_univ
+  example (X : Type) (T : Topology X) (C : Set X) : T.IsClosed C ↔ T.IsOpen Cᶜ := Iff.rfl
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
+    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+    rwa [Set.sUnion_empty] at h
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Topology.IsClosed`, and then show that `Set.univ` is closed. For the second, `show T.IsOpen _` names the goal for what it is, `Set.compl_univ` rewrites the complement, and the empty set is open.
+stub_names:
+- Topology.IsClosed
+- Topology.isClosed_univ
+namespace: GeneralTopology
+seq: 39
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/TopologicalSpaces.lean
+  line: 217
+  closure_rounds: 1
+  check_kind: mixed

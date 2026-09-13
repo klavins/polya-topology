@@ -1,0 +1,48 @@
+slug: sierpinski_point_not_open
+kind: theorem
+title: One of the Two Points is Not Open
+statement: |-
+  The set `{false}` is not open, and that is what makes the space worth naming. Its single point contains `false` and not `true`, so the defining implication fails at once.
+
+  The consequence is that `false` has no small neighbourhood: every open set containing it also contains `true`, so the two points cannot be told apart by open sets from that side, though they can from the other.
+concepts:
+- sierpinski_space
+stub: 'theorem sierpinski_singleton_false_not_open : ¬ sierpinski.IsOpen {false} := sorry'
+reference: |-
+  theorem sierpinski_singleton_false_not_open : ¬ sierpinski.IsOpen {false} := by
+    intro h
+    have : (true : Bool) ∈ ({false} : Set Bool) := h rfl
+    simp at this
+spec: 'example : ¬ sierpinski.IsOpen {false} := _root_.GeneralTopology.sierpinski_singleton_false_not_open'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def sierpinski : Topology Bool where
+    IsOpen := fun U => false ∈ U → true ∈ U
+    univ := fun _ => trivial
+    inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
+    sUnion := by
+      intro F h hf
+      obtain ⟨U, hUF, hU⟩ := hf
+      exact ⟨U, hUF, h U hUF hU⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `{false}` is not open in `sierpinski`. Assume it is, apply the implication to the membership `false ∈ {false}`, and the result says `true = false`, which `simp` refutes.
+stub_names:
+- sierpinski_singleton_false_not_open
+namespace: GeneralTopology
+seq: 49
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/BasicExamples.lean
+  line: 160
+  closure_rounds: 1
+  check_kind: theorem

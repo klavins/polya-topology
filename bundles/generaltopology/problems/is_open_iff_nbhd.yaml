@@ -1,0 +1,61 @@
+slug: is_open_iff_nbhd
+kind: theorem
+title: Open Means a Neighbourhood of Each of Its Points
+statement: |-
+  Now the two directions meet. An open set is a neighbourhood of each of its points, being itself the open set required. And a set that is a neighbourhood of each of its points is the union of the open sets inside it, which the union condition makes open.
+
+  So openness, a property of a set, is exactly a property holding at every one of its points. Every later notion in topology is stated in the second form.
+concepts:
+- neighbourhoods
+stub: |-
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := sorry
+reference: |-
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
+    constructor
+    · intro hU x hx
+      exact T.nbhd_of_isOpen hU hx
+    · intro h
+      rw [T.union_of_opens_inside U h]
+      exact T.sUnion (fun V hV => hV.1)
+spec: 'example : ∀ {X : Type u} (T : Topology X) (U : Set X), T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := _root_.GeneralTopology.Topology.isOpen_iff_nbhd'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove the equivalence. The forward direction is the previous concept's `T.nbhd_of_isOpen`; for the other, rewrite `U` by the previous problem and apply the union condition, whose hypothesis is the first half of each member's defining pair.
+stub_names:
+- Topology.isOpen_iff_nbhd
+namespace: GeneralTopology
+seq: 43
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/TopologicalSpaces.lean
+  line: 311
+  closure_rounds: 1
+  check_kind: theorem

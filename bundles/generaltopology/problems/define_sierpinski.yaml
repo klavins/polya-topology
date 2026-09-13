@@ -1,0 +1,43 @@
+slug: define_sierpinski
+kind: definition
+title: The Sierpiński Space
+statement: |-
+  Take the two-element set `Bool` and declare a subset open when, if it contains `false`, it also contains `true`. Three subsets pass: the empty set, `{true}`, and the whole set. The fourth, `{false}`, fails, and that single asymmetry is the whole of the example.
+
+  Written this way each condition is an implication, and the proofs are short. That is the advantage of describing the open sets by a property rather than by listing them.
+concepts:
+- sierpinski_space
+stub: 'def sierpinski : Topology Bool := sorry'
+reference: |-
+  def sierpinski : Topology Bool where
+    IsOpen := fun U => false ∈ U → true ∈ U
+    univ := fun _ => trivial
+    inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
+    sUnion := by
+      intro F h hf
+      obtain ⟨U, hUF, hU⟩ := hf
+      exact ⟨U, hUF, h U hUF hU⟩
+spec: 'example (U : Set Bool) : _root_.GeneralTopology.sierpinski.IsOpen U ↔ (false ∈ U → true ∈ U) := Iff.rfl'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `sierpinski`, a topology on `Bool` whose `IsOpen U` is `false ∈ U → true ∈ U`. The whole set holds it trivially; an intersection holds it from both halves; and for a union, the member that supplies `false` supplies `true`.
+stub_names:
+- sierpinski
+namespace: GeneralTopology
+seq: 48
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/BasicExamples.lean
+  line: 133
+  closure_rounds: 1
+  check_kind: definition

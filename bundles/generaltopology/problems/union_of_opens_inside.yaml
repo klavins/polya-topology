@@ -1,0 +1,50 @@
+slug: union_of_opens_inside
+kind: theorem
+title: A Set is the Union of the Open Sets Inside It
+statement: |-
+  Suppose every point of `U` has an open set around it inside `U`. Collect all the open sets contained in `U`: their union is contained in `U`, since each of them is, and it contains every point of `U`, since each point has one of them around it. So `U` is that union exactly.
+
+  This is the step that turns a condition holding at each point into a single set built by the union rule.
+concepts:
+- neighbourhoods
+stub: |-
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := sorry
+reference: |-
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U), U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := _root_.GeneralTopology.Topology.union_of_opens_inside
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U}` under that hypothesis. `Set.Subset.antisymm` splits the equality into the two containments; one takes the open set the hypothesis supplies, and the other reads the membership apart with `rintro` and applies the containment it carries.
+stub_names:
+- Topology.union_of_opens_inside
+namespace: GeneralTopology
+seq: 42
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/TopologicalSpaces.lean
+  line: 290
+  closure_rounds: 1
+  check_kind: theorem

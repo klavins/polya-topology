@@ -1,0 +1,54 @@
+slug: cofinite_closure
+kind: example
+title: Cofinite Sets Are Closed Under Both Operations
+statement: |-
+  Call a subset open when it is empty, or when its complement is finite. On a finite set this is just the discrete topology; on an infinite one it is a genuinely new example, and a small one, since any two nonempty open sets must meet.
+
+  The two conditions come out of two facts about finite sets. For an intersection, `(U ∩ V)ᶜ = Uᶜ ∪ Vᶜ`, and a union of two finite sets is finite. For a union, the complement of `⋃₀ F` is contained in the complement of any one member, and a subset of a finite set is finite.
+concepts:
+- cofinite_topology
+stub: |-
+  theorem cofinite_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ Uᶜ.Finite)
+      (hV : V = ∅ ∨ Vᶜ.Finite) : U ∩ V = ∅ ∨ (U ∩ V)ᶜ.Finite := sorry
+
+  theorem cofinite_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ Uᶜ.Finite) : ⋃₀ F = ∅ ∨ (⋃₀ F)ᶜ.Finite := sorry
+reference: |-
+  theorem cofinite_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ Uᶜ.Finite)
+      (hV : V = ∅ ∨ Vᶜ.Finite) : U ∩ V = ∅ ∨ (U ∩ V)ᶜ.Finite := by
+    rcases hU with rfl | hu
+    · left; exact Set.empty_inter V
+    · rcases hV with rfl | hv
+      · left; exact Set.inter_empty U
+      · right; rw [Set.compl_inter]; exact hu.union hv
+
+  theorem cofinite_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ Uᶜ.Finite) : ⋃₀ F = ∅ ∨ (⋃₀ F)ᶜ.Finite := by
+    by_cases he : ∃ U ∈ F, U ≠ ∅
+    · obtain ⟨U, hUF, hne⟩ := he
+      refine Or.inr (((h U hUF).resolve_left hne).subset ?_)
+      exact Set.compl_subset_compl.mpr (Set.subset_sUnion_of_mem hUF)
+    · refine Or.inl (Set.sUnion_eq_empty.mpr ?_)
+      intro U hUF
+      by_contra hne
+      exact he ⟨U, hUF, hne⟩
+spec: |-
+  example : ∀ {X : Type u} {U V : Set X} (hU : U = ∅ ∨ Uᶜ.Finite)
+      (hV : V = ∅ ∨ Vᶜ.Finite), U ∩ V = ∅ ∨ (U ∩ V)ᶜ.Finite := _root_.GeneralTopology.cofinite_inter
+  example : ∀ {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ Uᶜ.Finite), ⋃₀ F = ∅ ∨ (⋃₀ F)ᶜ.Finite := _root_.GeneralTopology.cofinite_sUnion
+preamble: |
+  universe u
+description: 'Prove the two closure facts for sets that are empty or have a finite complement. For the intersection, `rcases` both hypotheses, then `Set.compl_inter` and `Set.Finite.union`. For the union, split with `by_cases` on whether some member is nonempty: if one is, its complement is finite and `Set.compl_subset_compl` with `Set.Finite.subset` finishes; if none is, `by_contra` shows every member empty.'
+stub_names:
+- cofinite_inter
+- cofinite_sUnion
+namespace: GeneralTopology
+seq: 50
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/BasicExamples.lean
+  line: 185
+  closure_rounds: 1
+  check_kind: theorem

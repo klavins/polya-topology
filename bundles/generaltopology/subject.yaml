@@ -452,6 +452,8 @@ environment:
   - Mathlib.Tactic.Linarith
   - Mathlib.Tactic.Ring
   - Mathlib.Tactic.NormNum
+  - Mathlib.Data.Set.Lattice
+  - Mathlib.Data.Set.Finite.Basic
   project: mathlib
   toolchain: leanprover/lean4:v4.31.0
   mathlib_rev: v4.31.0
@@ -507,11 +509,83 @@ concepts:
 - slug: plane_norms
   description: 'On the line there is one reasonable length. On the plane there are many, and which to measure with is a real choice. Setting two of them side by side asks what a metric space keeps and what it throws away: two lengths can disagree everywhere and still call the same sets near, and that is the observation topology is built on.'
   kind: definition
-  goal: true
+  goal: false
   section: Metric Spaces
   section_order: 0
   title: Two Norms on the Plane
   position: 6
+- slug: open_sets
+  description: 'A metric answers how far apart two points are, but most of what is built on it asks only a coarser question: is there room around this point? A set with room around each of its points is called open. Which sets are open turns out to be all that the later notions use, and it is the bridge from measuring to the subject proper.'
+  kind: definition
+  goal: false
+  section: Topological Spaces
+  section_order: 1
+  title: The Open Sets of a Metric Space
+  position: 7
+- slug: topological_space
+  description: 'The three facts just proved are all that most of the subject uses about a metric. So take them as the definition: a topology on a set is a choice of which subsets are open, asked only to contain the whole set and to be closed under intersecting two and uniting any number. What is gained is everything that has open sets but no distance.'
+  kind: definition
+  goal: false
+  section: Topological Spaces
+  section_order: 1
+  title: Topological Spaces
+  position: 8
+- slug: metric_topology
+  description: 'Every metric space is a topological space, by taking the open sets to be the ones the metric already calls open. This is the reason the axioms were chosen as they were, and it is the source of most of the examples: whenever a set carries a distance it carries a topology, and different distances may well give the same one.'
+  kind: theorem
+  goal: false
+  section: Topological Spaces
+  section_order: 1
+  title: The Topology of a Metric
+  position: 9
+- slug: closed_sets
+  description: 'A set is closed when its complement is open. Closed is not the opposite of open and not its negation: a set may be both, as the whole space is, or neither. The two notions carry the same information — each determines the other — and which is more convenient depends on what is being said.'
+  kind: definition
+  goal: false
+  section: Topological Spaces
+  section_order: 1
+  title: Closed Sets
+  position: 10
+- slug: neighbourhoods
+  description: 'A neighbourhood of a point is any set with an open set around that point inside it. The notion localises openness: a set is open exactly when it is a neighbourhood of each of its own points. That equivalence is how a global condition on a set is traded for a condition at each point, which is the form nearly every later argument takes.'
+  kind: definition
+  goal: false
+  section: Topological Spaces
+  section_order: 1
+  title: Neighbourhoods
+  position: 11
+- slug: extreme_topologies
+  description: 'Every set carries at least two topologies, and they are the ends of the range: one calls every subset open, the other only the two it must. Neither is interesting on its own; both are useful as bounds, as sources of counterexamples, and as a check that the axioms are weak enough to admit the trivial cases and strong enough to exclude nothing else.'
+  kind: definition
+  goal: false
+  section: Basic Examples
+  section_order: 2
+  title: The Two Extreme Topologies
+  position: 12
+- slug: sierpinski_space
+  description: 'The smallest space that is neither discrete nor codiscrete has two points, one of which is open and the other not. It is the standard source of the phenomena that vanish when a space is nice: two distinct points that no open set separates, and a point whose only neighbourhood is everything.'
+  kind: definition
+  goal: false
+  section: Basic Examples
+  section_order: 2
+  title: The Sierpiński Space
+  position: 13
+- slug: cofinite_topology
+  description: 'On any set, calling a subset open when it leaves out only finitely many points gives a topology. It is the first example whose conditions really have to be checked, and the first where the asymmetry between two and any number does visible work: complements of finitely many open sets stay finite because a finite union of finite sets is finite.'
+  kind: definition
+  goal: false
+  section: Basic Examples
+  section_order: 2
+  title: The Cofinite Topology
+  position: 14
+- slug: subspace_topology
+  description: A subset of a topological space is a topological space in its own right, with the sets cut out of the ambient open sets by intersection. This is how every space met in practice arises — a curve, a surface, a solid is a subset of a Euclidean space — and it is the first construction that makes new spaces out of old, which is what the rest of the subject does.
+  kind: definition
+  goal: true
+  section: Basic Examples
+  section_order: 2
+  title: The Subspace Topology
+  position: 15
 edges:
 - - metric_space
   - real_line
@@ -523,15 +597,33 @@ edges:
   - bounded_set
 - - open_ball
   - norm_metric
+- - open_ball
+  - open_sets
+- - open_sets
+  - metric_topology
 - - real_line
   - open_ball
+- - topological_space
+  - closed_sets
+- - topological_space
+  - cofinite_topology
+- - topological_space
+  - extreme_topologies
+- - topological_space
+  - metric_topology
+- - topological_space
+  - neighbourhoods
+- - topological_space
+  - sierpinski_space
+- - topological_space
+  - subspace_topology
 provenance:
-  source: extract@04c27a9
+  source: extract@332492a
   module: PolyaTopology.GeneralTopology
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: 2bd9709f4a8f3c00444ef6a8918560c3186e86df
+  commit: a06729a8b1364f66e35e354fbbc77ecd03917ea8
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

@@ -1,0 +1,40 @@
+slug: define_discrete
+kind: definition
+title: The Discrete Topology
+statement: |-
+  Call every subset open. The three conditions ask nothing, since the answer is always yes, so this is a topology on any set whatever — the *discrete* topology, the finest there is.
+
+  A field of a structure may be filled by a proof that ignores its hypotheses. `trivial` proves `True`.
+concepts:
+- extreme_topologies
+stub: 'def discrete (X : Type u) : Topology X := sorry'
+reference: |-
+  def discrete (X : Type u) : Topology X where
+    IsOpen := fun _ => True
+    univ := trivial
+    inter := fun _ _ => trivial
+    sUnion := fun _ => trivial
+spec: 'example (X : Type) (U : Set X) : (_root_.GeneralTopology.discrete X).IsOpen U ↔ True := Iff.rfl'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `discrete X`, whose `IsOpen` is `fun _ => True`. Each of the three conditions is `trivial`, the last two after their hypotheses are taken and discarded.
+stub_names:
+- discrete
+namespace: GeneralTopology
+seq: 44
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/BasicExamples.lean
+  line: 21
+  closure_rounds: 1
+  check_kind: definition

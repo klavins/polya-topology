@@ -1,0 +1,52 @@
+slug: define_subspace
+kind: definition
+title: A Subset is a Space
+statement: |-
+  Let `A` be a subset of a space `X`. A point of `A` is a term of the type `A` — a point of `X` together with a proof it lies in `A` — and `Subtype.val` sends it back. A subset of `A` is called open when it is what an open set of `X` leaves behind: `V = Subtype.val ⁻¹' U` for some open `U`.
+
+  The conditions transfer because taking preimages commutes with both operations. The union needs one turn of thought: the collection to unite in `X` is the open sets whose trace lies in the given collection, and that is enough, because every member of the collection is the trace of one of them.
+concepts:
+- subspace_topology
+stub: 'def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A := sorry'
+reference: |-
+  def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A where
+    IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U
+    univ := ⟨Set.univ, T.univ, rfl⟩
+    inter := by
+      rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
+      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
+    sUnion := by
+      intro F h
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      apply Set.Subset.antisymm
+      · rintro x ⟨V, hVF, hxV⟩
+        obtain ⟨U, hU, rfl⟩ := h V hVF
+        exact ⟨U, ⟨hU, hVF⟩, hxV⟩
+      · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
+        exact ⟨_, hUF, hxU⟩
+spec: |-
+  example (X : Type) (T : Topology X) (A : Set X) (V : Set A) :
+      (T.subspace A).IsOpen V ↔ ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U := Iff.rfl
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Topology.subspace`, the topology `T` induces on `A`. For the whole set take `Set.univ`; for an intersection, `rintro` the two witnesses with `rfl` and offer their intersection. For the union, offer `⋃₀ {U | T.IsOpen U ∧ Subtype.val ⁻¹' U ∈ F}` and prove the two containments with `Set.Subset.antisymm`.
+stub_names:
+- Topology.subspace
+namespace: GeneralTopology
+seq: 52
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/BasicExamples.lean
+  line: 250
+  closure_rounds: 1
+  check_kind: definition

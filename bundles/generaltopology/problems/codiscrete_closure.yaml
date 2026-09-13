@@ -1,0 +1,55 @@
+slug: codiscrete_closure
+kind: example
+title: Two Sets Are Closed Under Both Operations
+statement: |-
+  Before the topology, the two facts it needs. Call a set *trivial* when it is `∅` or the whole space.
+
+  Two trivial sets intersect to a trivial one: if either is empty the intersection is empty, and otherwise both are everything and so is the intersection.
+
+  A union of trivial sets is trivial: if some member is the whole space then the union is too, being between that member and the whole; and if none is, every member is empty and so is the union.
+concepts:
+- extreme_topologies
+stub: |-
+  theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
+      (hV : V = ∅ ∨ V = Set.univ) : U ∩ V = ∅ ∨ U ∩ V = Set.univ := sorry
+
+  theorem trivial_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ U = Set.univ) : ⋃₀ F = ∅ ∨ ⋃₀ F = Set.univ := sorry
+reference: |-
+  theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
+      (hV : V = ∅ ∨ V = Set.univ) : U ∩ V = ∅ ∨ U ∩ V = Set.univ := by
+    rcases hU with rfl | rfl
+    · left; exact Set.empty_inter V
+    · rcases hV with rfl | rfl
+      · left; exact Set.inter_empty _
+      · right; exact Set.inter_self _
+
+  theorem trivial_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ U = Set.univ) : ⋃₀ F = ∅ ∨ ⋃₀ F = Set.univ := by
+    by_cases hu : (Set.univ : Set X) ∈ F
+    · exact Or.inr (Set.Subset.antisymm (Set.subset_univ _) (Set.subset_sUnion_of_mem hu))
+    · refine Or.inl (Set.sUnion_eq_empty.mpr ?_)
+      intro U hUF
+      rcases h U hUF with rfl | rfl
+      · rfl
+      · exact absurd hUF hu
+spec: |-
+  example : ∀ {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
+      (hV : V = ∅ ∨ V = Set.univ), U ∩ V = ∅ ∨ U ∩ V = Set.univ := _root_.GeneralTopology.trivial_inter
+  example : ∀ {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ U = Set.univ), ⋃₀ F = ∅ ∨ ⋃₀ F = Set.univ := _root_.GeneralTopology.trivial_sUnion
+preamble: |
+  universe u
+description: 'Prove the two. Each is a case analysis: `rcases` a hypothesis of the form `U = ∅ ∨ U = Set.univ` and the substitution does most of the work. For the union, split on `Set.univ ∈ F` with `by_cases`; `Set.subset_sUnion_of_mem` and `Set.subset_univ` sandwich one case and `Set.sUnion_eq_empty` reduces the other.'
+stub_names:
+- trivial_inter
+- trivial_sUnion
+namespace: GeneralTopology
+seq: 45
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@332492a
+  file: PolyaTopology/GeneralTopology/BasicExamples.lean
+  line: 45
+  closure_rounds: 1
+  check_kind: theorem
