@@ -16,7 +16,7 @@ namespace GeneralTopology
 @title Metric Spaces
 @kind definition
 
-Distance is the first thing one measures about a pair of points, and a great deal of mathematics is an elaboration of it. A metric space is a set together with a rule that assigns to each pair of its points a real number, their distance, subject to three conditions taken from the way distance behaves on a map. Everything in this section is deduced from those three conditions and from nothing else.
+Distance is the first thing one measures about a pair of points, and much of mathematics is an elaboration of it. A metric space is a set together with a rule giving each pair of its points a distance, subject to a few conditions taken from the way distance behaves on a map. Everything that follows is deduced from those conditions and nothing else.
 -/
 
 /-!
@@ -94,7 +94,7 @@ theorem Metric.nonneg {X : Type u} (M : Metric X) (x y : X) : 0 ≤ M.dist x y :
 @title The Real Line as a Metric Space
 @kind definition
 
-A definition with no examples under it is an empty one. The first example is the line itself: the real numbers, where the distance between two of them is the size of their difference. Every one of the three conditions is then a standard fact about the absolute value, and the whole of this section can be read with the line in mind.
+A definition says nothing until something satisfies it. The real line is the instance to hold in mind for the rest of the subject: the simplest metric space there is, and the one against which every later notion can be read.
 -/
 
 /-!
@@ -134,7 +134,7 @@ example (x y : ℝ) : line.dist x y = |x - y| := rfl
 @title Open Balls, Closed Balls and Spheres
 @kind definition
 
-Around each point of a metric space, and for each radius, lies the set of points nearer to it than that radius: an open ball. Balls are how a metric is used. Almost every notion built on a metric — bounded, open, convergent, continuous — is stated by saying that some ball is contained in something, and the distances themselves appear only inside the definition of the ball.
+Around each point of a metric space, and for each radius, lie the points nearer to it than that radius. Balls are how a metric is used: almost everything built on one — bounded, open, convergent, continuous — is stated by saying that some ball lies inside something, and the distances themselves appear only in the definition of the ball.
 -/
 
 /-!
@@ -270,7 +270,7 @@ theorem Metric.ball_subset_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ)
 @title Bounded Subsets
 @kind definition
 
-A subset of a metric space is bounded when it does not run away to infinity — when one ball, of some finite radius, already holds the whole of it. The notion belongs to the metric and not to the space underneath: the same set may be bounded for one distance and unbounded for another, as the plane will show.
+A subset of a metric space is bounded when it does not run away to infinity: when one ball, of some finite radius, already holds the whole of it. The notion belongs to the metric rather than to the set, so one distance may call a set bounded where another does not.
 -/
 
 /-!
@@ -340,7 +340,7 @@ theorem Metric.isBounded_union {X : Type u} (M : Metric X) (S T : Set X)
 @title Normed Vector Spaces
 @kind definition
 
-Most metrics are not given directly. They come from a length: in a space where vectors can be added and scaled, one measures the size of a single vector, and the distance between two vectors is then the size of their difference. A rule that measures the size of a vector is a norm, and this concept is about the conditions it must satisfy.
+Most metrics are not given directly; they come from a length. Where vectors can be added and scaled, one measures the size of a single vector, and the distance between two is the size of their difference. A rule that measures a vector's size is a norm, and the conditions it must satisfy are what this concept sets down.
 -/
 
 /-!
@@ -426,7 +426,7 @@ theorem Norm.nonneg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v
 @title The Metric of a Norm
 @kind theorem
 
-A norm measures one vector; the distance between two is the length of their difference. This turns every normed vector space into a metric space, and it is where almost all the metrics of analysis come from. The construction is the content of this concept, and the real line, measured by the absolute value, is its first instance.
+A norm measures one vector; the distance between two is the length of their difference. That one step turns every normed vector space into a metric space, and it is where almost all the metrics of analysis come from — which is why a norm is worth defining at all.
 -/
 
 /--
@@ -525,9 +525,7 @@ example (x : ℝ) : absNorm.norm x = |x| := rfl
 @kind definition
 @goal
 
-On the line there was only one reasonable length. On the plane there are many. For each `p` at least one there is a length `(|x|^p + |y|^p)^(1/p)`, which at `p = 1` adds the magnitudes of the two coordinates and at `p = 2` is the Euclidean length. As `p` grows the `p`-th root suppresses the smaller coordinate more and more, and in the limit only the larger survives; that limit is written `p = ∞` and called the supremum norm.
-
-Two members of the family can be written down without a root, and they are the two ends: `p = 1` and `p = ∞`. Their unit balls are a diamond and a square, so the two are certainly not the same function. Yet inside every ball of either one there is a ball of the other about the same point, and a notion defined by "some ball about `x` lies inside `S`" therefore cannot tell them apart. That is where topology begins.
+On the line there is one reasonable length. On the plane there are many, and which to measure with is a real choice. Setting two of them side by side asks what a metric space keeps and what it throws away: two lengths can disagree everywhere and still call the same sets near, and that is the observation topology is built on.
 -/
 
 /--
@@ -663,7 +661,9 @@ theorem max_add_max (a b c d : ℝ) : max (a + c) (b + d) ≤ max a b + max c d 
 @concept plane_norms
 
 @preamble
-The second length on the plane keeps only the larger of the two magnitudes: the length of `(x, y)` is `max |x| |y|`. Its unit ball is the square with corners at `(1, 1)`, `(1, -1)`, `(-1, -1)` and `(-1, 1)`, the vectors both of whose coordinates are smaller than one in magnitude.
+The second length on the plane keeps only the larger of the two magnitudes: the length of `(x, y)` is `max |x| |y|`. Its unit ball is the square with corners at `(1, 1)`, `(1, -1)`, `(-1, -1)` and `(-1, 1)`.
+
+The two norms are the ends of a family. For each `p` at least one there is a length `(|x|^p + |y|^p)^(1/p)`, the taxicab norm at `p = 1` and the Euclidean one at `p = 2`. As `p` grows the root suppresses the smaller coordinate further, and in the limit only the larger survives — hence the name, and the index `∞`. The two that need no root are the two ends.
 
 Homogeneity needs one fact beyond the previous norm: a non-negative factor may be moved through a maximum, which is `mul_max_of_nonneg`.
 @description

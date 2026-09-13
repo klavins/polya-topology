@@ -68,7 +68,7 @@ namespace: GeneralTopology
 seq: 18
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@8c3087a
+  source: extract@04c27a9
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 477
   closure_rounds: 1

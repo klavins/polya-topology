@@ -113,6 +113,22 @@ end. Automation closes a goal; it does not replace the argument.
 
 ## Prose
 
+A **concept description is at most 400 characters** — about seven lines at the width the
+problem page gives it. It sits in the left column beside the problem, so every line it spends
+is a line the student does not have for the mathematics they are working on.
+
+What belongs in it: what the concept is, in a sentence, and **why the subject needs it**. What
+does not: anything a problem already says, any worked example, any Lean, any forward reference
+to a later problem. The concept column is read before and beside the problems, not instead of
+them.
+
+`plane_norms` was 848 characters — it carried the whole `p`-norm family, the unit balls, and the
+punchline about equivalent metrics. The family is exposition, so it went to `define_sup_norm`,
+the problem that needs it; the unit balls were already in the two problems that build them. What
+is left is 326 characters saying what the concept is for: two lengths on one set, and the
+question of what a metric keeps.
+
+
 A problem's `@preamble` and `@description` together get **about 22 lines of 55 characters** —
 17 to 27. That is the room the problem page has; anything past it is pushed out of sight. The
 skill's `reference/style.md` carries the command that counts them over a bundle, and no problem
@@ -131,10 +147,11 @@ room, and that are the ones to look for first:
 - **Lean mechanics met before.** How a structure instance is written belongs in `define_line`,
   once, not in every definition that follows.
 
-What is worth keeping but is not needed to start the problem goes in the **concept
-description**, which is under no budget. The survey of the `p`-norm family sat in
-`define_sup_norm` and cost it twelve lines; it now opens the `plane_norms` concept, where it
-introduces both norms at once and the reader meets it before either problem.
+What is worth keeping but is not needed to start *this* problem goes in the preamble of the
+problem that does need it — not in the concept description, which has the tighter budget above
+and carries no exposition at all. The survey of the `p`-norm family has been in both places and
+belongs in neither but one: it is exposition for the supremum norm, so it sits in
+`define_sup_norm`, trimmed to the four lines that problem can spare.
 
 A problem whose prose is honestly over the budget is two problems.
 
