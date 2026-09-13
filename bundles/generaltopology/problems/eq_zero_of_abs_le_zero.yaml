@@ -1,0 +1,30 @@
+slug: eq_zero_of_abs_le_zero
+kind: theorem
+title: A Number Whose Magnitude is at Most Zero
+statement: |-
+  Both of the norms below vanish only at the zero vector, and in both cases the argument passes through the same small fact: an absolute value is never negative, so one that is at most zero is exactly zero, and a number whose absolute value is zero is zero. Since it is wanted twice, we prove it once.
+
+  Proving a small thing separately is not only economy. The two proofs below would each be a dozen lines with this argument inlined, and a dozen-line proof is one nobody reads.
+concepts:
+- plane_norms
+stub: 'theorem eq_zero_of_abs_le_zero {a : ℝ} (h : |a| ≤ 0) : a = 0 := sorry'
+reference: |-
+  theorem eq_zero_of_abs_le_zero {a : ℝ} (h : |a| ≤ 0) : a = 0 := by
+    rw [← abs_eq_zero]
+    have h0 := abs_nonneg a
+    linarith
+spec: 'example : ∀ {a : ℝ} (h : |a| ≤ 0), a = 0 := _root_.GeneralTopology.eq_zero_of_abs_le_zero'
+preamble: |
+  universe u
+description: Show that `a = 0` follows from `|a| ≤ 0`. Rewriting the goal backwards with `abs_eq_zero` asks instead for `|a| = 0`, and `abs_nonneg a` together with the hypothesis gives that to `linarith`.
+stub_names:
+- eq_zero_of_abs_le_zero
+namespace: GeneralTopology
+seq: 20
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 532
+  closure_rounds: 1
+  check_kind: theorem

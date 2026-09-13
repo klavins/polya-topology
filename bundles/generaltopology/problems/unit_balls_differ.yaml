@@ -1,0 +1,151 @@
+slug: unit_balls_differ
+kind: theorem
+title: The Two Unit Balls Are Different Sets
+statement: |-
+  The two norms are genuinely different functions, and one point is enough to show it. Take `(3/4, 3/4)`. The larger of the magnitudes of its coordinates is `3/4`, which is less than one, so the point lies in the unit ball of the supremum norm. Their sum is `3/2`, which is not less than one, so it does not lie in the unit ball of the taxicab norm. The two balls are therefore not the same set.
+
+  On the picture this is the corner of the square poking out beyond the diamond. Any point of the square near one of its corners will do, and the diamond has no points at all beyond the square, since the taxicab length is the larger of the two.
+concepts:
+- plane_norms
+stub: |-
+  theorem unit_balls_differ :
+      supNorm.toMetric.ball (0 : ℝ × ℝ) 1 ≠ taxicab.toMetric.ball (0 : ℝ × ℝ) 1 := sorry
+reference: |-
+  theorem unit_balls_differ :
+      supNorm.toMetric.ball (0 : ℝ × ℝ) 1 ≠ taxicab.toMetric.ball (0 : ℝ × ℝ) 1 := by
+    intro h
+    have hin : ((3/4, 3/4) : ℝ × ℝ) ∈ supNorm.toMetric.ball (0 : ℝ × ℝ) 1 := by
+      rw [supNorm.mem_ball_zero]
+      show max |(3/4 : ℝ)| |(3/4 : ℝ)| < 1
+      rw [max_self, abs_of_nonneg] <;> norm_num
+    rw [h, taxicab.mem_ball_zero] at hin
+    have hout : ¬ (taxicab.norm ((3/4, 3/4) : ℝ × ℝ) < 1) := by
+      show ¬ (|(3/4 : ℝ)| + |(3/4 : ℝ)| < 1)
+      rw [abs_of_nonneg] <;> norm_num
+    exact hout hin
+spec: 'example : supNorm.toMetric.ball (0 : ℝ × ℝ) 1 ≠ taxicab.toMetric.ball (0 : ℝ × ℝ) 1 := _root_.GeneralTopology.unit_balls_differ'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ x y, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ) :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : V → ℝ
+    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+
+  theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      N.norm (-v) = N.norm v := by
+    have h := N.smul (-1) v
+    rw [neg_one_smul] at h
+    rw [h, abs_neg, abs_one, one_mul]
+
+  theorem Norm.sub_comm {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V) :
+      N.norm (v - w) = N.norm (w - v) := by
+    rw [← N.neg (v - w), neg_sub]
+
+  def Norm.toMetric {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : Metric V where
+    dist v w := N.norm (v - w)
+    symm v w := N.sub_comm v w
+    triangle u v w := by
+      have h := N.triangle (u - v) (v - w)
+      rw [sub_add_sub_cancel] at h
+      exact h
+    eq_zero v w := by rw [N.eq_zero, sub_eq_zero]
+
+  theorem Norm.mem_ball_zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V)
+      (v : V) (ε : ℝ) : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := by
+    rw [Metric.mem_ball]
+    show N.norm (0 - v) < ε ↔ N.norm v < ε
+    rw [zero_sub, N.neg]
+
+  theorem eq_zero_of_abs_le_zero {a : ℝ} (h : |a| ≤ 0) : a = 0 := by
+    rw [← abs_eq_zero]
+    have h0 := abs_nonneg a
+    linarith
+
+  theorem abs_add_abs_eq_zero {a b : ℝ} : |a| + |b| = 0 ↔ a = 0 ∧ b = 0 := by
+    constructor
+    · intro h
+      have ha := abs_nonneg a
+      have hb := abs_nonneg b
+      exact ⟨eq_zero_of_abs_le_zero (by linarith), eq_zero_of_abs_le_zero (by linarith)⟩
+    · rintro ⟨ha, hb⟩
+      rw [ha, hb, abs_zero, add_zero]
+
+  theorem prod_eq_zero {v : ℝ × ℝ} : v = 0 ↔ v.1 = 0 ∧ v.2 = 0 := by
+    constructor
+    · intro h
+      rw [h]
+      exact ⟨rfl, rfl⟩
+    · rintro ⟨h1, h2⟩
+      exact Prod.ext h1 h2
+
+  def taxicab : Norm (ℝ × ℝ) where
+    norm v := |v.1| + |v.2|
+    eq_zero v := by rw [abs_add_abs_eq_zero, prod_eq_zero]
+    smul c v := by
+      show |c * v.1| + |c * v.2| = |c| * (|v.1| + |v.2|)
+      rw [abs_mul, abs_mul]
+      ring
+    triangle v w := by
+      show |v.1 + w.1| + |v.2 + w.2| ≤ |v.1| + |v.2| + (|w.1| + |w.2|)
+      have h1 := abs_add_le v.1 w.1
+      have h2 := abs_add_le v.2 w.2
+      linarith
+
+  theorem max_abs_eq_zero {a b : ℝ} : max |a| |b| = 0 ↔ a = 0 ∧ b = 0 := by
+    constructor
+    · intro h
+      have ha := le_max_left |a| |b|
+      have hb := le_max_right |a| |b|
+      rw [h] at ha hb
+      exact ⟨eq_zero_of_abs_le_zero ha, eq_zero_of_abs_le_zero hb⟩
+    · rintro ⟨ha, hb⟩
+      rw [ha, hb, abs_zero, max_self]
+
+  theorem max_add_max (a b c d : ℝ) : max (a + c) (b + d) ≤ max a b + max c d := by
+    rw [max_le_iff]
+    have a1 := le_max_left a b
+    have a2 := le_max_right a b
+    have b1 := le_max_left c d
+    have b2 := le_max_right c d
+    constructor <;> linarith
+
+  def supNorm : Norm (ℝ × ℝ) where
+    norm v := max |v.1| |v.2|
+    eq_zero v := by rw [max_abs_eq_zero, prod_eq_zero]
+    smul c v := by
+      show max |c * v.1| |c * v.2| = |c| * max |v.1| |v.2|
+      rw [abs_mul, abs_mul, mul_max_of_nonneg _ _ (abs_nonneg c)]
+    triangle v w := by
+      show max |v.1 + w.1| |v.2 + w.2| ≤ max |v.1| |v.2| + max |w.1| |w.2|
+      have h1 := max_le_max (abs_add_le v.1 w.1) (abs_add_le v.2 w.2)
+      have h2 := max_add_max |v.1| |v.2| |w.1| |w.2|
+      linarith
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that the two unit balls about the origin are different sets. Assume they are equal, put `(3/4, 3/4)` into the first with `supNorm.mem_ball_zero`, carry it across the assumed equality with `rw`, and contradict it with the same computation for the taxicab norm. In each computation `show` puts the goal in coordinates and `abs_of_nonneg` removes the absolute values, after which `norm_num` settles the arithmetic.
+stub_names:
+- unit_balls_differ
+namespace: GeneralTopology
+seq: 29
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 728
+  closure_rounds: 1
+  check_kind: theorem

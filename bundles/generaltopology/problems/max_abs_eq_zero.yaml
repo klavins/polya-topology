@@ -1,0 +1,40 @@
+slug: max_abs_eq_zero
+kind: theorem
+title: When a Larger of Two Magnitudes Vanishes
+statement: The same question for the second norm. The larger of two non-negative numbers is zero exactly when both are, since each of them is at most the larger. The fact that bounds a number by a maximum is `le_max_left`, with `le_max_right` for the other side.
+concepts:
+- plane_norms
+stub: 'theorem max_abs_eq_zero {a b : ℝ} : max |a| |b| = 0 ↔ a = 0 ∧ b = 0 := sorry'
+reference: |-
+  theorem max_abs_eq_zero {a b : ℝ} : max |a| |b| = 0 ↔ a = 0 ∧ b = 0 := by
+    constructor
+    · intro h
+      have ha := le_max_left |a| |b|
+      have hb := le_max_right |a| |b|
+      rw [h] at ha hb
+      exact ⟨eq_zero_of_abs_le_zero ha, eq_zero_of_abs_le_zero hb⟩
+    · rintro ⟨ha, hb⟩
+      rw [ha, hb, abs_zero, max_self]
+spec: 'example : ∀ {a b : ℝ}, max |a| |b| = 0 ↔ a = 0 ∧ b = 0 := _root_.GeneralTopology.max_abs_eq_zero'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  theorem eq_zero_of_abs_le_zero {a : ℝ} (h : |a| ≤ 0) : a = 0 := by
+    rw [← abs_eq_zero]
+    have h0 := abs_nonneg a
+    linarith
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `max |a| |b| = 0` exactly when `a = 0` and `b = 0`. In one direction, rewrite the hypothesis into the bounds that `le_max_left` and `le_max_right` provide and hand each result to `eq_zero_of_abs_le_zero`; in the other, rewrite by the two hypotheses and close with `abs_zero` and `max_self`.
+stub_names:
+- max_abs_eq_zero
+namespace: GeneralTopology
+seq: 24
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 621
+  closure_rounds: 1
+  check_kind: theorem

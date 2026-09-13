@@ -1,0 +1,53 @@
+slug: define_is_bounded
+kind: example
+title: The Definition of a Bounded Set
+statement: |-
+  A subset `S` of a metric space is *bounded* if some ball contains it: if there are a point `x` and a radius `ε` with `S ⊆ M.ball x ε`. Which point is chosen does not matter, by the last problem of the previous concept — a ball about one point lies inside a ball about any other, at the cost of a larger radius — so the content of the definition is that some finite radius suffices at all.
+
+  The statement "there are an `x` and an `ε` such that …" is written in Lean with nested existential quantifiers, and a proof of it is the two witnesses together with a proof of the remaining claim, written `⟨x, ε, h⟩`.
+concepts:
+- bounded_set
+stub: |-
+  def Metric.IsBounded {X : Type u} (M : Metric X) (S : Set X) : Prop := sorry
+
+  theorem Metric.isBounded_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.IsBounded (M.ball x ε) := sorry
+reference: |-
+  def Metric.IsBounded {X : Type u} (M : Metric X) (S : Set X) : Prop :=
+    ∃ (x : X) (ε : ℝ), S ⊆ M.ball x ε
+
+  theorem Metric.isBounded_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.IsBounded (M.ball x ε) :=
+    ⟨x, ε, subset_rfl⟩
+spec: |-
+  example {X : Type u} (M : Metric X) (S : Set X) : _root_.GeneralTopology.Metric.IsBounded M S ↔ (∃ (x : X) (ε : ℝ), S ⊆ M.ball x ε) := by unfold _root_.GeneralTopology.Metric.IsBounded; first | exact Iff.rfl | grind
+  example : ∀ {X : Type u} (M : Metric X) (x : X) (ε : ℝ), M.IsBounded (M.ball x ε) := _root_.GeneralTopology.Metric.isBounded_ball
+  example (X : Type) (M : Metric X) (S : Set X) :
+      M.IsBounded S ↔ ∃ (x : X) (ε : ℝ), S ⊆ M.ball x ε := Iff.rfl
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ x y, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Metric.IsBounded`, and then show that a ball is a bounded set. For the second, the ball is contained in itself, which is `subset_rfl`.
+stub_names:
+- Metric.IsBounded
+- Metric.isBounded_ball
+namespace: GeneralTopology
+seq: 10
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 277
+  closure_rounds: 1
+  check_kind: mixed

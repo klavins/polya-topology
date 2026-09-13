@@ -1,0 +1,63 @@
+slug: norm_to_metric
+kind: definition
+title: Every Norm Induces a Metric
+statement: |-
+  Define the distance between two vectors to be the length of their difference: `d v w = ‖v - w‖`. The three conditions on a metric then follow from the three conditions on a norm.
+
+  Symmetry is the problem above. Non-degeneracy holds because `‖v - w‖` is zero exactly when `v - w` is the zero vector, and a difference is zero exactly when the two vectors agree. The triangle inequality is the norm's, applied to the pair of vectors `u - v` and `v - w`, whose sum is `u - w`; the detour through `v` in the metric is the splitting of a displacement into two in the vector space.
+
+  Note which of the norm's conditions is not used: homogeneity plays no part here. It is what distinguishes the metrics that come from norms from metrics in general, and a metric space need not have any vector space under it at all.
+concepts:
+- norm_metric
+stub: 'def Norm.toMetric {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : Metric V := sorry'
+reference: |-
+  def Norm.toMetric {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : Metric V where
+    dist v w := N.norm (v - w)
+    symm v w := N.sub_comm v w
+    triangle u v w := by
+      have h := N.triangle (u - v) (v - w)
+      rw [sub_add_sub_cancel] at h
+      exact h
+    eq_zero v w := by rw [N.eq_zero, sub_eq_zero]
+spec: |-
+  example (V : Type) [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V) :
+      N.toMetric.dist v w = N.norm (v - w) := rfl
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ x y, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : V → ℝ
+    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+
+  theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      N.norm (-v) = N.norm v := by
+    have h := N.smul (-1) v
+    rw [neg_one_smul] at h
+    rw [h, abs_neg, abs_one, one_mul]
+
+  theorem Norm.sub_comm {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V) :
+      N.norm (v - w) = N.norm (w - v) := by
+    rw [← N.neg (v - w), neg_sub]
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Norm.toMetric`, the metric induced by a norm. For the triangle inequality, apply `N.triangle` to `u - v` and `v - w` and rewrite the result with `sub_add_sub_cancel`; for non-degeneracy, rewrite with `N.eq_zero` and then `sub_eq_zero`.
+stub_names:
+- Norm.toMetric
+namespace: GeneralTopology
+seq: 17
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 447
+  closure_rounds: 1
+  check_kind: definition

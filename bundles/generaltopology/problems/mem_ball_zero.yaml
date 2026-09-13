@@ -1,0 +1,75 @@
+slug: mem_ball_zero
+kind: theorem
+title: The Ball About the Origin
+statement: |-
+  In a normed space the ball about the origin is the set of vectors shorter than its radius. The distance from `0` to `v` is `‖0 - v‖`, which is `‖-v‖`, which is `‖v‖`.
+
+  This is the ball one draws when asking what a norm looks like, and every other ball is a translate of it. The two norms of the next concept are told apart precisely by the shape of this one set.
+concepts:
+- norm_metric
+stub: |-
+  theorem Norm.mem_ball_zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V)
+      (v : V) (ε : ℝ) : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := sorry
+reference: |-
+  theorem Norm.mem_ball_zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V)
+      (v : V) (ε : ℝ) : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := by
+    rw [Metric.mem_ball]
+    show N.norm (0 - v) < ε ↔ N.norm v < ε
+    rw [zero_sub, N.neg]
+spec: |-
+  example : ∀ {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V)
+      (v : V) (ε : ℝ), v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := _root_.GeneralTopology.Norm.mem_ball_zero
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ x y, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ) :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : V → ℝ
+    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+
+  theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      N.norm (-v) = N.norm v := by
+    have h := N.smul (-1) v
+    rw [neg_one_smul] at h
+    rw [h, abs_neg, abs_one, one_mul]
+
+  theorem Norm.sub_comm {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V) :
+      N.norm (v - w) = N.norm (w - v) := by
+    rw [← N.neg (v - w), neg_sub]
+
+  def Norm.toMetric {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : Metric V where
+    dist v w := N.norm (v - w)
+    symm v w := N.sub_comm v w
+    triangle u v w := by
+      have h := N.triangle (u - v) (v - w)
+      rw [sub_add_sub_cancel] at h
+      exact h
+    eq_zero v w := by rw [N.eq_zero, sub_eq_zero]
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `v ∈ N.toMetric.ball 0 ε` exactly when `N.norm v < ε`. Rewrite with `Metric.mem_ball`, use `show` to restate the distance as the length it is, and rewrite that with `zero_sub` and `N.neg`.
+stub_names:
+- Norm.mem_ball_zero
+namespace: GeneralTopology
+seq: 18
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 477
+  closure_rounds: 1
+  check_kind: theorem

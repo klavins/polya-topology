@@ -1,0 +1,52 @@
+slug: norm_zero_and_neg
+kind: example
+title: The Length of Zero and of a Negative
+statement: |-
+  Two consequences of the conditions, both needed below.
+
+  The zero vector has length zero. This is the right-to-left direction of non-degeneracy, applied to `0`.
+
+  A vector and its negative have the same length. The reason is homogeneity: `-v` is `(-1) • v`, so its length is `|-1|` times the length of `v`, and `|-1|` is `1`. Geometrically, turning a vector around does not change how long it is.
+concepts:
+- normed_space
+stub: |-
+  theorem Norm.zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : N.norm 0 = 0 := sorry
+
+  theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      N.norm (-v) = N.norm v := sorry
+reference: |-
+  theorem Norm.zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : N.norm 0 = 0 :=
+    (N.eq_zero 0).mpr rfl
+
+  theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      N.norm (-v) = N.norm v := by
+    have h := N.smul (-1) v
+    rw [neg_one_smul] at h
+    rw [h, abs_neg, abs_one, one_mul]
+spec: |-
+  example : ∀ {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V), N.norm 0 = 0 := _root_.GeneralTopology.Norm.zero
+  example : ∀ {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V), N.norm (-v) = N.norm v := _root_.GeneralTopology.Norm.neg
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : V → ℝ
+    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove both. For the first, apply the right-to-left direction of `N.eq_zero` at `0`. For the second, start from the instance `N.smul (-1) v` of homogeneity, rewrite `(-1) • v` as `-v` with `neg_one_smul`, and then clear the factor with `abs_neg`, `abs_one` and `one_mul`.
+stub_names:
+- Norm.zero
+- Norm.neg
+namespace: GeneralTopology
+seq: 14
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 381
+  closure_rounds: 1
+  check_kind: theorem

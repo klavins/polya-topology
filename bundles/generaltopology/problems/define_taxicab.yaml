@@ -1,0 +1,71 @@
+slug: define_taxicab
+kind: definition
+title: The Taxicab Norm
+statement: |-
+  The first length on the plane adds the magnitudes of the two coordinates: the length of `(x, y)` is `|x| + |y|`. It is the distance a taxicab drives in a city laid out on a square grid, where one may travel east and north but not diagonally, and it is called the taxicab norm for that reason. Its unit ball, the vectors of length less than one, is the diamond with corners at `(1, 0)`, `(0, 1)`, `(-1, 0)` and `(0, -1)`.
+
+  A point of the plane is a pair, a term `v : ℝ × ℝ` with coordinates `v.1` and `v.2`. Addition and scaling act on each coordinate separately, so `(v + w).1` is `v.1 + w.1` and `(c • v).1` is `c * v.1`, each by definition. Two pairs are equal when their coordinates are, which is `Prod.ext`.
+
+  Each of the three conditions comes down to the corresponding fact about absolute values, one coordinate at a time.
+concepts:
+- plane_norms
+stub: 'def taxicab : Norm (ℝ × ℝ) := sorry'
+reference: |-
+  def taxicab : Norm (ℝ × ℝ) where
+    norm v := |v.1| + |v.2|
+    eq_zero v := by rw [abs_add_abs_eq_zero, prod_eq_zero]
+    smul c v := by
+      show |c * v.1| + |c * v.2| = |c| * (|v.1| + |v.2|)
+      rw [abs_mul, abs_mul]
+      ring
+    triangle v w := by
+      show |v.1 + w.1| + |v.2 + w.2| ≤ |v.1| + |v.2| + (|w.1| + |w.2|)
+      have h1 := abs_add_le v.1 w.1
+      have h2 := abs_add_le v.2 w.2
+      linarith
+spec: 'example (v : ℝ × ℝ) : _root_.GeneralTopology.taxicab.norm v = |v.1| + |v.2| := rfl'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : V → ℝ
+    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+
+  theorem eq_zero_of_abs_le_zero {a : ℝ} (h : |a| ≤ 0) : a = 0 := by
+    rw [← abs_eq_zero]
+    have h0 := abs_nonneg a
+    linarith
+
+  theorem abs_add_abs_eq_zero {a b : ℝ} : |a| + |b| = 0 ↔ a = 0 ∧ b = 0 := by
+    constructor
+    · intro h
+      have ha := abs_nonneg a
+      have hb := abs_nonneg b
+      exact ⟨eq_zero_of_abs_le_zero (by linarith), eq_zero_of_abs_le_zero (by linarith)⟩
+    · rintro ⟨ha, hb⟩
+      rw [ha, hb, abs_zero, add_zero]
+
+  theorem prod_eq_zero {v : ℝ × ℝ} : v = 0 ↔ v.1 = 0 ∧ v.2 = 0 := by
+    constructor
+    · intro h
+      rw [h]
+      exact ⟨rfl, rfl⟩
+    · rintro ⟨h1, h2⟩
+      exact Prod.ext h1 h2
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `taxicab`, the norm on `ℝ × ℝ` sending `v` to `|v.1| + |v.2|`. Non-degeneracy is the two previous problems, one after the other, rewritten into the goal; for the other two conditions, `show` the goal in coordinates first, then `abs_mul` on each coordinate with `ring`, and `abs_add_le` on each coordinate with `linarith`.
+stub_names:
+- taxicab
+namespace: GeneralTopology
+seq: 23
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 588
+  closure_rounds: 1
+  check_kind: definition

@@ -1,0 +1,47 @@
+slug: define_norm
+kind: definition
+title: The Definition of a Norm
+statement: |-
+  A real vector space is a set whose elements can be added to one another and scaled by real numbers. A *norm* on it assigns to each vector `v` a real number, its length, subject to three conditions.
+
+  *Non-degeneracy*: the length of `v` is zero exactly when `v` is the zero vector. Only the origin has no size.
+
+  *Homogeneity*: scaling a vector by a real number `c` scales its length by `|c|`, so that `‖c • v‖ = |c| * ‖v‖`. The absolute value is there because scaling by a negative number turns a vector around without making it any shorter.
+
+  *The triangle inequality*: `‖v + w‖ ≤ ‖v‖ + ‖w‖`. Two displacements made one after the other carry one no further than the sum of their lengths.
+
+  In Lean a type `V` is a real vector space when it carries the two instances `[AddCommGroup V]`, which provides `+`, `-`, `0` and negation, and `[Module ℝ V]`, which provides the scaling, written `c • v`. Both appear in the signature of the structure, before the fields.
+concepts:
+- normed_space
+stub: |-
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : sorry
+    eq_zero : sorry
+    smul : sorry
+    triangle : sorry
+reference: |-
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : V → ℝ
+    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+spec: |-
+  example (V : Type) [AddCommGroup V] [Module ℝ V] (N : _root_.GeneralTopology.Norm V) (c : ℝ) (v w : V) :
+      (N.norm v = 0 ↔ v = 0)
+        ∧ N.norm (c • v) = |c| * N.norm v
+        ∧ N.norm (v + w) ≤ N.norm v + N.norm w :=
+    ⟨N.eq_zero v, N.smul c v, N.triangle v w⟩
+preamble: |
+  universe u
+description: 'Define the structure `Norm V` for a real vector space `V`, with four fields in this order: `norm`, of type `V → ℝ`; then `eq_zero`, `smul` and `triangle`, carrying the equivalence `norm v = 0 ↔ v = 0`, the equation `norm (c • v) = |c| * norm v` for every real `c`, and the inequality `norm (v + w) ≤ norm v + norm w`, each quantified over the vectors it mentions.'
+stub_names:
+- Norm
+namespace: GeneralTopology
+seq: 13
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 347
+  closure_rounds: 1
+  check_kind: definition

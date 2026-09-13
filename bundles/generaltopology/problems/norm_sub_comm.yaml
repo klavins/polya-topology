@@ -1,0 +1,43 @@
+slug: norm_sub_comm
+kind: theorem
+title: The Length of a Difference Does Not Depend on the Order
+statement: The differences `v - w` and `w - v` are negatives of one another, and a vector and its negative have the same length. So the length of a difference does not depend on the order in which the two vectors are written — which is exactly the symmetry that the distance defined from a norm will need.
+concepts:
+- norm_metric
+stub: |-
+  theorem Norm.sub_comm {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V) :
+      N.norm (v - w) = N.norm (w - v) := sorry
+reference: |-
+  theorem Norm.sub_comm {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V) :
+      N.norm (v - w) = N.norm (w - v) := by
+    rw [← N.neg (v - w), neg_sub]
+spec: 'example : ∀ {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V), N.norm (v - w) = N.norm (w - v) := _root_.GeneralTopology.Norm.sub_comm'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : V → ℝ
+    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+
+  theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      N.norm (-v) = N.norm v := by
+    have h := N.smul (-1) v
+    rw [neg_one_smul] at h
+    rw [h, abs_neg, abs_one, one_mul]
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `N.norm (v - w) = N.norm (w - v)`. Rewriting the goal backwards with `N.neg (v - w)` puts a negation in its way, and `neg_sub` turns `-(v - w)` into `w - v`.
+stub_names:
+- Norm.sub_comm
+namespace: GeneralTopology
+seq: 16
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 433
+  closure_rounds: 1
+  check_kind: theorem

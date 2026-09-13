@@ -1,0 +1,39 @@
+slug: abs_add_abs_eq_zero
+kind: theorem
+title: When a Sum of Magnitudes Vanishes
+statement: Two non-negative numbers add up to zero only if both are zero, since neither can be made up for by the other. So `|a| + |b| = 0` holds exactly when `a` and `b` are both zero. This is the non-degeneracy of the first norm on the plane, written out in coordinates before the norm itself is defined.
+concepts:
+- plane_norms
+stub: 'theorem abs_add_abs_eq_zero {a b : ℝ} : |a| + |b| = 0 ↔ a = 0 ∧ b = 0 := sorry'
+reference: |-
+  theorem abs_add_abs_eq_zero {a b : ℝ} : |a| + |b| = 0 ↔ a = 0 ∧ b = 0 := by
+    constructor
+    · intro h
+      have ha := abs_nonneg a
+      have hb := abs_nonneg b
+      exact ⟨eq_zero_of_abs_le_zero (by linarith), eq_zero_of_abs_le_zero (by linarith)⟩
+    · rintro ⟨ha, hb⟩
+      rw [ha, hb, abs_zero, add_zero]
+spec: 'example : ∀ {a b : ℝ}, |a| + |b| = 0 ↔ a = 0 ∧ b = 0 := _root_.GeneralTopology.abs_add_abs_eq_zero'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  theorem eq_zero_of_abs_le_zero {a : ℝ} (h : |a| ≤ 0) : a = 0 := by
+    rw [← abs_eq_zero]
+    have h0 := abs_nonneg a
+    linarith
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `|a| + |b| = 0` exactly when `a = 0` and `b = 0`. In one direction, `abs_nonneg` applied to each of `a` and `b` puts each magnitude within reach of the previous problem; in the other, rewrite by the two hypotheses and clear the result with `abs_zero` and `add_zero`.
+stub_names:
+- abs_add_abs_eq_zero
+namespace: GeneralTopology
+seq: 21
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 549
+  closure_rounds: 1
+  check_kind: theorem

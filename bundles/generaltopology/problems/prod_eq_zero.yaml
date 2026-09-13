@@ -1,0 +1,33 @@
+slug: prod_eq_zero
+kind: theorem
+title: The Zero Vector of the Plane
+statement: |-
+  The zero vector of the plane is the pair whose coordinates are both zero, and a pair is the zero vector exactly when each of its coordinates is zero. This deserves recording on its own because both of the norms below need it, and both need it in the same place: non-degeneracy is a statement about a vector, while a norm on the plane is written in coordinates, and something has to carry one over to the other.
+
+  Two pairs are equal when their coordinates are equal, which is `Prod.ext`. In the other direction the coordinates of the zero vector are zero by definition, so each half is `rfl`.
+concepts:
+- plane_norms
+stub: 'theorem prod_eq_zero {v : ℝ × ℝ} : v = 0 ↔ v.1 = 0 ∧ v.2 = 0 := sorry'
+reference: |-
+  theorem prod_eq_zero {v : ℝ × ℝ} : v = 0 ↔ v.1 = 0 ∧ v.2 = 0 := by
+    constructor
+    · intro h
+      rw [h]
+      exact ⟨rfl, rfl⟩
+    · rintro ⟨h1, h2⟩
+      exact Prod.ext h1 h2
+spec: 'example : ∀ {v : ℝ × ℝ}, v = 0 ↔ v.1 = 0 ∧ v.2 = 0 := _root_.GeneralTopology.prod_eq_zero'
+preamble: |
+  universe u
+description: Show that a point `v` of the plane is the zero vector exactly when `v.1 = 0` and `v.2 = 0`. One direction rewrites by the hypothesis and then offers `rfl` for each coordinate; the other is `Prod.ext`.
+stub_names:
+- prod_eq_zero
+namespace: GeneralTopology
+seq: 22
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 568
+  closure_rounds: 1
+  check_kind: theorem

@@ -1,0 +1,166 @@
+slug: equivalent_norms
+kind: example
+title: Each Norm's Balls Fit Inside the Other's
+statement: |-
+  Different as the two unit balls are, neither norm sees anything the other misses.
+
+  Since the supremum norm is at most the taxicab norm, a vector short in the taxicab norm is short in the supremum norm, and every taxicab ball lies inside the supremum ball of the same radius about the same point. Since the taxicab norm is at most twice the supremum norm, the supremum ball of half a radius lies inside the taxicab ball of that radius. Put together: inside any ball of one norm there is a ball of the other about the same centre.
+
+  Two metrics standing in this relation are called *equivalent*. They assign different numbers to the same pair of points, and their balls are different sets, but a statement of the form "some ball about `x` is contained in `S`" holds for one exactly when it holds for the other. Every notion in the rest of this subject — open, closed, convergent, continuous, compact — is of that form. None of them can distinguish these two metrics, and what is left when the distances have been forgotten and only such statements remain is the topology.
+concepts:
+- plane_norms
+stub: |-
+  theorem ball_taxicab_subset_supNorm (x : ℝ × ℝ) (ε : ℝ) :
+      taxicab.toMetric.ball x ε ⊆ supNorm.toMetric.ball x ε := sorry
+
+  theorem ball_supNorm_subset_taxicab (x : ℝ × ℝ) (ε : ℝ) :
+      supNorm.toMetric.ball x (ε / 2) ⊆ taxicab.toMetric.ball x ε := sorry
+reference: |-
+  theorem ball_taxicab_subset_supNorm (x : ℝ × ℝ) (ε : ℝ) :
+      taxicab.toMetric.ball x ε ⊆ supNorm.toMetric.ball x ε := by
+    intro y hy
+    have h : taxicab.norm (x - y) < ε := hy
+    have h2 := supNorm_le_taxicab (x - y)
+    show supNorm.norm (x - y) < ε
+    linarith
+
+  theorem ball_supNorm_subset_taxicab (x : ℝ × ℝ) (ε : ℝ) :
+      supNorm.toMetric.ball x (ε / 2) ⊆ taxicab.toMetric.ball x ε := by
+    intro y hy
+    have h : supNorm.norm (x - y) < ε / 2 := hy
+    have h2 := taxicab_le_two_supNorm (x - y)
+    show taxicab.norm (x - y) < ε
+    linarith
+spec: |-
+  example : ∀ (x : ℝ × ℝ) (ε : ℝ), taxicab.toMetric.ball x ε ⊆ supNorm.toMetric.ball x ε := _root_.GeneralTopology.ball_taxicab_subset_supNorm
+  example : ∀ (x : ℝ × ℝ) (ε : ℝ), supNorm.toMetric.ball x (ε / 2) ⊆ taxicab.toMetric.ball x ε := _root_.GeneralTopology.ball_supNorm_subset_taxicab
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ x y, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : V → ℝ
+    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+
+  theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      N.norm (-v) = N.norm v := by
+    have h := N.smul (-1) v
+    rw [neg_one_smul] at h
+    rw [h, abs_neg, abs_one, one_mul]
+
+  theorem Norm.sub_comm {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V) :
+      N.norm (v - w) = N.norm (w - v) := by
+    rw [← N.neg (v - w), neg_sub]
+
+  def Norm.toMetric {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : Metric V where
+    dist v w := N.norm (v - w)
+    symm v w := N.sub_comm v w
+    triangle u v w := by
+      have h := N.triangle (u - v) (v - w)
+      rw [sub_add_sub_cancel] at h
+      exact h
+    eq_zero v w := by rw [N.eq_zero, sub_eq_zero]
+
+  theorem eq_zero_of_abs_le_zero {a : ℝ} (h : |a| ≤ 0) : a = 0 := by
+    rw [← abs_eq_zero]
+    have h0 := abs_nonneg a
+    linarith
+
+  theorem abs_add_abs_eq_zero {a b : ℝ} : |a| + |b| = 0 ↔ a = 0 ∧ b = 0 := by
+    constructor
+    · intro h
+      have ha := abs_nonneg a
+      have hb := abs_nonneg b
+      exact ⟨eq_zero_of_abs_le_zero (by linarith), eq_zero_of_abs_le_zero (by linarith)⟩
+    · rintro ⟨ha, hb⟩
+      rw [ha, hb, abs_zero, add_zero]
+
+  theorem prod_eq_zero {v : ℝ × ℝ} : v = 0 ↔ v.1 = 0 ∧ v.2 = 0 := by
+    constructor
+    · intro h
+      rw [h]
+      exact ⟨rfl, rfl⟩
+    · rintro ⟨h1, h2⟩
+      exact Prod.ext h1 h2
+
+  def taxicab : Norm (ℝ × ℝ) where
+    norm v := |v.1| + |v.2|
+    eq_zero v := by rw [abs_add_abs_eq_zero, prod_eq_zero]
+    smul c v := by
+      show |c * v.1| + |c * v.2| = |c| * (|v.1| + |v.2|)
+      rw [abs_mul, abs_mul]
+      ring
+    triangle v w := by
+      show |v.1 + w.1| + |v.2 + w.2| ≤ |v.1| + |v.2| + (|w.1| + |w.2|)
+      have h1 := abs_add_le v.1 w.1
+      have h2 := abs_add_le v.2 w.2
+      linarith
+
+  theorem max_abs_eq_zero {a b : ℝ} : max |a| |b| = 0 ↔ a = 0 ∧ b = 0 := by
+    constructor
+    · intro h
+      have ha := le_max_left |a| |b|
+      have hb := le_max_right |a| |b|
+      rw [h] at ha hb
+      exact ⟨eq_zero_of_abs_le_zero ha, eq_zero_of_abs_le_zero hb⟩
+    · rintro ⟨ha, hb⟩
+      rw [ha, hb, abs_zero, max_self]
+
+  theorem max_add_max (a b c d : ℝ) : max (a + c) (b + d) ≤ max a b + max c d := by
+    rw [max_le_iff]
+    have a1 := le_max_left a b
+    have a2 := le_max_right a b
+    have b1 := le_max_left c d
+    have b2 := le_max_right c d
+    constructor <;> linarith
+
+  def supNorm : Norm (ℝ × ℝ) where
+    norm v := max |v.1| |v.2|
+    eq_zero v := by rw [max_abs_eq_zero, prod_eq_zero]
+    smul c v := by
+      show max |c * v.1| |c * v.2| = |c| * max |v.1| |v.2|
+      rw [abs_mul, abs_mul, mul_max_of_nonneg _ _ (abs_nonneg c)]
+    triangle v w := by
+      show max |v.1 + w.1| |v.2 + w.2| ≤ max |v.1| |v.2| + max |w.1| |w.2|
+      have h1 := max_le_max (abs_add_le v.1 w.1) (abs_add_le v.2 w.2)
+      have h2 := max_add_max |v.1| |v.2| |w.1| |w.2|
+      linarith
+
+  theorem supNorm_le_taxicab (v : ℝ × ℝ) : supNorm.norm v ≤ taxicab.norm v := by
+    show max |v.1| |v.2| ≤ |v.1| + |v.2|
+    have h1 := abs_nonneg v.1
+    have h2 := abs_nonneg v.2
+    rw [max_le_iff]
+    constructor <;> linarith
+
+  theorem taxicab_le_two_supNorm (v : ℝ × ℝ) : taxicab.norm v ≤ 2 * supNorm.norm v := by
+    show |v.1| + |v.2| ≤ 2 * max |v.1| |v.2|
+    have h1 := le_max_left |v.1| |v.2|
+    have h2 := le_max_right |v.1| |v.2|
+    linarith
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove the two containments. In each, introduce a point and its membership; `have h : ... := hy` restates that membership as the inequality between lengths it abbreviates, `show` does the same for the goal, and the comparison proved in one of the previous two problems, applied to `x - y`, lets `linarith` finish.'
+stub_names:
+- ball_taxicab_subset_supNorm
+- ball_supNorm_subset_taxicab
+namespace: GeneralTopology
+seq: 30
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 753
+  closure_rounds: 1
+  check_kind: theorem

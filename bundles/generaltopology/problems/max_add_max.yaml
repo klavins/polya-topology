@@ -1,0 +1,33 @@
+slug: max_add_max
+kind: theorem
+title: A Maximum of Sums
+statement: |-
+  The maximum of two sums is at most the sum of the two maxima: `max (a + c) (b + d) ≤ max a b + max c d`. Each of the two sums is bounded by the right-hand side one summand at a time, since `a` and `b` are both at most `max a b` and `c` and `d` are both at most `max c d`; and a bound holding for both of two numbers holds for their maximum.
+
+  This is the triangle inequality of the next problem with the absolute values stripped away. Proved separately it keeps that proof to a few lines, and it is the shape of the argument rather than anything about lengths that is doing the work.
+concepts:
+- plane_norms
+stub: 'theorem max_add_max (a b c d : ℝ) : max (a + c) (b + d) ≤ max a b + max c d := sorry'
+reference: |-
+  theorem max_add_max (a b c d : ℝ) : max (a + c) (b + d) ≤ max a b + max c d := by
+    rw [max_le_iff]
+    have a1 := le_max_left a b
+    have a2 := le_max_right a b
+    have b1 := le_max_left c d
+    have b2 := le_max_right c d
+    constructor <;> linarith
+spec: 'example : ∀ (a b c d : ℝ), max (a + c) (b + d) ≤ max a b + max c d := _root_.GeneralTopology.max_add_max'
+preamble: |
+  universe u
+description: Show that `max (a + c) (b + d) ≤ max a b + max c d`. `max_le_iff` turns the goal into a pair of bounds, `le_max_left` and `le_max_right` supply the four facts they need, and `linarith` closes both.
+stub_names:
+- max_add_max
+namespace: GeneralTopology
+seq: 25
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 641
+  closure_rounds: 1
+  check_kind: theorem

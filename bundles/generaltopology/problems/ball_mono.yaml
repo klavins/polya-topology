@@ -1,0 +1,40 @@
+slug: ball_mono
+kind: theorem
+title: Balls Grow With Their Radius
+statement: 'Two balls about the same centre are nested, the one of smaller radius inside the one of larger: a point nearer to `x` than `ε` is nearer to `x` than any `δ` at least as large. So the balls about a fixed point form a family increasing with the radius, and to say that something holds "for all small enough radii" is to say that it holds for one.'
+concepts:
+- open_ball
+stub: |-
+  theorem Metric.ball_mono {X : Type u} (M : Metric X) (x : X) {ε δ : ℝ} (h : ε ≤ δ) :
+      M.ball x ε ⊆ M.ball x δ := sorry
+reference: |-
+  theorem Metric.ball_mono {X : Type u} (M : Metric X) (x : X) {ε δ : ℝ} (h : ε ≤ δ) :
+      M.ball x ε ⊆ M.ball x δ :=
+    fun _ hy => lt_of_lt_of_le hy h
+spec: 'example : ∀ {X : Type u} (M : Metric X) (x : X) {ε δ : ℝ} (h : ε ≤ δ), M.ball x ε ⊆ M.ball x δ := _root_.GeneralTopology.Metric.ball_mono'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ x y, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `M.ball x ε ⊆ M.ball x δ` when `ε ≤ δ`. A containment is a function taking a point and a proof of membership to a proof of membership, so the whole proof can be written as `fun _ hy => ...`; `lt_of_lt_of_le` chains a strict inequality with a weak one.
+stub_names:
+- Metric.ball_mono
+namespace: GeneralTopology
+seq: 7
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 216
+  closure_rounds: 1
+  check_kind: theorem

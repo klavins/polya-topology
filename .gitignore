@@ -1,0 +1,4 @@
+.lake/
+bundles/.cache/   # the bundles themselves are committed: an instance installs the content from them
+.env              # POLYA_SERVER, POLYA_API_KEY, POLYA_AUTHOR
+.DS_Store

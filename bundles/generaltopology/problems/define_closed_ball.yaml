@@ -1,0 +1,66 @@
+slug: define_closed_ball
+kind: example
+title: The Closed Ball and the Sphere
+statement: |-
+  The open ball has two companions, got by changing the inequality. The *closed ball* of radius `ε` about `x` admits the points at distance exactly `ε` as well, and the *sphere* of radius `ε` about `x` is made of those points alone: the boundary the open ball stops short of.
+
+  In the plane with its ordinary distance the three are the disc without its edge, the disc with its edge, and the circle, which is where the names come from. On the real line they are an open interval, the corresponding closed interval, and the pair of its endpoints. In a space of one point they are stranger, and in general a sphere may be empty.
+
+  Since the strict inequality implies the weak one, the open ball is contained in the closed ball of the same radius.
+concepts:
+- open_ball
+stub: |-
+  def Metric.closedBall {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X := sorry
+
+  def Metric.sphere {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X := sorry
+
+  theorem Metric.ball_subset_closedBall {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.ball x ε ⊆ M.closedBall x ε := sorry
+reference: |-
+  def Metric.closedBall {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y ≤ ε}
+
+  def Metric.sphere {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y = ε}
+
+  theorem Metric.ball_subset_closedBall {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.ball x ε ⊆ M.closedBall x ε := by
+    intro y hy
+    have h : M.dist x y < ε := hy
+    show M.dist x y ≤ ε
+    linarith
+spec: |-
+  example {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : _root_.GeneralTopology.Metric.closedBall M x ε = ({y | M.dist x y ≤ ε} : Set X) := rfl
+  example {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : _root_.GeneralTopology.Metric.sphere M x ε = ({y | M.dist x y = ε} : Set X) := rfl
+  example : ∀ {X : Type u} (M : Metric X) (x : X) (ε : ℝ), M.ball x ε ⊆ M.closedBall x ε := _root_.GeneralTopology.Metric.ball_subset_closedBall
+  example (X : Type) (M : Metric X) (x y : X) (ε : ℝ) :
+      (y ∈ M.closedBall x ε ↔ M.dist x y ≤ ε) ∧ (y ∈ M.sphere x ε ↔ M.dist x y = ε) :=
+    ⟨Iff.rfl, Iff.rfl⟩
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ x y, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Metric.closedBall` and `Metric.sphere`, and then show that `M.ball x ε ⊆ M.closedBall x ε`. A containment is proved by introducing a point and a proof that it lies in the first set; `have h : M.dist x y < ε := hy` restates that proof as the inequality it already is, `show` does the same for the goal, and `linarith` closes the gap between `<` and `≤`.'
+stub_names:
+- Metric.closedBall
+- Metric.sphere
+- Metric.ball_subset_closedBall
+namespace: GeneralTopology
+seq: 6
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 181
+  closure_rounds: 1
+  check_kind: mixed

@@ -1,0 +1,49 @@
+slug: line_ball
+kind: theorem
+title: Balls on the Real Line Are Intervals
+statement: |-
+  On the real line a ball is an interval, and this is the picture to keep. The numbers `y` with `|x - y| < ε` are those that differ from `x` by less than `ε` in either direction, that is, those with `x - ε < y` and `y < x + ε`. The ball of radius `ε` about `x` is the interval of width `2 * ε` centred at `x`.
+
+  The fact that turns an absolute value into a pair of inequalities is `abs_lt`, which says that `|a| < b` holds exactly when `-b < a` and `a < b`.
+concepts:
+- open_ball
+stub: 'theorem line_ball (x ε : ℝ) : line.ball x ε = {y | x - ε < y ∧ y < x + ε} := sorry'
+reference: |-
+  theorem line_ball (x ε : ℝ) : line.ball x ε = {y | x - ε < y ∧ y < x + ε} := by
+    ext y
+    show |x - y| < ε ↔ _
+    rw [Set.mem_setOf_eq, abs_lt]
+    constructor <;> rintro ⟨h1, h2⟩ <;> constructor <;> linarith
+spec: 'example : ∀ (x ε : ℝ), line.ball x ε = {y | x - ε < y ∧ y < x + ε} := _root_.GeneralTopology.line_ball'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ x y, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+
+  def line : Metric ℝ where
+    dist x y := |x - y|
+    symm x y := abs_sub_comm x y
+    triangle x y z := abs_sub_le x y z
+    eq_zero x y := by rw [abs_eq_zero, sub_eq_zero]
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `line.ball x ε` is the set `{y | x - ε < y ∧ y < x + ε}`. Two sets are equal when they have the same elements, which is what `ext y` asks you to prove; `show` restates the membership on the left as the inequality `|x - y| < ε` that it abbreviates, `Set.mem_setOf_eq` does the same on the right, `abs_lt` splits the absolute value, and `linarith` rearranges each of the four resulting inequalities.
+stub_names:
+- line_ball
+namespace: GeneralTopology
+seq: 8
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 230
+  closure_rounds: 1
+  check_kind: theorem

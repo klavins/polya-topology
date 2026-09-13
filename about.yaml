@@ -1,0 +1,6 @@
+# What the library says about this repository, above its subjects (polya publish requires the
+# title and the description); `license` names the license its subjects carry unless their
+# @subject block says otherwise — each subject's directory holds the text in a LICENSE file.
+title: Polya Topology
+description: "A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib's own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber's Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from."
+license: CC-BY-SA-4.0

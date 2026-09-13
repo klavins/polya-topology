@@ -1,0 +1,49 @@
+slug: define_metric
+kind: definition
+title: The Definition of a Metric Space
+statement: |-
+  What must a rule satisfy to deserve the name of a distance? Three things, and each of them holds for distance on a map.
+
+  The first is *symmetry*. The distance from `x` to `y` is the distance from `y` to `x`; a distance belongs to an unordered pair of points, not to a journey with a direction.
+
+  The second is the *triangle inequality*. Going from `x` to `z` by way of `y` is never shorter than going from `x` to `z` directly, so `d x z ≤ d x y + d y z`. The name comes from the plane, where it says that one side of a triangle is at most the sum of the other two.
+
+  The third is *non-degeneracy*. Two points are at distance zero exactly when they are the same point: `d x y = 0` if and only if `x = y`. Distinct points are held apart, and no point is held away from itself.
+
+  Notice what is not asked. Nothing here says that a distance is a non-negative number. It need not be asked, because it follows, as a problem below will show. One asks of a definition only what cannot be deduced.
+
+  A structure in Lean gathers data and the conditions on that data under a single name. A term of type `Metric X` is therefore a distance function on `X` together with proofs that it satisfies all three conditions, and the fields are named so that `M.dist x y` is the distance and `M.symm`, `M.triangle` and `M.eq_zero` are the three proofs.
+concepts:
+- metric_space
+stub: |-
+  structure Metric (X : Type u) where
+    dist : sorry
+    symm : sorry
+    triangle : sorry
+    eq_zero : sorry
+reference: |-
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ x y, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ x y, dist x y = 0 ↔ x = y
+spec: |-
+  example (X : Type) (M : _root_.GeneralTopology.Metric X) (x y z : X) :
+      M.dist x y = M.dist y x
+        ∧ M.dist x z ≤ M.dist x y + M.dist y z
+        ∧ (M.dist x y = 0 ↔ x = y) :=
+    ⟨M.symm x y, M.triangle x y z, M.eq_zero x y⟩
+preamble: |
+  universe u
+description: 'Define the structure `Metric X` for a type `X`, with four fields in this order: `dist`, of type `X → X → ℝ`; then `symm`, `triangle` and `eq_zero`, each quantified over all the points of `X` it mentions, carrying symmetry, the triangle inequality `dist x z ≤ dist x y + dist y z`, and the equivalence `dist x y = 0 ↔ x = y`.'
+stub_names:
+- Metric
+namespace: GeneralTopology
+seq: 0
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 23
+  closure_rounds: 1
+  check_kind: definition

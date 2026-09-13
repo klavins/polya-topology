@@ -1,0 +1,51 @@
+slug: norm_nonneg
+kind: theorem
+title: Lengths Are Never Negative
+statement: |-
+  As with a distance, non-negativity was not asked for and does not have to be. The vector `v + (-v)` is the zero vector, whose length is zero; the triangle inequality bounds that zero by `‖v‖ + ‖-v‖`, which is twice `‖v‖` since a vector and its negative have the same length. A number whose double is non-negative is non-negative.
+
+  This is the same argument as the one for distances, with the detour that returns to its starting point replaced by a vector added to its own negative.
+concepts:
+- normed_space
+stub: |-
+  theorem Norm.nonneg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      0 ≤ N.norm v := sorry
+reference: |-
+  theorem Norm.nonneg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      0 ≤ N.norm v := by
+    have h := N.triangle v (-v)
+    rw [add_neg_cancel, N.zero, N.neg] at h
+    linarith
+spec: 'example : ∀ {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V), 0 ≤ N.norm v := _root_.GeneralTopology.Norm.nonneg'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
+    norm : V → ℝ
+    eq_zero : ∀ v, norm v = 0 ↔ v = 0
+    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+
+  theorem Norm.zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : N.norm 0 = 0 :=
+    (N.eq_zero 0).mpr rfl
+
+  theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
+      N.norm (-v) = N.norm v := by
+    have h := N.smul (-1) v
+    rw [neg_one_smul] at h
+    rw [h, abs_neg, abs_one, one_mul]
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `0 ≤ N.norm v`. Begin with `N.triangle v (-v)`, rewrite it with `add_neg_cancel`, `N.zero` and `N.neg`, and finish with `linarith`.
+stub_names:
+- Norm.nonneg
+namespace: GeneralTopology
+seq: 15
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@f1eff20
+  file: PolyaTopology/GeneralTopology/MetricSpaces.lean
+  line: 407
+  closure_rounds: 1
+  check_kind: theorem
