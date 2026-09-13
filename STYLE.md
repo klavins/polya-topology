@@ -70,6 +70,33 @@ where a membership or a distance has to be restated as what it abbreviates, `hav
 to name a hypothesis that is already the thing wanted, and `linarith` for the arithmetic at the
 end. Automation closes a goal; it does not replace the argument.
 
+## Prose
+
+A problem's `@preamble` and `@description` together get **about 22 lines of 55 characters** —
+17 to 27. That is the room the problem page has; anything past it is pushed out of sight. The
+skill's `reference/style.md` carries the command that counts them over a bundle, and no problem
+here is over.
+
+Write only what a student needs in order to start *this* problem. The cuts that bought the most
+room, and that are the ones to look for first:
+
+- **Forward references.** "It need not be asked, because it follows, as a problem below will
+  show" — the student cannot use this, and the problem that proves it makes the point itself,
+  where it is earned.
+- **Morals about method.** "One asks of a definition only what cannot be deduced." True, and
+  not what the reader is here for.
+- **A second telling of the concept.** The concept description is already on the page, beside
+  the diagram.
+- **Lean mechanics met before.** How a structure instance is written belongs in `define_line`,
+  once, not in every definition that follows.
+
+What is worth keeping but is not needed to start the problem goes in the **concept
+description**, which is under no budget. The survey of the `p`-norm family sat in
+`define_sup_norm` and cost it twelve lines; it now opens the `plane_norms` concept, where it
+introduces both norms at once and the reader meets it before either problem.
+
+A problem whose prose is honestly over the budget is two problems.
+
 ## Sources
 
 The subjects follow published treatments for their selection and order of results, and name them

@@ -505,7 +505,10 @@ concepts:
   title: The Metric of a Norm
   position: 5
 - slug: plane_norms
-  description: 'On the line there was only one reasonable length. On the plane there are many, and two of them can be written down without a square root: the sum of the magnitudes of the two coordinates, and the larger of them. Their unit balls are a diamond and a square, so the two lengths are certainly not the same function. Yet inside every ball of either one there is a ball of the other about the same point, and a notion defined by "some ball about `x` lies inside `S`" therefore cannot tell them apart. That is where topology begins.'
+  description: |-
+    On the line there was only one reasonable length. On the plane there are many. For each `p` at least one there is a length `(|x|^p + |y|^p)^(1/p)`, which at `p = 1` adds the magnitudes of the two coordinates and at `p = 2` is the Euclidean length. As `p` grows the `p`-th root suppresses the smaller coordinate more and more, and in the limit only the larger survives; that limit is written `p = ∞` and called the supremum norm.
+
+    Two members of the family can be written down without a root, and they are the two ends: `p = 1` and `p = ∞`. Their unit balls are a diamond and a square, so the two are certainly not the same function. Yet inside every ball of either one there is a ball of the other about the same point, and a notion defined by "some ball about `x` lies inside `S`" therefore cannot tell them apart. That is where topology begins.
   kind: definition
   goal: true
   section: Metric Spaces
@@ -529,7 +532,9 @@ provenance:
   source: extract@f1eff20
   module: PolyaTopology.GeneralTopology
   license: CC-BY-SA-4.0
-  repo: built-in
+  repo: klavins/polya-topology
+  url: https://github.com/klavins/polya-topology
+  commit: c38cee12dc73999b60644907db037344e0de1b36
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

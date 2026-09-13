@@ -27,17 +27,15 @@ Distance is the first thing one measures about a pair of points, and a great dea
 @preamble
 What must a rule satisfy to deserve the name of a distance? Three things, and each of them holds for distance on a map.
 
-The first is *symmetry*. The distance from `x` to `y` is the distance from `y` to `x`; a distance belongs to an unordered pair of points, not to a journey with a direction.
+*Symmetry*: the distance from `x` to `y` is the distance from `y` to `x`. A distance belongs to an unordered pair of points, not to a journey with a direction.
 
-The second is the *triangle inequality*. Going from `x` to `z` by way of `y` is never shorter than going from `x` to `z` directly, so `d x z ≤ d x y + d y z`. The name comes from the plane, where it says that one side of a triangle is at most the sum of the other two.
+*The triangle inequality*: going from `x` to `z` by way of `y` is never shorter than going directly, so `d x z ≤ d x y + d y z`. In the plane it says that one side of a triangle is at most the sum of the other two.
 
-The third is *non-degeneracy*. Two points are at distance zero exactly when they are the same point: `d x y = 0` if and only if `x = y`. Distinct points are held apart, and no point is held away from itself.
+*Non-degeneracy*: `d x y = 0` exactly when `x = y`.
 
-Notice what is not asked. Nothing here says that a distance is a non-negative number. It need not be asked, because it follows, as a problem below will show. One asks of a definition only what cannot be deduced.
-
-A structure in Lean gathers data and the conditions on that data under a single name. A term of type `Metric X` is therefore a distance function on `X` together with proofs that it satisfies all three conditions, and the fields are named so that `M.dist x y` is the distance and `M.symm`, `M.triangle` and `M.eq_zero` are the three proofs.
+A structure gathers data and the conditions on it under one name, so a term of type `Metric X` is a distance function together with proofs of all three.
 @description
-Define the structure `Metric X` for a type `X`, with four fields in this order: `dist`, of type `X → X → ℝ`; then `symm`, `triangle` and `eq_zero`, each quantified over all the points of `X` it mentions, carrying symmetry, the triangle inequality `dist x z ≤ dist x y + dist y z`, and the equivalence `dist x y = 0 ↔ x = y`.
+Define the structure `Metric X` for a type `X`, with four fields in this order: `dist`, of type `X → X → ℝ`; then `symm`, `triangle` and `eq_zero`, each quantified over the points it mentions, carrying the three conditions above.
 -/
 
 structure Metric (X : Type u) where
@@ -103,9 +101,9 @@ A definition with no examples under it is an empty one. The first example is the
 @concept real_line
 
 @preamble
-How far apart are two real numbers? By `|x - y|`, the absolute value of their difference, which is `x - y` when that is non-negative and `y - x` when it is not. The three conditions hold, and each is a fact about the absolute value that Mathlib already knows. Symmetry is `abs_sub_comm`, which says `|a - b| = |b - a|`. The triangle inequality is `abs_sub_le`, which says `|a - c| ≤ |a - b| + |b - c|` and is where the inequality got its name. Non-degeneracy needs two steps: `abs_eq_zero` says `|a| = 0 ↔ a = 0`, and `sub_eq_zero` says `a - b = 0 ↔ a = b`.
+How far apart are two real numbers? By `|x - y|`, the absolute value of their difference. Each of the three conditions is then a standard fact about the absolute value: `abs_sub_comm` gives symmetry, `abs_sub_le` gives the triangle inequality and is where its name comes from, and `abs_eq_zero` with `sub_eq_zero` gives non-degeneracy.
 
-To give a term of a structure type is to give each of its fields, and Lean writes this with `where` and one line per field:
+To give a term of a structure type is to give each of its fields, which Lean writes with `where`:
 ```lean
 def someMetric : Metric ℝ where
   dist x y := ...
@@ -113,9 +111,9 @@ def someMetric : Metric ℝ where
   triangle x y z := ...
   eq_zero x y := ...
 ```
-The first line is a definition; the other three are proofs, and a proof may be written as a term or opened with `by`.
+The first field is a definition; the other three are proofs, written as terms or opened with `by`.
 @description
-Define `line`, the real numbers with `dist x y = |x - y|`. Three of the fields are the Mathlib facts named above applied to the right arguments; for the fourth, rewriting with `abs_eq_zero` and then `sub_eq_zero` turns the goal into one that `rw` closes by itself.
+Define `line`, the real numbers with `dist x y = |x - y|`. Three fields are the facts named above at the right arguments; for the fourth, rewriting with `abs_eq_zero` and then `sub_eq_zero` leaves a goal that `rw` closes by itself.
 -/
 
 def line : Metric ℝ where
@@ -349,17 +347,17 @@ Most metrics are not given directly. They come from a length: in a space where v
 @concept normed_space
 
 @preamble
-A real vector space is a set whose elements can be added to one another and scaled by real numbers. A *norm* on it assigns to each vector `v` a real number, its length, subject to three conditions.
+A real vector space is a set whose elements can be added and scaled by real numbers. A *norm* on it assigns to each vector `v` a real number, its length, subject to three conditions.
 
-*Non-degeneracy*: the length of `v` is zero exactly when `v` is the zero vector. Only the origin has no size.
+*Non-degeneracy*: the length of `v` is zero exactly when `v` is the zero vector.
 
-*Homogeneity*: scaling a vector by a real number `c` scales its length by `|c|`, so that `‖c • v‖ = |c| * ‖v‖`. The absolute value is there because scaling by a negative number turns a vector around without making it any shorter.
+*Homogeneity*: `‖c • v‖ = |c| * ‖v‖`. The absolute value is there because scaling by a negative number turns a vector around without making it shorter.
 
 *The triangle inequality*: `‖v + w‖ ≤ ‖v‖ + ‖w‖`. Two displacements made one after the other carry one no further than the sum of their lengths.
 
-In Lean a type `V` is a real vector space when it carries the two instances `[AddCommGroup V]`, which provides `+`, `-`, `0` and negation, and `[Module ℝ V]`, which provides the scaling, written `c • v`. Both appear in the signature of the structure, before the fields.
+A type `V` is a real vector space in Lean when it carries `[AddCommGroup V]` and `[Module ℝ V]`, which give it `+`, `0`, negation, and the scaling `c • v`.
 @description
-Define the structure `Norm V` for a real vector space `V`, with four fields in this order: `norm`, of type `V → ℝ`; then `eq_zero`, `smul` and `triangle`, carrying the equivalence `norm v = 0 ↔ v = 0`, the equation `norm (c • v) = |c| * norm v` for every real `c`, and the inequality `norm (v + w) ≤ norm v + norm w`, each quantified over the vectors it mentions.
+Define the structure `Norm V` for a real vector space `V`, with four fields in this order: `norm`, of type `V → ℝ`; then `eq_zero`, `smul` and `triangle`, carrying the three conditions above, each quantified over the vectors and scalars it mentions.
 -/
 
 structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
@@ -497,13 +495,13 @@ theorem Norm.mem_ball_zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Nor
 @concept norm_metric
 
 @preamble
-The real numbers are themselves a real vector space, of dimension one, and the length of a number is its absolute value. The three conditions are again standard facts: `abs_eq_zero` for non-degeneracy, `abs_mul` for homogeneity once `smul_eq_mul` has said that scaling a real number is multiplying it, and `abs_add_le` for the triangle inequality.
+The real numbers are themselves a real vector space of dimension one, and the length of a number is its absolute value. The three conditions are standard facts again: `abs_eq_zero` for non-degeneracy, `abs_mul` for homogeneity once `smul_eq_mul` has said that scaling a real number is multiplying it, and `abs_add_le` for the triangle inequality.
 
-This is the Euclidean length in dimension one. The Euclidean length of a vector with coordinates `x₁, …, xₙ` is the square root of `x₁² + ⋯ + xₙ²`, and for a single coordinate that is the square root of `x²`, which is `|x|`. In higher dimensions the square root is unavoidable, and square roots are beyond what this section is built from; the next concept measures the plane with two lengths that need no roots at all.
+This is the Euclidean length in dimension one, the square root of `x²` being `|x|`.
 
-The construction of the previous problem should now return the metric we began with. It does, and on the nose: the distance it produces is `|x - y|`, which is what `line` was defined to be, so the two metrics are not merely equal but identical as they stand.
+The construction of the previous problem should now return the metric this section began with, and it does: the distance it produces is `|x - y|`, which is what `line` was defined to be.
 @description
-Define `absNorm`, the absolute value as a norm on `ℝ`, and then show that the metric it induces is the `line` defined at the start of the section. The three fields are the facts named above, the second after rewriting with `smul_eq_mul` and `abs_mul`; and the two metrics are the same by `rfl`.
+Define `absNorm`, the absolute value as a norm on `ℝ`, and show that the metric it induces is `line`. The three fields are the facts named above, the second after rewriting with `smul_eq_mul` and `abs_mul`; the two metrics are the same by `rfl`.
 -/
 
 def absNorm : Norm ℝ where
@@ -525,7 +523,9 @@ example (x : ℝ) : absNorm.norm x = |x| := rfl
 @kind definition
 @goal
 
-On the line there was only one reasonable length. On the plane there are many, and two of them can be written down without a square root: the sum of the magnitudes of the two coordinates, and the larger of them. Their unit balls are a diamond and a square, so the two lengths are certainly not the same function. Yet inside every ball of either one there is a ball of the other about the same point, and a notion defined by "some ball about `x` lies inside `S`" therefore cannot tell them apart. That is where topology begins.
+On the line there was only one reasonable length. On the plane there are many. For each `p` at least one there is a length `(|x|^p + |y|^p)^(1/p)`, which at `p = 1` adds the magnitudes of the two coordinates and at `p = 2` is the Euclidean length. As `p` grows the `p`-th root suppresses the smaller coordinate more and more, and in the limit only the larger survives; that limit is written `p = ∞` and called the supremum norm.
+
+Two members of the family can be written down without a root, and they are the two ends: `p = 1` and `p = ∞`. Their unit balls are a diamond and a square, so the two are certainly not the same function. Yet inside every ball of either one there is a ball of the other about the same point, and a notion defined by "some ball about `x` lies inside `S`" therefore cannot tell them apart. That is where topology begins.
 -/
 
 /--
@@ -590,13 +590,11 @@ theorem prod_eq_zero {v : ℝ × ℝ} : v = 0 ↔ v.1 = 0 ∧ v.2 = 0 := by
 @concept plane_norms
 
 @preamble
-The first length on the plane adds the magnitudes of the two coordinates: the length of `(x, y)` is `|x| + |y|`. It is the distance a taxicab drives in a city laid out on a square grid, where one may travel east and north but not diagonally, and it is called the taxicab norm for that reason. Its unit ball, the vectors of length less than one, is the diamond with corners at `(1, 0)`, `(0, 1)`, `(-1, 0)` and `(0, -1)`.
+The first length on the plane adds the magnitudes of the two coordinates: the length of `(x, y)` is `|x| + |y|`. It is the distance a taxicab drives in a city laid out on a square grid, where one may travel east and north but not diagonally. Its unit ball is the diamond with corners at `(1, 0)`, `(0, 1)`, `(-1, 0)` and `(0, -1)`.
 
-A point of the plane is a pair, a term `v : ℝ × ℝ` with coordinates `v.1` and `v.2`. Addition and scaling act on each coordinate separately, so `(v + w).1` is `v.1 + w.1` and `(c • v).1` is `c * v.1`, each by definition. Two pairs are equal when their coordinates are, which is `Prod.ext`.
-
-Each of the three conditions comes down to the corresponding fact about absolute values, one coordinate at a time.
+A point of the plane is a pair `v : ℝ × ℝ` with coordinates `v.1` and `v.2`. Addition and scaling act on each coordinate separately, so `(v + w).1` is `v.1 + w.1` and `(c • v).1` is `c * v.1`, each by definition.
 @description
-Define `taxicab`, the norm on `ℝ × ℝ` sending `v` to `|v.1| + |v.2|`. Non-degeneracy is the two previous problems, one after the other, rewritten into the goal; for the other two conditions, `show` the goal in coordinates first, then `abs_mul` on each coordinate with `ring`, and `abs_add_le` on each coordinate with `linarith`.
+Define `taxicab`, the norm on `ℝ × ℝ` sending `v` to `|v.1| + |v.2|`. Non-degeneracy is the two previous problems rewritten into the goal one after the other; for the other conditions, `show` the goal in coordinates, then `abs_mul` with `ring`, and `abs_add_le` on each coordinate with `linarith`.
 -/
 
 def taxicab : Norm (ℝ × ℝ) where
@@ -663,13 +661,11 @@ theorem max_add_max (a b c d : ℝ) : max (a + c) (b + d) ≤ max a b + max c d 
 @concept plane_norms
 
 @preamble
-The second length on the plane keeps only the larger of the two magnitudes: the length of `(x, y)` is `max |x| |y|`. Its unit ball is the square with corners at `(1, 1)`, `(1, -1)`, `(-1, -1)` and `(-1, 1)` — the vectors both of whose coordinates are smaller than one in magnitude.
+The second length on the plane keeps only the larger of the two magnitudes: the length of `(x, y)` is `max |x| |y|`. Its unit ball is the square with corners at `(1, 1)`, `(1, -1)`, `(-1, -1)` and `(-1, 1)`, the vectors both of whose coordinates are smaller than one in magnitude.
 
-The two norms are the ends of a family. For each `p` at least one there is a length `(|x|^p + |y|^p)^(1/p)`, which at `p = 1` is the taxicab norm and at `p = 2` the Euclidean one. As `p` grows the `p`-th root suppresses the smaller coordinate more and more, and in the limit only the larger survives; hence the name supremum norm, and the traditional index `∞`. The two members we can write down without a root are the two ends, `p = 1` and `p = ∞`.
-
-Homogeneity needs one fact beyond the previous norm: a non-negative factor may be moved through a maximum, which is `mul_max_of_nonneg`. For the triangle inequality, bound each coordinate of `v + w` by the corresponding sum of magnitudes, which `max_le_max` carries through the maximum, and then apply the problem above.
+Homogeneity needs one fact beyond the previous norm: a non-negative factor may be moved through a maximum, which is `mul_max_of_nonneg`.
 @description
-Define `supNorm`, the norm on `ℝ × ℝ` sending `v` to `max |v.1| |v.2|`. Non-degeneracy is `max_abs_eq_zero` and then `prod_eq_zero`, as for the taxicab norm; homogeneity follows from `abs_mul` on each coordinate and `mul_max_of_nonneg`; and for the triangle inequality, feed `max_le_max` the two coordinatewise instances of `abs_add_le` and hand the result, together with `max_add_max`, to `linarith`.
+Define `supNorm`, the norm on `ℝ × ℝ` sending `v` to `max |v.1| |v.2|`. Non-degeneracy is `max_abs_eq_zero` and then `prod_eq_zero`, as for the taxicab norm; homogeneity is `abs_mul` on each coordinate and `mul_max_of_nonneg`; and for the triangle inequality, feed `max_le_max` the two instances of `abs_add_le` and hand the result, with `max_add_max`, to `linarith`.
 -/
 
 def supNorm : Norm (ℝ × ℝ) where
@@ -757,11 +753,11 @@ theorem unit_balls_differ :
 @preamble
 Different as the two unit balls are, neither norm sees anything the other misses.
 
-Since the supremum norm is at most the taxicab norm, a vector short in the taxicab norm is short in the supremum norm, and every taxicab ball lies inside the supremum ball of the same radius about the same point. Since the taxicab norm is at most twice the supremum norm, the supremum ball of half a radius lies inside the taxicab ball of that radius. Put together: inside any ball of one norm there is a ball of the other about the same centre.
+Since the supremum norm is at most the taxicab norm, every taxicab ball lies inside the supremum ball of the same radius about the same point. Since the taxicab norm is at most twice the supremum norm, the supremum ball of half a radius lies inside the taxicab ball of that radius. Inside any ball of one norm, then, there is a ball of the other about the same centre.
 
-Two metrics standing in this relation are called *equivalent*. They assign different numbers to the same pair of points, and their balls are different sets, but a statement of the form "some ball about `x` is contained in `S`" holds for one exactly when it holds for the other. Every notion in the rest of this subject — open, closed, convergent, continuous, compact — is of that form. None of them can distinguish these two metrics, and what is left when the distances have been forgotten and only such statements remain is the topology.
+Two metrics standing in this relation are called *equivalent*. A statement of the form "some ball about `x` is contained in `S`" holds for one exactly when it holds for the other, and every notion in the rest of this subject is of that form.
 @description
-Prove the two containments. In each, introduce a point and its membership; `have h : ... := hy` restates that membership as the inequality between lengths it abbreviates, `show` does the same for the goal, and the comparison proved in one of the previous two problems, applied to `x - y`, lets `linarith` finish.
+Prove the two containments. In each, introduce a point and its membership; `have h : ... := hy` restates that membership as the inequality between lengths it abbreviates, `show` does the same for the goal, and the comparison from one of the previous two problems, applied to `x - y`, lets `linarith` finish.
 -/
 
 theorem ball_taxicab_subset_supNorm (x : ℝ × ℝ) (ε : ℝ) :

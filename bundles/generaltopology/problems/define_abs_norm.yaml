@@ -2,11 +2,11 @@ slug: define_abs_norm
 kind: example
 title: The Absolute Value as a Norm
 statement: |-
-  The real numbers are themselves a real vector space, of dimension one, and the length of a number is its absolute value. The three conditions are again standard facts: `abs_eq_zero` for non-degeneracy, `abs_mul` for homogeneity once `smul_eq_mul` has said that scaling a real number is multiplying it, and `abs_add_le` for the triangle inequality.
+  The real numbers are themselves a real vector space of dimension one, and the length of a number is its absolute value. The three conditions are standard facts again: `abs_eq_zero` for non-degeneracy, `abs_mul` for homogeneity once `smul_eq_mul` has said that scaling a real number is multiplying it, and `abs_add_le` for the triangle inequality.
 
-  This is the Euclidean length in dimension one. The Euclidean length of a vector with coordinates `x₁, …, xₙ` is the square root of `x₁² + ⋯ + xₙ²`, and for a single coordinate that is the square root of `x²`, which is `|x|`. In higher dimensions the square root is unavoidable, and square roots are beyond what this section is built from; the next concept measures the plane with two lengths that need no roots at all.
+  This is the Euclidean length in dimension one, the square root of `x²` being `|x|`.
 
-  The construction of the previous problem should now return the metric we began with. It does, and on the nose: the distance it produces is `|x - y|`, which is what `line` was defined to be, so the two metrics are not merely equal but identical as they stand.
+  The construction of the previous problem should now return the metric this section began with, and it does: the distance it produces is `|x - y|`, which is what `line` was defined to be.
 concepts:
 - norm_metric
 stub: |-
@@ -66,7 +66,7 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Define `absNorm`, the absolute value as a norm on `ℝ`, and then show that the metric it induces is the `line` defined at the start of the section. The three fields are the facts named above, the second after rewriting with `smul_eq_mul` and `abs_mul`; and the two metrics are the same by `rfl`.
+description: Define `absNorm`, the absolute value as a norm on `ℝ`, and show that the metric it induces is `line`. The three fields are the facts named above, the second after rewriting with `smul_eq_mul` and `abs_mul`; the two metrics are the same by `rfl`.
 stub_names:
 - absNorm
 - absNorm_toMetric
@@ -76,6 +76,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@f1eff20
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
-  line: 495
+  line: 493
   closure_rounds: 1
   check_kind: mixed

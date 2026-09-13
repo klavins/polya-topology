@@ -4,9 +4,9 @@ title: Each Norm's Balls Fit Inside the Other's
 statement: |-
   Different as the two unit balls are, neither norm sees anything the other misses.
 
-  Since the supremum norm is at most the taxicab norm, a vector short in the taxicab norm is short in the supremum norm, and every taxicab ball lies inside the supremum ball of the same radius about the same point. Since the taxicab norm is at most twice the supremum norm, the supremum ball of half a radius lies inside the taxicab ball of that radius. Put together: inside any ball of one norm there is a ball of the other about the same centre.
+  Since the supremum norm is at most the taxicab norm, every taxicab ball lies inside the supremum ball of the same radius about the same point. Since the taxicab norm is at most twice the supremum norm, the supremum ball of half a radius lies inside the taxicab ball of that radius. Inside any ball of one norm, then, there is a ball of the other about the same centre.
 
-  Two metrics standing in this relation are called *equivalent*. They assign different numbers to the same pair of points, and their balls are different sets, but a statement of the form "some ball about `x` is contained in `S`" holds for one exactly when it holds for the other. Every notion in the rest of this subject — open, closed, convergent, continuous, compact — is of that form. None of them can distinguish these two metrics, and what is left when the distances have been forgotten and only such statements remain is the topology.
+  Two metrics standing in this relation are called *equivalent*. A statement of the form "some ball about `x` is contained in `S`" holds for one exactly when it holds for the other, and every notion in the rest of this subject is of that form.
 concepts:
 - plane_norms
 stub: |-
@@ -151,7 +151,7 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: 'Prove the two containments. In each, introduce a point and its membership; `have h : ... := hy` restates that membership as the inequality between lengths it abbreviates, `show` does the same for the goal, and the comparison proved in one of the previous two problems, applied to `x - y`, lets `linarith` finish.'
+description: 'Prove the two containments. In each, introduce a point and its membership; `have h : ... := hy` restates that membership as the inequality between lengths it abbreviates, `show` does the same for the goal, and the comparison from one of the previous two problems, applied to `x - y`, lets `linarith` finish.'
 stub_names:
 - ball_taxicab_subset_supNorm
 - ball_supNorm_subset_taxicab
@@ -161,6 +161,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@f1eff20
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
-  line: 753
+  line: 749
   closure_rounds: 1
   check_kind: theorem

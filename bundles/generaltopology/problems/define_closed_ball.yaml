@@ -61,6 +61,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@f1eff20
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
-  line: 181
+  line: 179
   closure_rounds: 1
   check_kind: mixed

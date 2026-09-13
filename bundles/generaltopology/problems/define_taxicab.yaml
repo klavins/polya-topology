@@ -2,11 +2,9 @@ slug: define_taxicab
 kind: definition
 title: The Taxicab Norm
 statement: |-
-  The first length on the plane adds the magnitudes of the two coordinates: the length of `(x, y)` is `|x| + |y|`. It is the distance a taxicab drives in a city laid out on a square grid, where one may travel east and north but not diagonally, and it is called the taxicab norm for that reason. Its unit ball, the vectors of length less than one, is the diamond with corners at `(1, 0)`, `(0, 1)`, `(-1, 0)` and `(0, -1)`.
+  The first length on the plane adds the magnitudes of the two coordinates: the length of `(x, y)` is `|x| + |y|`. It is the distance a taxicab drives in a city laid out on a square grid, where one may travel east and north but not diagonally. Its unit ball is the diamond with corners at `(1, 0)`, `(0, 1)`, `(-1, 0)` and `(0, -1)`.
 
-  A point of the plane is a pair, a term `v : ℝ × ℝ` with coordinates `v.1` and `v.2`. Addition and scaling act on each coordinate separately, so `(v + w).1` is `v.1 + w.1` and `(c • v).1` is `c * v.1`, each by definition. Two pairs are equal when their coordinates are, which is `Prod.ext`.
-
-  Each of the three conditions comes down to the corresponding fact about absolute values, one coordinate at a time.
+  A point of the plane is a pair `v : ℝ × ℝ` with coordinates `v.1` and `v.2`. Addition and scaling act on each coordinate separately, so `(v + w).1` is `v.1 + w.1` and `(c • v).1` is `c * v.1`, each by definition.
 concepts:
 - plane_norms
 stub: 'def taxicab : Norm (ℝ × ℝ) := sorry'
@@ -57,7 +55,7 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Define `taxicab`, the norm on `ℝ × ℝ` sending `v` to `|v.1| + |v.2|`. Non-degeneracy is the two previous problems, one after the other, rewritten into the goal; for the other two conditions, `show` the goal in coordinates first, then `abs_mul` on each coordinate with `ring`, and `abs_add_le` on each coordinate with `linarith`.
+description: Define `taxicab`, the norm on `ℝ × ℝ` sending `v` to `|v.1| + |v.2|`. Non-degeneracy is the two previous problems rewritten into the goal one after the other; for the other conditions, `show` the goal in coordinates, then `abs_mul` with `ring`, and `abs_add_le` on each coordinate with `linarith`.
 stub_names:
 - taxicab
 namespace: GeneralTopology

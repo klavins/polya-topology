@@ -2,11 +2,9 @@ slug: define_sup_norm
 kind: definition
 title: The Supremum Norm
 statement: |-
-  The second length on the plane keeps only the larger of the two magnitudes: the length of `(x, y)` is `max |x| |y|`. Its unit ball is the square with corners at `(1, 1)`, `(1, -1)`, `(-1, -1)` and `(-1, 1)` — the vectors both of whose coordinates are smaller than one in magnitude.
+  The second length on the plane keeps only the larger of the two magnitudes: the length of `(x, y)` is `max |x| |y|`. Its unit ball is the square with corners at `(1, 1)`, `(1, -1)`, `(-1, -1)` and `(-1, 1)`, the vectors both of whose coordinates are smaller than one in magnitude.
 
-  The two norms are the ends of a family. For each `p` at least one there is a length `(|x|^p + |y|^p)^(1/p)`, which at `p = 1` is the taxicab norm and at `p = 2` the Euclidean one. As `p` grows the `p`-th root suppresses the smaller coordinate more and more, and in the limit only the larger survives; hence the name supremum norm, and the traditional index `∞`. The two members we can write down without a root are the two ends, `p = 1` and `p = ∞`.
-
-  Homogeneity needs one fact beyond the previous norm: a non-negative factor may be moved through a maximum, which is `mul_max_of_nonneg`. For the triangle inequality, bound each coordinate of `v + w` by the corresponding sum of magnitudes, which `max_le_max` carries through the maximum, and then apply the problem above.
+  Homogeneity needs one fact beyond the previous norm: a non-negative factor may be moved through a maximum, which is `mul_max_of_nonneg`.
 concepts:
 - plane_norms
 stub: 'def supNorm : Norm (ℝ × ℝ) := sorry'
@@ -65,7 +63,7 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Define `supNorm`, the norm on `ℝ × ℝ` sending `v` to `max |v.1| |v.2|`. Non-degeneracy is `max_abs_eq_zero` and then `prod_eq_zero`, as for the taxicab norm; homogeneity follows from `abs_mul` on each coordinate and `mul_max_of_nonneg`; and for the triangle inequality, feed `max_le_max` the two coordinatewise instances of `abs_add_le` and hand the result, together with `max_add_max`, to `linarith`.
+description: Define `supNorm`, the norm on `ℝ × ℝ` sending `v` to `max |v.1| |v.2|`. Non-degeneracy is `max_abs_eq_zero` and then `prod_eq_zero`, as for the taxicab norm; homogeneity is `abs_mul` on each coordinate and `mul_max_of_nonneg`; and for the triangle inequality, feed `max_le_max` the two instances of `abs_add_le` and hand the result, with `max_add_max`, to `linarith`.
 stub_names:
 - supNorm
 namespace: GeneralTopology
@@ -74,6 +72,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@f1eff20
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
-  line: 661
+  line: 659
   closure_rounds: 1
   check_kind: definition

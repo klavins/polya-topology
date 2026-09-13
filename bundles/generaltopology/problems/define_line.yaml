@@ -2,9 +2,9 @@ slug: define_line
 kind: definition
 title: The Metric on the Real Line
 statement: |-
-  How far apart are two real numbers? By `|x - y|`, the absolute value of their difference, which is `x - y` when that is non-negative and `y - x` when it is not. The three conditions hold, and each is a fact about the absolute value that Mathlib already knows. Symmetry is `abs_sub_comm`, which says `|a - b| = |b - a|`. The triangle inequality is `abs_sub_le`, which says `|a - c| ≤ |a - b| + |b - c|` and is where the inequality got its name. Non-degeneracy needs two steps: `abs_eq_zero` says `|a| = 0 ↔ a = 0`, and `sub_eq_zero` says `a - b = 0 ↔ a = b`.
+  How far apart are two real numbers? By `|x - y|`, the absolute value of their difference. Each of the three conditions is then a standard fact about the absolute value: `abs_sub_comm` gives symmetry, `abs_sub_le` gives the triangle inequality and is where its name comes from, and `abs_eq_zero` with `sub_eq_zero` gives non-degeneracy.
 
-  To give a term of a structure type is to give each of its fields, and Lean writes this with `where` and one line per field:
+  To give a term of a structure type is to give each of its fields, which Lean writes with `where`:
   ```lean
   def someMetric : Metric ℝ where
     dist x y := ...
@@ -12,7 +12,7 @@ statement: |-
     triangle x y z := ...
     eq_zero x y := ...
   ```
-  The first line is a definition; the other three are proofs, and a proof may be written as a term or opened with `by`.
+  The first field is a definition; the other three are proofs, written as terms or opened with `by`.
 concepts:
 - real_line
 stub: 'def line : Metric ℝ := sorry'
@@ -34,7 +34,7 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Define `line`, the real numbers with `dist x y = |x - y|`. Three of the fields are the Mathlib facts named above applied to the right arguments; for the fourth, rewriting with `abs_eq_zero` and then `sub_eq_zero` turns the goal into one that `rw` closes by itself.
+description: Define `line`, the real numbers with `dist x y = |x - y|`. Three fields are the facts named above at the right arguments; for the fourth, rewriting with `abs_eq_zero` and then `sub_eq_zero` leaves a goal that `rw` closes by itself.
 stub_names:
 - line
 namespace: GeneralTopology
@@ -43,6 +43,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@f1eff20
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
-  line: 101
+  line: 99
   closure_rounds: 1
   check_kind: definition
