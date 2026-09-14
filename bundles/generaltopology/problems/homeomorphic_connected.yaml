@@ -1,0 +1,89 @@
+slug: homeomorphic_connected
+kind: theorem
+title: Connectedness is a Topological Property
+statement: |-
+  Homeomorphic spaces are the same space as far as a topology can tell, so a property stated with open sets alone passes from either to the other. Connectedness is such a property.
+
+  Let `e` carry `T` to `T'`, and let `V` be open and closed in `T'`. Its preimage along `e.toFun` is open and closed in `T`, since `e.isOpen_iff` reads openness on either side of the map and taking preimages commutes with complements. So the preimage is empty or everything — and `V` is the preimage of its preimage, which settles which.
+concepts:
+- connected_images
+stub: |-
+  theorem Homeomorphic.isConnected {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsConnected) : T'.IsConnected := sorry
+reference: |-
+  theorem Homeomorphic.isConnected {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsConnected) : T'.IsConnected := by
+    obtain ⟨e⟩ := h
+    intro V hVo hVc
+    have hc : T.IsClosed (e.toFun ⁻¹' V) := by
+      show T.IsOpen _
+      rw [← Set.preimage_compl]
+      exact (Homeomorphism.isOpen_iff e Vᶜ).mp hVc
+    rcases hT (e.toFun ⁻¹' V) ((Homeomorphism.isOpen_iff e V).mp hVo) hc with h0 | h0
+    · left
+      rw [← Homeomorphism.preimage_preimage e V, h0, Set.preimage_empty]
+    · right
+      rw [← Homeomorphism.preimage_preimage e V, h0, Set.preimage_univ]
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsConnected), T'.IsConnected := _root_.GeneralTopology.Homeomorphic.isConnected
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  def Homeomorphic {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) : Prop :=
+    Nonempty (Homeomorphism T T')
+
+  theorem Homeomorphism.preimage_preimage {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (h : Homeomorphism T T') (V : Set Y) :
+      h.invFun ⁻¹' (h.toFun ⁻¹' V) = V := by
+    apply Set.ext
+    intro y
+    show h.toFun (h.invFun y) ∈ V ↔ y ∈ V
+    rw [h.right_inv]
+
+  theorem Homeomorphism.isOpen_iff {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') (V : Set Y) : T'.IsOpen V ↔ T.IsOpen (h.toFun ⁻¹' V) := by
+    constructor
+    · intro hV
+      exact h.continuous_toFun V hV
+    · intro hV
+      have hp := h.continuous_invFun _ hV
+      rwa [h.preimage_preimage] at hp
+
+  def Topology.IsConnected {X : Type u} (T : Topology X) : Prop :=
+    ∀ S, T.IsOpen S → T.IsClosed S → S = ∅ ∨ S = Set.univ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show `Homeomorphic.isConnected`. `obtain ⟨e⟩` opens the existence of a homeomorphism; `Set.preimage_compl` moves a complement across a preimage, and `rw [← e.preimage_preimage V, h0]` rewrites `V` as a preimage of what has just been identified.
+stub_names:
+- Homeomorphic.isConnected
+namespace: GeneralTopology
+seq: 169
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 306
+  closure_rounds: 1
+  check_kind: theorem

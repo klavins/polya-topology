@@ -1,0 +1,77 @@
+slug: union_connected
+kind: example
+title: Unions of Connected Sets Through a Point
+statement: |-
+  A single point is connected: whichever of the two sets catches it catches the whole of `{x}`.
+
+  Now take a family of connected sets, every one of them containing a point `p`, and let two open sets cover the union and share none of its points. Each member of the family is covered by the two as well and shares none of its points with them, so each member lies inside one of the two. Say `p` lies in the first. A member lying inside the second would put `p` in both, so every member lies inside the first, and so does the union. If `p` lies in the second instead, the same argument runs with the sides exchanged.
+concepts:
+- components
+stub: |-
+  theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsConnectedSet {x} := sorry
+
+  theorem Topology.isConnectedSet_sUnion {X : Type u} (T : Topology X) {F : Set (Set X)} {p : X}
+      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsConnectedSet S) : T.IsConnectedSet (⋃₀ F) := sorry
+reference: |-
+  theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsConnectedSet {x} := by
+    intro U V _ _ _ hcov
+    have hx : x ∈ ({x} : Set X) := rfl
+    rcases hcov hx with h | h
+    · refine Or.inl fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+    · refine Or.inr fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+
+  theorem Topology.isConnectedSet_sUnion {X : Type u} (T : Topology X) {F : Set (Set X)} {p : X}
+      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsConnectedSet S) : T.IsConnectedSet (⋃₀ F) := by
+    intro U V hU hV hno hcov
+    have key : ∀ S ∈ F, S ⊆ U ∨ S ⊆ V := fun S hSF => h S hSF U V hU hV
+      (fun x hx => hno x ⟨S, hSF, hx⟩) (fun x hx => hcov ⟨S, hSF, hx⟩)
+    by_cases hpU : p ∈ U
+    · left
+      rintro x ⟨S, hSF, hxS⟩
+      rcases key S hSF with hs | hs
+      · exact hs hxS
+      · exact (hno p ⟨S, hSF, hp S hSF⟩ hpU (hs (hp S hSF))).elim
+    · right
+      rintro x ⟨S, hSF, hxS⟩
+      rcases key S hSF with hs | hs
+      · exact absurd (hs (hp S hSF)) hpU
+      · exact hs hxS
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) (x : X), T.IsConnectedSet {x} := _root_.GeneralTopology.Topology.isConnectedSet_singleton
+  example : ∀ {X : Type u} (T : Topology X) {F : Set (Set X)} {p : X}
+      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsConnectedSet S), T.IsConnectedSet (⋃₀ F) := _root_.GeneralTopology.Topology.isConnectedSet_sUnion
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove `Topology.isConnectedSet_singleton` and `Topology.isConnectedSet_sUnion`, the second for a family `F` all of whose members contain `p`. A membership `y ∈ {x}` is the equation `y = x` and must be restated as one before rewriting; `by_cases hpU : p ∈ U` chooses the side, and `rintro x ⟨S, hSF, hxS⟩` opens a point of `⋃₀ F`.'
+stub_names:
+- Topology.isConnectedSet_singleton
+- Topology.isConnectedSet_sUnion
+namespace: GeneralTopology
+seq: 172
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 400
+  closure_rounds: 1
+  check_kind: theorem

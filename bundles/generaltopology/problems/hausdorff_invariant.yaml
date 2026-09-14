@@ -4,7 +4,7 @@ title: Being Hausdorff is a Topological Property
 statement: |-
   Nothing in the Hausdorff condition mentions anything but open sets and points, so a homeomorphism carries it across. Given two distinct points of the second space, send them back by the inverse map — they are still distinct, since the forward map returns them — separate them there, and pull the two open sets forward along the inverse map, which is continuous.
 
-  Discreteness and codiscreteness were transported by the same argument in an earlier section, and every axiom of this one transports the same way. A property that survives every homeomorphism is a property of the space and not of the names of its points.
+  Discreteness and codiscreteness were transported across a homeomorphism in an earlier section, and each of the other axioms here moves by the argument just given. A property that survives every homeomorphism is a property of the space and not of the names of its points.
 concepts:
 - separation_hereditary
 stub: |-

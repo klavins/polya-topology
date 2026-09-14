@@ -1,0 +1,44 @@
+slug: define_interval
+kind: example
+title: Intervals
+statement: |-
+  A set of reals is an *interval* when it omits no point lying between two of its own: if `x` and `y` belong to it and `x < r < y`, then `r` belongs to it. Open, closed and half-open intervals all satisfy this, bounded or not, and so do the empty set, a single point and the whole line. The condition names the shape and says nothing about endpoints.
+
+  Because it says nothing about them, the weak form has to be deduced. If `x ≤ r ≤ y` with `x` and `y` in the set, then `r` is in it: the two cases where an inequality is an equality are the cases where `r` is one of the two points already.
+concepts:
+- connected_examples
+stub: |-
+  def IsInterval (S : Set ℝ) : Prop := sorry
+
+  theorem IsInterval.mem_of_le {S : Set ℝ} (h : IsInterval S) {a b x : ℝ} (ha : a ∈ S) (hb : b ∈ S)
+      (h1 : a ≤ x) (h2 : x ≤ b) : x ∈ S := sorry
+reference: |-
+  def IsInterval (S : Set ℝ) : Prop :=
+    ∀ x ∈ S, ∀ y ∈ S, ∀ r, x < r → r < y → r ∈ S
+
+  theorem IsInterval.mem_of_le {S : Set ℝ} (h : IsInterval S) {a b x : ℝ} (ha : a ∈ S) (hb : b ∈ S)
+      (h1 : a ≤ x) (h2 : x ≤ b) : x ∈ S := by
+    rcases eq_or_lt_of_le h1 with rfl | hlt
+    · exact ha
+    rcases eq_or_lt_of_le h2 with rfl | hlt2
+    · exact hb
+    exact h a ha b hb x hlt hlt2
+spec: |-
+  example : ∀ {S : Set ℝ} (h : _root_.GeneralTopology.IsInterval S) {a b x : ℝ} (ha : a ∈ S) (hb : b ∈ S)
+      (h1 : a ≤ x) (h2 : x ≤ b), x ∈ S := _root_.GeneralTopology.IsInterval.mem_of_le
+  example (S : Set ℝ) : _root_.GeneralTopology.IsInterval S ↔ ∀ x ∈ S, ∀ y ∈ S, ∀ r, x < r → r < y → r ∈ S := Iff.rfl
+preamble: |
+  universe u v
+description: Define `IsInterval`, quantified as `∀ x ∈ S, ∀ y ∈ S, ∀ r, x < r → r < y → r ∈ S`, and prove `IsInterval.mem_of_le`. `eq_or_lt_of_le` splits a weak inequality into the two cases and `rcases … with rfl | hlt` substitutes in the first.
+stub_names:
+- IsInterval
+- IsInterval.mem_of_le
+namespace: GeneralTopology
+seq: 164
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 146
+  closure_rounds: 1
+  check_kind: mixed

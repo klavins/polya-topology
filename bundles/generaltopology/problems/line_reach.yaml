@@ -1,0 +1,110 @@
+slug: line_reach
+kind: example
+title: Reaching Out from a Point of an Open Set
+statement: |-
+  An open set of the line holds a ball about each of its points, and a ball about `c` is an interval around it: `y ∈ line.ball c ε` says `|c - y| < ε`, which `abs_lt` splits into the two inequalities bounding `y` on either side. Two consequences of that are what any argument approaching a point from one side wants.
+
+  Rightwards: if `c` lies in an open `U` and `c < b`, then `U` holds a point strictly to the right of `c` and no further out than `b`. Half the radius gives a candidate, and the smaller of it and `b` stays in range.
+
+  Leftwards: if `c` lies in an open `V`, then for some positive `ε` every point of the stretch `c - ε < y ≤ c` lies in `V`.
+concepts:
+- connected_examples
+stub: |-
+  theorem line_open_right {U : Set ℝ} (hU : line.toTopology.IsOpen U) {c : ℝ} (hc : c ∈ U)
+      {b : ℝ} (hcb : c < b) : ∃ x, c < x ∧ x ≤ b ∧ x ∈ U := sorry
+
+  theorem line_open_left {V : Set ℝ} (hV : line.toTopology.IsOpen V) {c : ℝ} (hc : c ∈ V) :
+      ∃ ε > 0, ∀ y, c - ε < y → y ≤ c → y ∈ V := sorry
+reference: |-
+  theorem line_open_right {U : Set ℝ} (hU : line.toTopology.IsOpen U) {c : ℝ} (hc : c ∈ U)
+      {b : ℝ} (hcb : c < b) : ∃ x, c < x ∧ x ≤ b ∧ x ∈ U := by
+    obtain ⟨ε, hε, hsub⟩ := hU c hc
+    have h1 : c < min (c + ε / 2) b := lt_min (by linarith) hcb
+    have h2 : min (c + ε / 2) b ≤ c + ε / 2 := min_le_left _ _
+    refine ⟨min (c + ε / 2) b, h1, min_le_right _ _, hsub ?_⟩
+    show |c - min (c + ε / 2) b| < ε
+    rw [abs_lt]
+    constructor <;> linarith
+
+  theorem line_open_left {V : Set ℝ} (hV : line.toTopology.IsOpen V) {c : ℝ} (hc : c ∈ V) :
+      ∃ ε > 0, ∀ y, c - ε < y → y ≤ c → y ∈ V := by
+    obtain ⟨ε, hε, hsub⟩ := hV c hc
+    refine ⟨ε, hε, fun y h1 h2 => hsub ?_⟩
+    show |c - y| < ε
+    rw [abs_lt]
+    constructor <;> linarith
+spec: |-
+  example : ∀ {U : Set ℝ} (hU : line.toTopology.IsOpen U) {c : ℝ} (hc : c ∈ U)
+      {b : ℝ} (hcb : c < b), ∃ x, c < x ∧ x ≤ b ∧ x ∈ U := _root_.GeneralTopology.line_open_right
+  example : ∀ {V : Set ℝ} (hV : line.toTopology.IsOpen V) {c : ℝ} (hc : c ∈ V), ∃ ε > 0, ∀ y, c - ε < y → y ≤ c → y ∈ V := _root_.GeneralTopology.line_open_left
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  def line : Metric ℝ where
+    dist x y := |x - y|
+    symm {x y} := abs_sub_comm x y
+    triangle x y z := abs_sub_le x y z
+    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+    ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
+
+  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+    fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
+
+  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+      (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
+    intro x hx
+    obtain ⟨a, ha, hau⟩ := hU x hx.1
+    obtain ⟨b, hb, hbv⟩ := hV x hx.2
+    refine ⟨min a b, lt_min ha hb, ?_⟩
+    intro y hy
+    rw [M.mem_ball] at hy
+    exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
+
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
+    intro x hx
+    obtain ⟨U, hUF, hxU⟩ := hx
+    obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
+    exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
+
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+    IsOpen := M.IsOpenSet
+    univ := M.isOpenSet_univ
+    inter := M.isOpenSet_inter
+    sUnion := M.isOpenSet_sUnion
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `line_open_right` and `line_open_left`. `hU c hc` produces the radius and the containment; `lt_min` and `min_le_left` handle the smaller of two candidates, and `show |c - y| < ε` restates the membership in the ball as the inequality `abs_lt` splits.
+stub_names:
+- line_open_right
+- line_open_left
+namespace: GeneralTopology
+seq: 165
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 175
+  closure_rounds: 1
+  check_kind: theorem

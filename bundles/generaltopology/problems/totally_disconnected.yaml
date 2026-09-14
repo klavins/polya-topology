@@ -1,0 +1,87 @@
+slug: totally_disconnected
+kind: example
+title: Totally Disconnected Spaces
+statement: |-
+  A space whose components are as small as they can be — every component a single point — is *totally disconnected*. The rationals with the distance they inherit from the line are the interesting example — between any two of them lies an irrational number to cut at — and a discrete space is the plain one.
+
+  In a discrete space let `S` be connected and contain `x`. The sets `{x}` and its complement are open, they cover `S` and they share no point of it, so `S` lies inside one of them; not inside the second, which leaves `x` out. So `S ⊆ {x}`, every connected set through `x` is `{x}` or empty, and the component of `x` is `{x}`.
+concepts:
+- components
+stub: |-
+  def Topology.IsTotallyDisconnected {X : Type u} (T : Topology X) : Prop := sorry
+
+  theorem discrete_isTotallyDisconnected (X : Type u) : (discrete X).IsTotallyDisconnected := sorry
+reference: |-
+  def Topology.IsTotallyDisconnected {X : Type u} (T : Topology X) : Prop :=
+    ∀ x, T.component x = {x}
+
+  theorem discrete_isTotallyDisconnected (X : Type u) : (discrete X).IsTotallyDisconnected := by
+    intro x
+    apply Set.Subset.antisymm
+    · rintro y ⟨S, ⟨hS, hxS⟩, hyS⟩
+      have hcov : S ⊆ {x} ∪ {x}ᶜ := by rw [Set.union_compl_self]; exact Set.subset_univ S
+      rcases hS {x} {x}ᶜ trivial trivial (fun _ _ h1 h2 => h2 h1) hcov with hs | hs
+      · exact hs hyS
+      · exact absurd (hs hxS) (fun hc => hc rfl)
+    · intro y hy
+      have e : y = x := hy
+      rw [e]
+      exact Topology.mem_component _ x
+spec: |-
+  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsTotallyDisconnected T ↔ (∀ x, T.component x = {x}) := by unfold _root_.GeneralTopology.Topology.IsTotallyDisconnected; first | exact Iff.rfl | grind
+  example : ∀ (X : Type u), (discrete X).IsTotallyDisconnected := _root_.GeneralTopology.discrete_isTotallyDisconnected
+  example (X : Type) (T : Topology X) :
+      T.IsTotallyDisconnected ↔ ∀ x, T.component x = {x} := Iff.rfl
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def discrete (X : Type u) : Topology X where
+    IsOpen := fun _ => True
+    univ := trivial
+    inter := fun _ _ => trivial
+    sUnion := fun _ => trivial
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
+
+  theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsConnectedSet {x} := by
+    intro U V _ _ _ hcov
+    have hx : x ∈ ({x} : Set X) := rfl
+    rcases hcov hx with h | h
+    · refine Or.inl fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+    · refine Or.inr fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+
+  def Topology.component {X : Type u} (T : Topology X) (x : X) : Set X :=
+    ⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S}
+
+  theorem Topology.mem_component {X : Type u} (T : Topology X) (x : X) : x ∈ T.component x :=
+    ⟨{x}, ⟨Topology.isConnectedSet_singleton T x, rfl⟩, rfl⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Topology.IsTotallyDisconnected`, which says that `T.component x = {x}` for every `x`, and prove `discrete_isTotallyDisconnected`. `Set.Subset.antisymm` splits the equality of sets; `trivial` proves openness in a discrete space, and `Set.union_compl_self` rewrites the cover to `Set.univ`.
+stub_names:
+- Topology.IsTotallyDisconnected
+- discrete_isTotallyDisconnected
+namespace: GeneralTopology
+seq: 176
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 541
+  closure_rounds: 1
+  check_kind: mixed

@@ -1,0 +1,65 @@
+slug: define_component
+kind: example
+title: The Component of a Point
+statement: |-
+  The *connected component* of `x` is the union of every connected set that contains `x`. All of those sets pass through `x`, so the union is connected by the problem just proved, and nothing connected containing `x` lies outside it: it is the largest connected set around `x`.
+
+  The point itself belongs to it, since `{x}` is one of the sets united.
+concepts:
+- components
+stub: |-
+  def Topology.component {X : Type u} (T : Topology X) (x : X) : Set X := sorry
+
+  theorem Topology.mem_component {X : Type u} (T : Topology X) (x : X) : x ∈ T.component x := sorry
+reference: |-
+  def Topology.component {X : Type u} (T : Topology X) (x : X) : Set X :=
+    ⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S}
+
+  theorem Topology.mem_component {X : Type u} (T : Topology X) (x : X) : x ∈ T.component x :=
+    ⟨{x}, ⟨Topology.isConnectedSet_singleton T x, rfl⟩, rfl⟩
+spec: |-
+  example {X : Type u} (T : Topology X) (x : X) : _root_.GeneralTopology.Topology.component T x = (⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S} : Set X) := rfl
+  example : ∀ {X : Type u} (T : Topology X) (x : X), x ∈ T.component x := _root_.GeneralTopology.Topology.mem_component
+  example (X : Type) (T : Topology X) (x y : X) :
+      y ∈ T.component x ↔ ∃ S, (T.IsConnectedSet S ∧ x ∈ S) ∧ y ∈ S := Iff.rfl
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
+
+  theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsConnectedSet {x} := by
+    intro U V _ _ _ hcov
+    have hx : x ∈ ({x} : Set X) := rfl
+    rcases hcov hx with h | h
+    · refine Or.inl fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+    · refine Or.inr fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Topology.component`, the union `⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S}`, and prove `Topology.mem_component`. The witness for the second is the singleton, whose connectedness is the previous problem and whose two memberships are `rfl`.
+stub_names:
+- Topology.component
+- Topology.mem_component
+namespace: GeneralTopology
+seq: 173
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 446
+  closure_rounds: 1
+  check_kind: mixed

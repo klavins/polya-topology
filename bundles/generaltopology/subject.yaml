@@ -21,6 +21,8 @@ description: |-
 
   **Separation Axioms** asks the first question one asks of a space: how well its open sets tell its points apart. Three conditions of increasing strength say that one of two distinct points has an open set the other misses, that each of them does, and that the two sets may be chosen disjoint — the last being the Hausdorff condition. Every metric space satisfies it, while the example spaces of the earlier sections fail the three at every level, which is what shows no two of them to be the same condition. Each has a second form written with closures: a space is T₁ exactly when its points are closed sets, T₀ exactly when the closure of a point determines the point, and Hausdorff exactly when the diagonal is closed in the square of the space. All three pass to a subspace, to a product and across a homeomorphism. Above them stand two more, separating a point from a closed set and then two closed sets from each other; a discrete space satisfies both, and every metric space is regular.
 
+  **Connectedness** asks whether a space is in one piece. A set both open and closed is a piece cut cleanly out of it, and a space with no such piece but the empty set and itself is connected; a subset is connected when no two open sets divide it, which says exactly that the space the subset inherits is connected. The codiscrete topology is connected and a two-point discrete space is not, and between the two extremes stands the theorem the subject has owed since the real line was defined: an interval does not fall apart, which is the least upper bound property in another form. A continuous map carries a connected set to a connected set, so no homeomorphism can tell a connected space from a disconnected one, and on the line that one sentence is the intermediate value theorem of calculus. What is not connected still decomposes: every point lies in a largest connected set, its component; the components are closed and partition the space, and in a discrete space they are the points themselves. The section ends with the everyday reason for believing a space to be in one piece, which is that one can walk across it — a path is a continuous map from the unit interval, and a space whose points are joined by paths is connected because the interval is.
+
   Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
@@ -831,16 +833,58 @@ concepts:
 - slug: regular_normal
   description: Above Hausdorff the axioms stop separating points from points. They separate a point from a closed set, and then two closed sets from one another, which is what the deeper theorems of the subject need. Each is stated on top of T₁, and that is what keeps the hierarchy a chain.
   kind: definition
-  goal: true
+  goal: false
   section: Separation Axioms
   section_order: 8
   title: Regular and Normal Spaces
   position: 44
+- slug: connected
+  description: 'A space may fall into pieces that no open set straddles, and a topology says so without any help from a distance: a set both open and closed is a piece cut cleanly out. A space with no such piece but the two it cannot avoid is connected. It is the first property we ask of a space as a whole rather than of its points, and a subset may be asked for it too.'
+  kind: definition
+  goal: false
+  section: Connectedness
+  section_order: 9
+  title: Connected Spaces
+  position: 45
+- slug: connected_examples
+  description: 'A definition earns its place by what it admits and what it rules out. At one extreme is a topology too coarse to cut anything out of a space; at the other, a two-point space that falls apart. Between them lies the theorem the subject has owed since the real line was defined: an interval does not fall apart, and the least upper bound property is what says so.'
+  kind: theorem
+  goal: false
+  section: Connectedness
+  section_order: 9
+  title: Spaces That Are Connected, and Spaces That Are Not
+  position: 46
+- slug: connected_images
+  description: 'A continuous map cannot tear a space apart, so it carries a connected set to a connected set: any division of the image pulls back to a division of the source. Connectedness is therefore a property of the space and not of the way it is presented, and on the line the theorem is the intermediate value theorem of calculus.'
+  kind: theorem
+  goal: false
+  section: Connectedness
+  section_order: 9
+  title: Connectedness Under Continuous Maps
+  position: 47
+- slug: components
+  description: A space that is not connected still decomposes. Each point lies in a largest connected set, its component; the components cover the space and never overlap in part, and each of them is closed, since the closure of a connected set is connected. At the far end from a connected space is one whose components are single points.
+  kind: definition
+  goal: false
+  section: Connectedness
+  section_order: 9
+  title: Connected Components
+  position: 48
+- slug: path_connected
+  description: The everyday reason for believing a space to be in one piece is that one can walk across it. A path is a continuous map from the unit interval into the space, and a space is path-connected when every two of its points are joined by one. Since the interval is connected, so is every space that is — and the walk is usually the easier thing to exhibit.
+  kind: definition
+  goal: true
+  section: Connectedness
+  section_order: 9
+  title: Paths
+  position: 49
 edges:
 - - closed_families
   - closure
 - - closed_sets
   - closed_families
+- - closed_sets
+  - connected
 - - closed_sets
   - open_closed_maps
 - - closed_sets
@@ -849,6 +893,8 @@ edges:
   - subspace_maps
 - - closure
   - closure_points
+- - closure
+  - components
 - - closure
   - continuity_closed
 - - closure
@@ -859,6 +905,20 @@ edges:
   - separation_closures
 - - cofinite_topology
   - separation_examples
+- - connected
+  - components
+- - connected
+  - connected_examples
+- - connected_examples
+  - connected_images
+- - connected_examples
+  - path_connected
+- - continuity_bridge
+  - path_connected
+- - continuity_closed
+  - path_connected
+- - continuity_examples
+  - path_connected
 - - continuity_examples
   - subspace_maps
 - - continuous_maps
@@ -875,6 +935,8 @@ edges:
   - induced_topology
 - - epsilon_delta
   - continuity_bridge
+- - extreme_topologies
+  - components
 - - extreme_topologies
   - continuity_examples
 - - extreme_topologies
@@ -943,6 +1005,8 @@ edges:
   - product_maps
 - - product_topology
   - separation_closures
+- - quotient_examples
+  - connected_examples
 - - quotient_space
   - quotient_examples
 - - real_line
@@ -966,11 +1030,15 @@ edges:
 - - sierpinski_space
   - topological_invariants
 - - subspace_topology
+  - connected
+- - subspace_topology
   - continuity_examples
 - - subspace_topology
   - induced_topology
 - - subspace_topology
   - separation_hereditary
+- - topological_invariants
+  - connected_examples
 - - topological_space
   - closed_sets
 - - topological_space
@@ -997,7 +1065,7 @@ provenance:
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: 542accd4b5a80e69900d3db82711f2228deb63b6
+  commit: 54e2f1e0f77aab35fa442511ece4f48909385e06
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

@@ -1,0 +1,148 @@
+slug: component_closed
+kind: example
+title: Components are Closed
+statement: |-
+  The closure of a connected set is connected. Let two open sets cover `T.closure S` and share none of its points. They cover `S` as well and share none of its points, so `S` lies inside one of them, say the first. Then `S` meets the second nowhere, so `S` lies inside the complement of the second, which is closed; and a closed set containing `S` contains its closure. Every point of the closure is thus outside the second set and so, by the cover, inside the first.
+
+  A component is then closed. Its closure is a connected set containing the point, so the closure lies back inside the component, and a set containing its own closure is closed.
+concepts:
+- components
+stub: |-
+  theorem Topology.isConnectedSet_closure {X : Type u} (T : Topology X) {S : Set X}
+      (hS : T.IsConnectedSet S) : T.IsConnectedSet (T.closure S) := sorry
+
+  theorem Topology.isClosed_component {X : Type u} (T : Topology X) (x : X) :
+      T.IsClosed (T.component x) := sorry
+reference: |-
+  theorem Topology.isConnectedSet_closure {X : Type u} (T : Topology X) {S : Set X}
+      (hS : T.IsConnectedSet S) : T.IsConnectedSet (T.closure S) := by
+    intro U V hU hV hno hcov
+    have hsub := Topology.subset_closure T S
+    have hVc : T.IsClosed Vᶜ := by show T.IsOpen _; rwa [compl_compl]
+    have hUc : T.IsClosed Uᶜ := by show T.IsOpen _; rwa [compl_compl]
+    rcases hS U V hU hV (fun x hx => hno x (hsub hx)) (fun x hx => hcov (hsub hx)) with hs | hs
+    · have hc : T.closure S ⊆ Vᶜ :=
+        Topology.closure_min T hVc (fun z hz => hno z (hsub hz) (hs hz))
+      exact Or.inl fun x hx => (hcov hx).resolve_right (hc hx)
+    · have hc : T.closure S ⊆ Uᶜ :=
+        Topology.closure_min T hUc (fun z hz hzU => hno z (hsub hz) hzU (hs hz))
+      exact Or.inr fun x hx => (hcov hx).resolve_left (hc hx)
+
+  theorem Topology.isClosed_component {X : Type u} (T : Topology X) (x : X) :
+      T.IsClosed (T.component x) := by
+    rw [Topology.isClosed_iff_closure_eq T]
+    refine Set.Subset.antisymm ?_ (Topology.subset_closure T _)
+    exact Topology.subset_component T
+      (Topology.isConnectedSet_closure T (Topology.isConnectedSet_component T x))
+      (Topology.subset_closure T _ (Topology.mem_component T x))
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) {S : Set X}
+      (hS : T.IsConnectedSet S), T.IsConnectedSet (T.closure S) := _root_.GeneralTopology.Topology.isConnectedSet_closure
+  example : ∀ {X : Type u} (T : Topology X) (x : X), T.IsClosed (T.component x) := _root_.GeneralTopology.Topology.isClosed_component
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
+    show T.IsOpen _
+    rw [Set.compl_sInter]
+    apply T.sUnion
+    rintro U ⟨C, hCF, rfl⟩
+    exact h C hCF
+
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+
+  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+    intro x hx C hC
+    exact hC.2 hx
+
+  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed (T.closure S) :=
+    T.isClosed_sInter (fun _ hC => hC.1)
+
+  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+      (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
+    intro x hx
+    exact hx C ⟨hC, hSC⟩
+
+  theorem Topology.isClosed_iff_closure_eq {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed S ↔ T.closure S = S := by
+    constructor
+    · intro hS
+      exact Set.Subset.antisymm (T.closure_min hS subset_rfl) (T.subset_closure S)
+    · intro h
+      rw [← h]
+      exact T.isClosed_closure S
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
+
+  theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsConnectedSet {x} := by
+    intro U V _ _ _ hcov
+    have hx : x ∈ ({x} : Set X) := rfl
+    rcases hcov hx with h | h
+    · refine Or.inl fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+    · refine Or.inr fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+
+  theorem Topology.isConnectedSet_sUnion {X : Type u} (T : Topology X) {F : Set (Set X)} {p : X}
+      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsConnectedSet S) : T.IsConnectedSet (⋃₀ F) := by
+    intro U V hU hV hno hcov
+    have key : ∀ S ∈ F, S ⊆ U ∨ S ⊆ V := fun S hSF => h S hSF U V hU hV
+      (fun x hx => hno x ⟨S, hSF, hx⟩) (fun x hx => hcov ⟨S, hSF, hx⟩)
+    by_cases hpU : p ∈ U
+    · left
+      rintro x ⟨S, hSF, hxS⟩
+      rcases key S hSF with hs | hs
+      · exact hs hxS
+      · exact (hno p ⟨S, hSF, hp S hSF⟩ hpU (hs (hp S hSF))).elim
+    · right
+      rintro x ⟨S, hSF, hxS⟩
+      rcases key S hSF with hs | hs
+      · exact absurd (hs (hp S hSF)) hpU
+      · exact hs hxS
+
+  def Topology.component {X : Type u} (T : Topology X) (x : X) : Set X :=
+    ⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S}
+
+  theorem Topology.mem_component {X : Type u} (T : Topology X) (x : X) : x ∈ T.component x :=
+    ⟨{x}, ⟨Topology.isConnectedSet_singleton T x, rfl⟩, rfl⟩
+
+  theorem Topology.isConnectedSet_component {X : Type u} (T : Topology X) (x : X) :
+      T.IsConnectedSet (T.component x) :=
+    Topology.isConnectedSet_sUnion T (fun _ hS => hS.2) (fun _ hS => hS.1)
+
+  theorem Topology.subset_component {X : Type u} (T : Topology X) {S : Set X} {x : X}
+      (hS : T.IsConnectedSet S) (hx : x ∈ S) : S ⊆ T.component x :=
+    fun _ hy => ⟨S, ⟨hS, hx⟩, hy⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.isConnectedSet_closure` and `Topology.isClosed_component`. `T.closure_min` wants the complement's closedness, which is `show T.IsOpen _` and then `rwa [compl_compl]`; `Or.resolve_right` turns the cover into a membership, and `T.isClosed_iff_closure_eq` reduces the second claim to two containments.
+stub_names:
+- Topology.isConnectedSet_closure
+- Topology.isClosed_component
+namespace: GeneralTopology
+seq: 175
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 504
+  closure_rounds: 1
+  check_kind: theorem

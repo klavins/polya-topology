@@ -153,6 +153,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@9c4b8d6
   file: PolyaTopology/GeneralTopology/Separation.lean
-  line: 555
+  line: 554
   closure_rounds: 1
   check_kind: theorem

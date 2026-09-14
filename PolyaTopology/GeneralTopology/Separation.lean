@@ -458,7 +458,6 @@ theorem Homeomorphic.isHausdorff {X : Type u} {Y : Type v} {T : Topology X} {T' 
 @concept regular_normal
 @title Regular and Normal Spaces
 @kind definition
-@goal
 
 Above Hausdorff the axioms stop separating points from points. They separate a point from a closed set, and then two closed sets from one another, which is what the deeper theorems of the subject need. Each is stated on top of T₁, and that is what keeps the hierarchy a chain.
 -/

@@ -1,0 +1,107 @@
+slug: component_maximal
+kind: example
+title: Components are Maximal, and Do Not Overlap
+statement: |-
+  Three statements say what a component is, and each is a line.
+
+  It is connected, being a union of connected sets through `x`. It contains every connected set containing `x`, being the union of them. And two components that meet are equal: if `y` lies in the component of `x`, then the component of `x` is a connected set containing `y`, so it lies inside the component of `y`; that carries `x` into the component of `y`, which then lies inside the component of `x` for the same reason.
+
+  So the components partition the space. Every point has one, and two of them are equal or share no point at all.
+concepts:
+- components
+stub: |-
+  theorem Topology.isConnectedSet_component {X : Type u} (T : Topology X) (x : X) :
+      T.IsConnectedSet (T.component x) := sorry
+
+  theorem Topology.subset_component {X : Type u} (T : Topology X) {S : Set X} {x : X}
+      (hS : T.IsConnectedSet S) (hx : x ∈ S) : S ⊆ T.component x := sorry
+
+  theorem Topology.component_eq_of_mem {X : Type u} (T : Topology X) {x y : X}
+      (h : y ∈ T.component x) : T.component y = T.component x := sorry
+reference: |-
+  theorem Topology.isConnectedSet_component {X : Type u} (T : Topology X) (x : X) :
+      T.IsConnectedSet (T.component x) :=
+    Topology.isConnectedSet_sUnion T (fun _ hS => hS.2) (fun _ hS => hS.1)
+
+  theorem Topology.subset_component {X : Type u} (T : Topology X) {S : Set X} {x : X}
+      (hS : T.IsConnectedSet S) (hx : x ∈ S) : S ⊆ T.component x :=
+    fun _ hy => ⟨S, ⟨hS, hx⟩, hy⟩
+
+  theorem Topology.component_eq_of_mem {X : Type u} (T : Topology X) {x y : X}
+      (h : y ∈ T.component x) : T.component y = T.component x := by
+    have h1 : T.component x ⊆ T.component y :=
+      Topology.subset_component T (Topology.isConnectedSet_component T x) h
+    have hx : x ∈ T.component y := h1 (Topology.mem_component T x)
+    exact Set.Subset.antisymm
+      (Topology.subset_component T (Topology.isConnectedSet_component T y) hx) h1
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) (x : X), T.IsConnectedSet (T.component x) := _root_.GeneralTopology.Topology.isConnectedSet_component
+  example : ∀ {X : Type u} (T : Topology X) {S : Set X} {x : X}
+      (hS : T.IsConnectedSet S) (hx : x ∈ S), S ⊆ T.component x := _root_.GeneralTopology.Topology.subset_component
+  example : ∀ {X : Type u} (T : Topology X) {x y : X}
+      (h : y ∈ T.component x), T.component y = T.component x := _root_.GeneralTopology.Topology.component_eq_of_mem
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
+
+  theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsConnectedSet {x} := by
+    intro U V _ _ _ hcov
+    have hx : x ∈ ({x} : Set X) := rfl
+    rcases hcov hx with h | h
+    · refine Or.inl fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+    · refine Or.inr fun y hy => ?_
+      have e : y = x := hy
+      rw [e]
+      exact h
+
+  theorem Topology.isConnectedSet_sUnion {X : Type u} (T : Topology X) {F : Set (Set X)} {p : X}
+      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsConnectedSet S) : T.IsConnectedSet (⋃₀ F) := by
+    intro U V hU hV hno hcov
+    have key : ∀ S ∈ F, S ⊆ U ∨ S ⊆ V := fun S hSF => h S hSF U V hU hV
+      (fun x hx => hno x ⟨S, hSF, hx⟩) (fun x hx => hcov ⟨S, hSF, hx⟩)
+    by_cases hpU : p ∈ U
+    · left
+      rintro x ⟨S, hSF, hxS⟩
+      rcases key S hSF with hs | hs
+      · exact hs hxS
+      · exact (hno p ⟨S, hSF, hp S hSF⟩ hpU (hs (hp S hSF))).elim
+    · right
+      rintro x ⟨S, hSF, hxS⟩
+      rcases key S hSF with hs | hs
+      · exact absurd (hs (hp S hSF)) hpU
+      · exact hs hxS
+
+  def Topology.component {X : Type u} (T : Topology X) (x : X) : Set X :=
+    ⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S}
+
+  theorem Topology.mem_component {X : Type u} (T : Topology X) (x : X) : x ∈ T.component x :=
+    ⟨{x}, ⟨Topology.isConnectedSet_singleton T x, rfl⟩, rfl⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.isConnectedSet_component`, `Topology.subset_component` and `Topology.component_eq_of_mem`. The first two are the union lemma and the definition read back; the third is `Set.Subset.antisymm` on the two containments the second supplies.
+stub_names:
+- Topology.isConnectedSet_component
+- Topology.subset_component
+- Topology.component_eq_of_mem
+namespace: GeneralTopology
+seq: 174
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 471
+  closure_rounds: 1
+  check_kind: theorem

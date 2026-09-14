@@ -16,7 +16,7 @@ follows the source.
 
 ## How a section is sized
 
-The eight built sections measure 4 to 7 concepts and 9 to 31 problems, in 280 to 780 lines. That
+The ten built sections measure 4 to 7 concepts and 9 to 31 problems, in 280 to 780 lines. That
 is the target: **five or six concepts and twelve to eighteen problems**, which is a section a
 coding agent can draft, compile and extract in one sitting. A section wanting more than that is
 two sections. Every proof stays under fifteen lines; where a step will not, the step becomes a
@@ -55,6 +55,13 @@ its eighteen problems exist only to keep a proof under fifteen lines — a posit
 distinct points, and the two facts about the closure of a single point — which is the cost the
 line limit charges, and it is paid in problems, not in prose. Budget one such helper per hard
 statement rather than hoping the proof will fit.
+
+§10 came in at 5 concepts, 20 problems and 674 lines, with the longest proof at fourteen. It is
+the second overshoot, and it names the two things that make one: a notion stated **both for a
+space and for a subset** costs three problems before it is used once — the two definitions, the
+lemmas that compare them, and the comparison — and a theorem resting on the least upper bound
+property costs four. Both are §12's bill as well, so **a section carrying either should be
+budgeted at twenty problems, and a section carrying both should be split**.
 
 ## The sections
 
@@ -452,7 +459,7 @@ statement rather than hoping the proof will fit.
 
 ---
 
-- [ ] **10. Connectedness** — `Connectedness.lean` · 5 concepts, ~14 problems
+- [x] **10. Connectedness** — `Connectedness.lean` · 5 concepts, 20 problems
 
   The first property that is about the whole space rather than its points. Builds on §5 and §7.
 
@@ -479,6 +486,68 @@ statement rather than hoping the proof will fit.
   what every proof here uses, and `Topology.sum` would drag a homeomorphism into each of them.
   If the equivalence is wanted, it is one problem at the end, with `Topology.continuous_sum_iff`
   for the two maps.
+
+  As built, and what it settled:
+
+  - The **`@goal` moved** from §9's `regular_normal` to `path_connected`, which is where the
+    course now ends.
+  - **Two definitions, and one bridge between them, in one direction.** `Topology.IsConnected` is
+    the clopen form — a set both open and closed is `∅` or `Set.univ` — and
+    `Topology.IsConnectedSet` is the ambient form: two open sets that cover `S` and share no point
+    of it never divide it, so `S ⊆ U ∨ S ⊆ V`. They meet once, at
+    `Topology.isConnected_subspace : T.IsConnectedSet A → (T.subspace A).IsConnected`, and that is
+    the only direction anything here wants (`path_connected_connected` is what wants it). The
+    converse was not built, and neither was the identification of `IsConnectedSet Set.univ` with
+    `IsConnected` — so **"the line is a connected space" is not a sentence this subject says**;
+    what it says is that every interval of the line is a connected set. The missing bridge is
+    about nine lines and one problem, and a later section that needs the space form should add it
+    rather than work around it. The plan's other equivalence — a space is connected when it is not
+    two nonempty disjoint opens — was not stated either: **the two-open form lives on sets and the
+    clopen form on spaces**, and no proof in the section wanted the two-open form of a space.
+  - **The side conditions are pointwise, not set equations.** `IsConnectedSet` writes disjointness
+    as `∀ x ∈ S, x ∈ U → x ∉ V` where the literature writes `S ∩ U ∩ V = ∅`. The mathematics is
+    the same and the Lean is not: with the set equation, six proofs each spend three lines
+    building or taking apart an intersection, and three of them then run past fifteen lines.
+    **State a side condition in the form the proofs consume it in** — §12's covers included.
+  - **The subtype juggling is two lemmas and eight lines.** `trace_eq_univ_iff` (the trace of `U`
+    on `A` is the whole subspace exactly when `A ⊆ U`) and `trace_split` (if the trace of `V` is
+    the complement of the trace of `U`, the two cover `A` and share none of its points) are all of
+    it, and the bridge above is eight lines on top of them. §12 should reuse the pair rather than
+    reopen the subspace topology.
+  - **The interval cost four problems, not half a section.** `define_interval` (with
+    `IsInterval.mem_of_le`, the weak-inequality form the definition does not state),
+    `line_reach`, `line_no_split` and `interval_connected`. The argument is `Real.exists_isLUB`
+    on `{x | a ≤ x ∧ x ≤ b ∧ x ∈ U}` and `IsLUB.exists_between` to approach the supremum from
+    within. Two things made it fit: splitting off the two ways an open set of the line reaches out
+    from a point of it (`line_open_right` rightwards to a bound, `line_open_left` leftwards a
+    little), and handling the two orders of `a` and `b` by applying one asymmetric lemma twice
+    with the sets exchanged, which costs two lines instead of a second copy of the proof.
+    **§12's closed interval should copy the shape**, and can reuse all three helpers.
+  - **The intermediate value theorem does not need the image theorem.** It is the connectedness of
+    `{x | a ≤ x ∧ x ≤ b}` against the preimages of the two open rays, thirteen lines, and the rays
+    (`line_isOpen_lt`, `line_isOpen_gt`) are the only new thing it wants. The image theorem is
+    still in the section — five lines, since every hypothesis is inherited by taking preimages —
+    and it is the shape §12's `compact_images` should copy.
+  - **`Homeomorphic.isConnected` used the pair §9 named** — `Homeomorphism.isOpen_iff` with
+    `.preimage_preimage` — exactly as §9 predicted for a property stated without points. Eleven
+    lines, and §12's compactness should expect the same.
+  - **The empty space is connected here.** The source excludes it and says the choice is a
+    convention; the clopen definition admits it, and nothing in the section turns on it.
+  - **Three of the flags' rulings were taken and one was not.** The converse half of "the
+    connected subsets of the line are the intervals" is prose, the rationals are named in prose as
+    the interesting totally disconnected space and not proved to be one, and connectedness is not
+    defined through `Topology.sum`. What was not taken: `path_connected` was **not** dropped —
+    it is what pays for the subspace bridge — but **the plane's path-connectedness was**, since it
+    needs path-connectedness transported along a homeomorphism and nothing else wants that lemma.
+  - **No new import**, so the fence has stood still for four sections. `Real.exists_isLUB`,
+    `IsLUB.exists_between`, `Set.ne_univ_iff_exists_notMem`, `Set.compl_univ_iff` and
+    `Set.not_subset` are all under what §7 left.
+  - **Twenty problems, 5 concepts, 674 lines**, with the longest proof at fourteen
+    (`Topology.isConnectedSet_sUnion`, `line_isPathConnected` and
+    `Topology.isConnected_of_isPathConnected`). Two above the band, and the cause is nameable as
+    §8's was: a notion stated **twice** — of a space and of a subset — costs three problems before
+    any mathematics is done with it, and a theorem resting on the least upper bound property costs
+    four. §12 owes both bills again; budget five concepts and twenty problems for it, or split it.
 
 - [ ] **11. Sequences and Convergence** — `Sequences.lean` · 5 concepts, ~14 problems
 
@@ -508,6 +577,10 @@ statement rather than hoping the proof will fit.
   — `Classical.choice` is on the check's axiom allowlist — but they are the two longest proofs in
   the section. That the line is complete is a real theorem, not a corollary of anything here;
   leave it stated in prose, or give it a section of its own later.
+  §10 leaves two things here. The `@goal` moves from its `path_connected` to this section's last
+  concept, as every section has moved it. And a side condition on two sets is to be written in the
+  form the proofs consume — pointwise, not as an equation between intersections; §10's
+  `Topology.IsConnectedSet` says why.
 
 - [ ] **12. Compactness** — `Compactness.lean` · 5 concepts, ~15 problems
 
@@ -531,6 +604,18 @@ statement rather than hoping the proof will fit.
   that it is attained — worth a helper.
   `unitInterval` is defined and `unitInterval_closed` is proved, in §8; `interval_compact` should
   be stated at that set rather than introducing an interval of its own.
+  §10 pays for a good deal of this section in advance, and the notes under it say so at length.
+  In short: state a cover's disjointness and its side conditions **pointwise**; define compactness
+  of a subset with opens of the ambient space and compare it to the subspace **once and in one
+  direction**, reusing `trace_eq_univ_iff` and `trace_split` rather than reopening
+  `Topology.subspace`; ask before building the space-versus-subset bridge at all what actually
+  needs the space form. `interval_compact`'s least upper bound argument should copy
+  `line_no_split`: `Real.exists_isLUB` on the points reached, `IsLUB.exists_between` to come at
+  the supremum from within, `line_open_right` and `line_open_left` for the two ways an open set of
+  the line reaches out from a point of it, and `IsInterval.mem_of_le` for the points between two
+  of a set's own. `Topology.isConnectedSet_image` is the five-line shape for `compact_images`, and
+  `Homeomorphic.isConnected` the eleven-line shape for compactness as a topological property.
+  Count the section at twenty problems, or split `interval_compact` off as §12½.
 
 - [ ] **13. Compact Hausdorff Spaces** — `CompactHausdorff.lean` · 5 concepts, ~13 problems
 
@@ -566,6 +651,11 @@ statement rather than hoping the proof will fit.
   is known closed. `IsSaturated` and `Topology.isOpen_image_of_saturated` are the closed-set form
   of the recognition; take them if `compact_to_hausdorff` wants a third problem, and skip them
   otherwise — nothing else in the roadmap needs saturation.
+  One thing §10 leaves for this section or a later one: **`IsConnectedSet Set.univ ↔ IsConnected`
+  was never proved**, so the subject cannot yet say "the line is a connected space", and a
+  statement pairing connectedness with compactness at the level of spaces will want it first. It
+  is nine lines: `S` and `Sᶜ` against the definition one way, and `Set.univ_subset_iff` with
+  `Set.compl_univ_iff` the other.
 
 ## What is deliberately left out
 
@@ -581,6 +671,7 @@ and why:
 | Urysohn's lemma, partitions of unity, paracompactness | the dyadic construction is a section on its own, and partitions of unity need bump functions, hence analysis |
 | Local compactness, one-point compactification, mapping spaces and the compact-open topology | reachable in principle; a later roadmap's business, once §13 is in |
 | Sequential compactness equivalent to compactness for metric spaces | needs completeness and total boundedness, both of which are theorems this subject has not built |
+| Locally connected and locally path-connected spaces, and π₀ as a space | the source wants them for the decomposition of a space into the disjoint union of its components, which needs an infinite sum; §10 stops at the components themselves |
 | Cell complexes, vector bundles, manifolds, tangent bundles | the source's part 2; needs analysis and smoothness, so out of reach entirely |
 
 ## Flags
@@ -609,7 +700,10 @@ two: `Setoid`, `Quotient` with its four operations, `Sum` with `Sum.elim` and `S
 and `Set.preimage_image_eq` beside `Set.preimage_inr_image_inl` are all reachable under what §7
 left, so `Mathlib.Data.Sum.Basic` was tested, found clean, and not needed. §9 added nothing
 either, so the fence has stood still for three sections: `Set.infinite_univ`,
-`Set.finite_singleton` and `Subtype.ext` are all under what §7 left. Test any further import
+`Set.finite_singleton` and `Subtype.ext` are all under what §7 left. §10 added nothing either — four
+sections now — and it is the section that most looked as though it would: the least upper bound
+property arrives as `Real.exists_isLUB` and `IsLUB.exists_between`, both under §4's
+`Mathlib.Algebra.Order.Archimedean.Real.Basic`, exactly as the paragraph below predicted. Test any further import
 before adding it; the command is in `STYLE.md`, and the message to grep for is
 `unknownIdentifier`, which Lean capitalizes.
 
@@ -695,6 +789,18 @@ one — never a redefinition.
   `Topology.isClosed_diagonal_of_isHausdorff`, `Topology.isHausdorff_of_isClosed_diagonal`
 - `Topology.isT0_subspace`, `Topology.isT1_subspace`, `Topology.isHausdorff_subspace`,
   `Topology.isHausdorff_prod`, `Homeomorphic.isHausdorff`
+- `Topology.IsConnected`, `Topology.IsConnectedSet`, `trace_eq_univ_iff`, `trace_split`,
+  `Topology.isConnected_subspace`, `codiscrete_isConnected`, `discrete_bool_not_isConnected`
+- `IsInterval`, `IsInterval.mem_of_le`, `line_open_right`, `line_open_left`, `line_no_split`,
+  `line_isConnectedSet_of_isInterval`, `line_isConnectedSet_segment`, `unitInterval_isConnectedSet`
+- `Topology.isConnectedSet_image`, `Homeomorphic.isConnected`, `line_isOpen_lt`, `line_isOpen_gt`,
+  `line_intermediate_value`
+- `Topology.isConnectedSet_singleton`, `Topology.isConnectedSet_sUnion`, `Topology.component`,
+  `Topology.mem_component`, `Topology.isConnectedSet_component`, `Topology.subset_component`,
+  `Topology.component_eq_of_mem`, `Topology.isConnectedSet_closure`, `Topology.isClosed_component`,
+  `Topology.IsTotallyDisconnected`, `discrete_isTotallyDisconnected`
+- `unitInterval.zero`, `unitInterval.one`, `Topology.IsPathConnected`, `line_isPathConnected`,
+  `Topology.isConnected_of_isPathConnected`
 
 Two in particular: §7's `Topology.induced` is the shape `Topology.subspace` already had
 (`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it and
@@ -733,6 +839,14 @@ it is followed first; follow it in every section from here. §9 did the same thr
 nothing stalled there either. Structure *fields* stay in dot form (`M.dist`, `M.triangle`,
 `M.symm`, `T.IsOpen`, `e.continuous_invFun`), since they arrive with the structure.
 
+§10 followed §9 exactly, and the line it drew is worth writing down, since it is the one both
+sections used: **dot notation stays in a statement, and never appears in a proof.** A type may say
+`T.subspace A`, `T.closure S`, `T.component x`, `M.toTopology` — a student reads those, and §9's
+`T.prod T` and `T.IsHausdorff` set the precedent — while a proof writes
+`Topology.subset_component T`, `Topology.closure_min T`, `IsInterval.mem_of_le h` and
+`Homeomorphism.isOpen_iff e`. A pulled statement is closed over what the build says the target
+depends on; a pulled *proof* is closed over its own tokens alone, which is where §6 stalled.
+
 ### Shapes that cost more than they look
 
 - **Generating a topology from a family.** Avoid it — see §7. Every construction in §7 and §8 is
@@ -741,7 +855,10 @@ nothing stalled there either. Structure *fields* stay in dot form (`M.dist`, `M.
 - **Subsets versus subspaces.** Compactness and connectedness are each stated twice in the
   literature — of a space, and of a subset. Define the subset version with opens of the ambient
   space, prove once that it agrees with the subspace being compact or connected, and never juggle
-  subtypes again.
+  subtypes again. §10 did this and can report the price: **two definitions, two trace lemmas and
+  a bridge, which is three problems before a single example is connected**, and only one direction
+  of the agreement was worth proving. Ask first what needs the space form. If nothing does — and
+  in §10 only path-connectedness did — the subset form alone is a section cheaper.
 - **Quotients.** This bullet is struck. `Quotient.lift` was not where §8 stalled — nothing was.
   The four names `Quotient.inductionOn`, `.sound`, `.exact` and `.lift` carry every statement
   about a quotient, the setoid rides as an explicit argument like a `Metric`, and no proof ever
@@ -766,8 +883,13 @@ nothing stalled there either. Structure *fields* stay in dot form (`M.dist`, `M.
 ### The expensive proofs
 
 In the order they arise, these are the ones to budget for and to split into helper problems:
-§10's connectedness of an interval; §11's two reverse halves, which pick a point from each of a
-shrinking sequence of balls; and, far above the rest, §12's compactness of a closed interval.
+§11's two reverse halves, which pick a point from each of a shrinking sequence of balls; and, far
+above the rest, §12's compactness of a closed interval.
+
+§10's connectedness of an interval is struck from this list, and what it cost is the estimate to
+carry forward: **four problems and about forty lines of Lean**, of which the argument proper is
+twelve. The three helpers are `IsInterval.mem_of_le`, `line_open_right` and `line_open_left`, and
+all three are reusable — §12 needs exactly them.
 
 §5's bridge between ε-δ and open sets was on this list and is struck from it: built, it is ten
 lines and wanted no helper, because §1's balls and §2's `Metric.toTopology` had already made the

@@ -1,0 +1,165 @@
+slug: interval_connected
+kind: example
+title: An Interval is Connected
+statement: |-
+  Suppose two open sets divide an interval `S`. Then some point of `S` escapes the first and some point escapes the second, and each of the two lies in the set the other escaped, since together they cover `S`. The two points are distinct, one being in the first set and the other not, so one lies to the left of the other — and either way the previous problem forbids it. Only the order of the two sets changes between the cases.
+
+  Two consequences follow at once. Every set `{x | a ≤ x ∧ x ≤ b}` is an interval, so every closed interval is connected; and `unitInterval` is such a set.
+concepts:
+- connected_examples
+stub: |-
+  theorem line_isConnectedSet_of_isInterval {S : Set ℝ} (h : IsInterval S) :
+      line.toTopology.IsConnectedSet S := sorry
+
+  theorem line_isConnectedSet_segment (a b : ℝ) :
+      line.toTopology.IsConnectedSet {x | a ≤ x ∧ x ≤ b} := sorry
+
+  theorem unitInterval_isConnectedSet : line.toTopology.IsConnectedSet unitInterval := sorry
+reference: |-
+  theorem line_isConnectedSet_of_isInterval {S : Set ℝ} (h : IsInterval S) :
+      line.toTopology.IsConnectedSet S := by
+    intro U V hU hV hno hcov
+    by_contra hcon
+    push Not at hcon
+    obtain ⟨a, haS, haU⟩ := Set.not_subset.mp hcon.1
+    obtain ⟨b, hbS, hbV⟩ := Set.not_subset.mp hcon.2
+    have haV : a ∈ V := (hcov haS).resolve_left haU
+    have hbU : b ∈ U := (hcov hbS).resolve_right hbV
+    rcases lt_or_gt_of_ne (fun e : a = b => haU (e ▸ hbU)) with hlt | hgt
+    · exact line_no_split h hV hU (fun x h1 h2 h3 => hno x h1 h3 h2)
+        (fun x hx => (hcov hx).symm) haS hbS haV hbU hlt
+    · exact line_no_split h hU hV hno hcov hbS haS hbU haV hgt
+
+  theorem line_isConnectedSet_segment (a b : ℝ) :
+      line.toTopology.IsConnectedSet {x | a ≤ x ∧ x ≤ b} :=
+    line_isConnectedSet_of_isInterval
+      (fun _ hx _ hy _ h1 h2 => ⟨le_trans hx.1 h1.le, le_trans h2.le hy.2⟩)
+
+  theorem unitInterval_isConnectedSet : line.toTopology.IsConnectedSet unitInterval :=
+    line_isConnectedSet_segment 0 1
+spec: |-
+  example : ∀ {S : Set ℝ} (h : IsInterval S), line.toTopology.IsConnectedSet S := _root_.GeneralTopology.line_isConnectedSet_of_isInterval
+  example : ∀ (a b : ℝ), line.toTopology.IsConnectedSet {x | a ≤ x ∧ x ≤ b} := _root_.GeneralTopology.line_isConnectedSet_segment
+  example : line.toTopology.IsConnectedSet unitInterval := _root_.GeneralTopology.unitInterval_isConnectedSet
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  def line : Metric ℝ where
+    dist x y := |x - y|
+    symm {x y} := abs_sub_comm x y
+    triangle x y z := abs_sub_le x y z
+    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+    ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
+
+  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+    fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
+
+  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+      (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
+    intro x hx
+    obtain ⟨a, ha, hau⟩ := hU x hx.1
+    obtain ⟨b, hb, hbv⟩ := hV x hx.2
+    refine ⟨min a b, lt_min ha hb, ?_⟩
+    intro y hy
+    rw [M.mem_ball] at hy
+    exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
+
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
+    intro x hx
+    obtain ⟨U, hUF, hxU⟩ := hx
+    obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
+    exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
+
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+    IsOpen := M.IsOpenSet
+    univ := M.isOpenSet_univ
+    inter := M.isOpenSet_inter
+    sUnion := M.isOpenSet_sUnion
+
+  def unitInterval : Set ℝ := {x | 0 ≤ x ∧ x ≤ 1}
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
+
+  def IsInterval (S : Set ℝ) : Prop :=
+    ∀ x ∈ S, ∀ y ∈ S, ∀ r, x < r → r < y → r ∈ S
+
+  theorem IsInterval.mem_of_le {S : Set ℝ} (h : IsInterval S) {a b x : ℝ} (ha : a ∈ S) (hb : b ∈ S)
+      (h1 : a ≤ x) (h2 : x ≤ b) : x ∈ S := by
+    rcases eq_or_lt_of_le h1 with rfl | hlt
+    · exact ha
+    rcases eq_or_lt_of_le h2 with rfl | hlt2
+    · exact hb
+    exact h a ha b hb x hlt hlt2
+
+  theorem line_open_right {U : Set ℝ} (hU : line.toTopology.IsOpen U) {c : ℝ} (hc : c ∈ U)
+      {b : ℝ} (hcb : c < b) : ∃ x, c < x ∧ x ≤ b ∧ x ∈ U := by
+    obtain ⟨ε, hε, hsub⟩ := hU c hc
+    have h1 : c < min (c + ε / 2) b := lt_min (by linarith) hcb
+    have h2 : min (c + ε / 2) b ≤ c + ε / 2 := min_le_left _ _
+    refine ⟨min (c + ε / 2) b, h1, min_le_right _ _, hsub ?_⟩
+    show |c - min (c + ε / 2) b| < ε
+    rw [abs_lt]
+    constructor <;> linarith
+
+  theorem line_open_left {V : Set ℝ} (hV : line.toTopology.IsOpen V) {c : ℝ} (hc : c ∈ V) :
+      ∃ ε > 0, ∀ y, c - ε < y → y ≤ c → y ∈ V := by
+    obtain ⟨ε, hε, hsub⟩ := hV c hc
+    refine ⟨ε, hε, fun y h1 h2 => hsub ?_⟩
+    show |c - y| < ε
+    rw [abs_lt]
+    constructor <;> linarith
+
+  theorem line_no_split {S U V : Set ℝ} (h : IsInterval S) (hU : line.toTopology.IsOpen U)
+      (hV : line.toTopology.IsOpen V) (hno : ∀ x ∈ S, x ∈ U → x ∉ V) (hcov : S ⊆ U ∪ V)
+      {a b : ℝ} (haS : a ∈ S) (hbS : b ∈ S) (haU : a ∈ U) (hbV : b ∈ V) (hab : a < b) : False := by
+    obtain ⟨c, hlub⟩ := Real.exists_isLUB (s := {x | a ≤ x ∧ x ≤ b ∧ x ∈ U})
+      ⟨a, le_refl a, hab.le, haU⟩ ⟨b, fun x hx => hx.2.1⟩
+    have hac : a ≤ c := hlub.1 ⟨le_refl a, hab.le, haU⟩
+    have hcb : c ≤ b := hlub.2 (fun x hx => hx.2.1)
+    have hcS : c ∈ S := IsInterval.mem_of_le h haS hbS hac hcb
+    have hcU : c ∉ U := fun hcU => by
+      obtain ⟨x, hcx, hxb, hxU⟩ :=
+        line_open_right hU hcU (lt_of_le_of_ne hcb fun e => hno c hcS hcU (e ▸ hbV))
+      exact absurd (hlub.1 ⟨hac.trans hcx.le, hxb, hxU⟩) (not_le.mpr hcx)
+    obtain ⟨ε, hε, hball⟩ := line_open_left hV ((hcov hcS).resolve_left hcU)
+    obtain ⟨x, hxA, hxgt, hxle⟩ := hlub.exists_between (show c - ε < c by linarith)
+    exact hno x (IsInterval.mem_of_le h haS hbS hxA.1 hxA.2.1) hxA.2.2 (hball x hxgt hxle)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `line_isConnectedSet_of_isInterval`, then `line_isConnectedSet_segment` and `unitInterval_isConnectedSet`. `by_contra` and `push Not` turn the goal into the two escaping points, `Set.not_subset` names them, and `Or.resolve_left` puts each into the set the other escaped.
+stub_names:
+- line_isConnectedSet_of_isInterval
+- line_isConnectedSet_segment
+- unitInterval_isConnectedSet
+namespace: GeneralTopology
+seq: 167
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 240
+  closure_rounds: 1
+  check_kind: theorem

@@ -1,0 +1,63 @@
+slug: subspace_trace
+kind: example
+title: The Trace of a Set on a Subspace
+statement: |-
+  A subset `A` of `X` is a space in its own right, and its open sets are the traces `Subtype.val ⁻¹' U` of the open sets of `X`. A point of the subspace is a point `x` of `X` carrying a proof that `x ∈ A`, written `⟨x, hx⟩`, and it lies in a trace exactly when `x` lies in the set traced. Two facts about traces are all we need.
+
+  The trace of `U` is the whole of the subspace exactly when `A` lies inside `U`.
+
+  And if the trace of `V` is the complement of the trace of `U`, then no point of `A` lies in both `U` and `V`, and `A` lies inside their union. One equation, read in its two directions, gives both.
+concepts:
+- connected
+stub: |-
+  theorem trace_eq_univ_iff {X : Type u} {A U : Set X} :
+      (Subtype.val ⁻¹' U : Set A) = Set.univ ↔ A ⊆ U := sorry
+
+  theorem trace_split {X : Type u} {A U V : Set X}
+      (h : (Subtype.val ⁻¹' U : Set A)ᶜ = Subtype.val ⁻¹' V) :
+      (∀ x ∈ A, x ∈ U → x ∉ V) ∧ A ⊆ U ∪ V := sorry
+reference: |-
+  theorem trace_eq_univ_iff {X : Type u} {A U : Set X} :
+      (Subtype.val ⁻¹' U : Set A) = Set.univ ↔ A ⊆ U := by
+    constructor
+    · intro h x hx
+      have hp : (⟨x, hx⟩ : A) ∈ (Subtype.val ⁻¹' U : Set A) := by rw [h]; trivial
+      exact hp
+    · intro h
+      apply Set.eq_univ_of_forall
+      intro p
+      exact h p.2
+
+  theorem trace_split {X : Type u} {A U V : Set X}
+      (h : (Subtype.val ⁻¹' U : Set A)ᶜ = Subtype.val ⁻¹' V) :
+      (∀ x ∈ A, x ∈ U → x ∉ V) ∧ A ⊆ U ∪ V := by
+    constructor
+    · intro x hxA hxU hxV
+      have hp : (⟨x, hxA⟩ : A) ∈ (Subtype.val ⁻¹' V : Set A) := hxV
+      rw [← h] at hp
+      exact hp hxU
+    · intro x hxA
+      by_cases hxU : x ∈ U
+      · exact Or.inl hxU
+      · have hp : (⟨x, hxA⟩ : A) ∈ (Subtype.val ⁻¹' U : Set A)ᶜ := hxU
+        rw [h] at hp
+        exact Or.inr hp
+spec: |-
+  example : ∀ {X : Type u} {A U : Set X}, (Subtype.val ⁻¹' U : Set A) = Set.univ ↔ A ⊆ U := _root_.GeneralTopology.trace_eq_univ_iff
+  example : ∀ {X : Type u} {A U V : Set X}
+      (h : (Subtype.val ⁻¹' U : Set A)ᶜ = Subtype.val ⁻¹' V), (∀ x ∈ A, x ∈ U → x ∉ V) ∧ A ⊆ U ∪ V := _root_.GeneralTopology.trace_split
+preamble: |
+  universe u v
+description: 'Prove `trace_eq_univ_iff` and `trace_split`. Each direction turns a point `x` of `A` into the point `(⟨x, hx⟩ : A)` of the subspace and rewrites its membership along the equation given; `Set.eq_univ_of_forall` proves a set is everything one point at a time.'
+stub_names:
+- trace_eq_univ_iff
+- trace_split
+namespace: GeneralTopology
+seq: 161
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 52
+  closure_rounds: 1
+  check_kind: theorem

@@ -1,0 +1,56 @@
+slug: image_connected
+kind: theorem
+title: The Continuous Image of a Connected Set
+statement: |-
+  Let `f` be continuous and let `S` be connected. Suppose two open sets cover `f '' S` and share none of its points. Their preimages are open, they cover `S`, and no point of `S` lies in both — every hypothesis is inherited by taking preimages, because a point of `S` lies in the preimage of a set exactly when its image lies in the set.
+
+  So `S` lies inside one of the preimages, and its image lies inside the corresponding set.
+concepts:
+- connected_images
+stub: |-
+  theorem Topology.isConnectedSet_image {X : Type u} {Y : Type v} (T : Topology X)
+      {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) {S : Set X}
+      (hS : T.IsConnectedSet S) : T'.IsConnectedSet (f '' S) := sorry
+reference: |-
+  theorem Topology.isConnectedSet_image {X : Type u} {Y : Type v} (T : Topology X)
+      {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) {S : Set X}
+      (hS : T.IsConnectedSet S) : T'.IsConnectedSet (f '' S) := by
+    intro U V hU hV hno hcov
+    rcases hS (f ⁻¹' U) (f ⁻¹' V) (hf U hU) (hf V hV)
+        (fun x hx => hno (f x) ⟨x, hx, rfl⟩) (fun x hx => hcov ⟨x, hx, rfl⟩) with h0 | h0
+    · exact Or.inl (Set.image_subset_iff.mpr h0)
+    · exact Or.inr (Set.image_subset_iff.mpr h0)
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X)
+      {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) {S : Set X}
+      (hS : T.IsConnectedSet S), T'.IsConnectedSet (f '' S) := _root_.GeneralTopology.Topology.isConnectedSet_image
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.isConnectedSet_image`. Each hypothesis for the preimages is one line, since a point of `f '' S` is `⟨x, hx, rfl⟩`; `Set.image_subset_iff` trades the image on the left of a containment for a preimage on the right.
+stub_names:
+- Topology.isConnectedSet_image
+namespace: GeneralTopology
+seq: 168
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 285
+  closure_rounds: 1
+  check_kind: theorem

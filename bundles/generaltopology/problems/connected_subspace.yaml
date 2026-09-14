@@ -1,0 +1,99 @@
+slug: connected_subspace
+kind: theorem
+title: A Connected Set is a Connected Space
+statement: |-
+  The two definitions now meet. A set is connected in the ambient sense exactly when the space it carries — the subspace topology — is connected, and it is the direction from the set to the space that we prove.
+
+  Let `W` be a set of the subspace that is both open and closed. Being open, `W` is the trace of an open `U`; being closed, its complement is the trace of an open `V`. The facts about traces turn that pair into two open sets covering `A` and sharing none of its points, so `A` lies inside one of them: inside `U`, and `W` is the whole subspace; inside `V`, and the complement of `W` is, so `W` is empty.
+concepts:
+- connected
+stub: |-
+  theorem Topology.isConnected_subspace {X : Type u} (T : Topology X) {A : Set X}
+      (h : T.IsConnectedSet A) : (T.subspace A).IsConnected := sorry
+reference: |-
+  theorem Topology.isConnected_subspace {X : Type u} (T : Topology X) {A : Set X}
+      (h : T.IsConnectedSet A) : (T.subspace A).IsConnected := by
+    rintro W ⟨U, hU, rfl⟩ ⟨V, hV, hVeq⟩
+    obtain ⟨hno, hcov⟩ := trace_split hVeq
+    rcases h U V hU hV hno hcov with h0 | h0
+    · exact Or.inr (trace_eq_univ_iff.mpr h0)
+    · left
+      have hu := trace_eq_univ_iff.mpr h0
+      rw [← hVeq] at hu
+      exact Set.compl_univ_iff.mp hu
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) {A : Set X}
+      (h : T.IsConnectedSet A), (T.subspace A).IsConnected := _root_.GeneralTopology.Topology.isConnected_subspace
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A where
+    IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U
+    univ := ⟨Set.univ, T.univ, rfl⟩
+    inter := by
+      rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
+      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
+    sUnion := by
+      intro F h
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      apply Set.Subset.antisymm
+      · rintro x ⟨V, hVF, hxV⟩
+        obtain ⟨U, hU, rfl⟩ := h V hVF
+        exact ⟨U, ⟨hU, hVF⟩, hxV⟩
+      · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
+        exact ⟨_, hUF, hxU⟩
+
+  def Topology.IsConnected {X : Type u} (T : Topology X) : Prop :=
+    ∀ S, T.IsOpen S → T.IsClosed S → S = ∅ ∨ S = Set.univ
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
+
+  theorem trace_eq_univ_iff {X : Type u} {A U : Set X} :
+      (Subtype.val ⁻¹' U : Set A) = Set.univ ↔ A ⊆ U := by
+    constructor
+    · intro h x hx
+      have hp : (⟨x, hx⟩ : A) ∈ (Subtype.val ⁻¹' U : Set A) := by rw [h]; trivial
+      exact hp
+    · intro h
+      apply Set.eq_univ_of_forall
+      intro p
+      exact h p.2
+
+  theorem trace_split {X : Type u} {A U V : Set X}
+      (h : (Subtype.val ⁻¹' U : Set A)ᶜ = Subtype.val ⁻¹' V) :
+      (∀ x ∈ A, x ∈ U → x ∉ V) ∧ A ⊆ U ∪ V := by
+    constructor
+    · intro x hxA hxU hxV
+      have hp : (⟨x, hxA⟩ : A) ∈ (Subtype.val ⁻¹' V : Set A) := hxV
+      rw [← h] at hp
+      exact hp hxU
+    · intro x hxA
+      by_cases hxU : x ∈ U
+      · exact Or.inl hxU
+      · have hp : (⟨x, hxA⟩ : A) ∈ (Subtype.val ⁻¹' U : Set A)ᶜ := hxU
+        rw [h] at hp
+        exact Or.inr hp
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `T.IsConnectedSet A` makes the subspace `A` a connected space. `rintro W ⟨U, hU, rfl⟩ ⟨V, hV, hVeq⟩` opens both hypotheses at once, naming the equation the closedness supplies, and `Set.compl_univ_iff` turns `Wᶜ = Set.univ` into `W = ∅`.
+stub_names:
+- Topology.isConnected_subspace
+namespace: GeneralTopology
+seq: 162
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 95
+  closure_rounds: 1
+  check_kind: theorem

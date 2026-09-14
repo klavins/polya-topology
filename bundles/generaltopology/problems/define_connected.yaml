@@ -1,0 +1,55 @@
+slug: define_connected
+kind: example
+title: Connected Spaces and Connected Sets
+statement: |-
+  A set that is both open and closed cuts the space in two: it and its complement are both open, they share no point, and together they are everything. Neither half can be reached from the other, and the topology sees no connection across the cut.
+
+  Every space has two such sets, the empty one and the whole space. A space is *connected* when it has no others.
+
+  A subset may be cut in the same way, and we ask the question with the open sets of the space around it rather than with those of the subspace. Two open sets that cover `S` and share no point of `S` divide it between them; `S` is connected when no such pair divides it, which is to say that `S` lies wholly inside one of the two.
+concepts:
+- connected
+stub: |-
+  def Topology.IsConnected {X : Type u} (T : Topology X) : Prop := sorry
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop := sorry
+reference: |-
+  def Topology.IsConnected {X : Type u} (T : Topology X) : Prop :=
+    ∀ S, T.IsOpen S → T.IsClosed S → S = ∅ ∨ S = Set.univ
+
+  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
+spec: |-
+  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsConnected T ↔ (∀ S, T.IsOpen S → T.IsClosed S → S = ∅ ∨ S = Set.univ) := by unfold _root_.GeneralTopology.Topology.IsConnected; first | exact Iff.rfl | grind
+  example {X : Type u} (T : Topology X) (S : Set X) : _root_.GeneralTopology.Topology.IsConnectedSet T S ↔ (∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V) := by unfold _root_.GeneralTopology.Topology.IsConnectedSet; first | exact Iff.rfl | grind
+  example (X : Type) (T : Topology X) (S : Set X) :
+      (T.IsConnected ↔ ∀ C, T.IsOpen C → T.IsClosed C → C = ∅ ∨ C = Set.univ)
+        ∧ (T.IsConnectedSet S ↔ ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) →
+            S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V) :=
+    ⟨Iff.rfl, Iff.rfl⟩
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Topology.IsConnected`, which says of a set that is open and closed — the two taken as separate hypotheses — that it is `∅` or `Set.univ`, the two disjuncts in that order. Then define `Topology.IsConnectedSet T S`: for all `U` and `V` with `T.IsOpen U`, `T.IsOpen V`, no point of `S` in both (written `∀ x ∈ S, x ∈ U → x ∉ V`) and `S ⊆ U ∪ V`, either `S ⊆ U` or `S ⊆ V`.'
+stub_names:
+- Topology.IsConnected
+- Topology.IsConnectedSet
+namespace: GeneralTopology
+seq: 160
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Connectedness.lean
+  line: 22
+  closure_rounds: 1
+  check_kind: mixed
