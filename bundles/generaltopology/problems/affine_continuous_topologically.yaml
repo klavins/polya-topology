@@ -1,0 +1,141 @@
+slug: affine_continuous_topologically
+kind: theorem
+title: The Affine Map, Read Topologically
+statement: |-
+  What the bridge buys, in one line. The affine map of the line was shown continuous by producing a `δ` for each `ε`; the bridge turns that, with no further work, into the statement that every open set of the line has an open preimage under it.
+
+  This is how every metric example enters the topological subject from here on. One proves the ε-δ statement, where the arithmetic lives, and reads off the topological one.
+concepts:
+- continuity_bridge
+stub: |-
+  theorem line_continuous_affine_top (a b : ℝ) (ha : a ≠ 0) :
+      line.toTopology.Continuous line.toTopology (fun t => a * t + b) := sorry
+reference: |-
+  theorem line_continuous_affine_top (a b : ℝ) (ha : a ≠ 0) :
+      line.toTopology.Continuous line.toTopology (fun t => a * t + b) :=
+    (line.continuous_iff line _).mp (line_continuous_affine a b ha)
+spec: 'example : ∀ (a b : ℝ) (ha : a ≠ 0), line.toTopology.Continuous line.toTopology (fun t => a * t + b) := _root_.GeneralTopology.line_continuous_affine_top'
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
+    M.eq_zero.mpr rfl
+
+  def line : Metric ℝ where
+    dist x y := |x - y|
+    symm {x y} := abs_sub_comm x y
+    triangle x y z := abs_sub_le x y z
+    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  theorem Metric.mem_ball_self {X : Type u} (M : Metric X) (x : X) (ε : ℝ) (h : 0 < ε) :
+      x ∈ M.ball x ε := by
+    rw [M.mem_ball, M.dist_self]
+    exact h
+
+  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+    ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
+
+  theorem Metric.isOpenSet_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.IsOpenSet (M.ball x ε) := by
+    intro y hy
+    rw [M.mem_ball] at hy
+    refine ⟨ε - M.dist x y, by linarith, ?_⟩
+    intro z hz
+    rw [M.mem_ball] at hz ⊢
+    have h := M.triangle x y z
+    linarith
+
+  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+    fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
+
+  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+      (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
+    intro x hx
+    obtain ⟨a, ha, hau⟩ := hU x hx.1
+    obtain ⟨b, hb, hbv⟩ := hV x hx.2
+    refine ⟨min a b, lt_min ha hb, ?_⟩
+    intro y hy
+    rw [M.mem_ball] at hy
+    exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
+
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
+    intro x hx
+    obtain ⟨U, hUF, hxU⟩ := hx
+    obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
+    exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
+
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+    IsOpen := M.IsOpenSet
+    univ := M.isOpenSet_univ
+    inter := M.isOpenSet_inter
+    sUnion := M.isOpenSet_sUnion
+
+  def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+      (x : X) : Prop :=
+    ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε
+
+  def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop :=
+    ∀ x, M.ContinuousAt N f x
+
+  theorem line_continuous_affine (a b : ℝ) (ha : a ≠ 0) :
+      line.Continuous line (fun t => a * t + b) := by
+    intro x ε hε
+    have hpos : 0 < |a| := abs_pos.mpr ha
+    refine ⟨ε / |a|, div_pos hε hpos, ?_⟩
+    intro x' h
+    have hx : |x - x'| < ε / |a| := h
+    show |(a * x + b) - (a * x' + b)| < ε
+    have e : (a * x + b) - (a * x' + b) = a * (x - x') := by ring
+    rw [e, abs_mul]
+    calc |a| * |x - x'| < |a| * (ε / |a|) := mul_lt_mul_of_pos_left hx hpos
+      _ = ε := mul_div_cancel₀ ε (ne_of_gt hpos)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Metric.continuous_iff {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) :
+      M.Continuous N f ↔ M.toTopology.Continuous N.toTopology f := by
+    constructor
+    · intro hf U hU x hx
+      obtain ⟨ε, hε, hball⟩ := hU (f x) hx
+      obtain ⟨δ, hδ, hδ'⟩ := hf x ε hε
+      exact ⟨δ, hδ, fun y hy => hball (hδ' y hy)⟩
+    · intro hf x ε hε
+      have hopen := hf (N.ball (f x) ε) (N.isOpenSet_ball (f x) ε)
+      obtain ⟨δ, hδ, hsub⟩ := hopen x (N.mem_ball_self (f x) ε hε)
+      exact ⟨δ, hδ, fun y hy => hsub hy⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `fun t => a * t + b` is continuous as a map of topological spaces when `a ≠ 0`. Take the left-to-right direction of the bridge and apply it to the problem already proved.
+stub_names:
+- line_continuous_affine_top
+namespace: GeneralTopology
+seq: 78
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 225
+  closure_rounds: 1
+  check_kind: theorem

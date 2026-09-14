@@ -1,0 +1,94 @@
+slug: continuous_extremes
+kind: example
+title: Out of the Discrete, Into the Codiscrete
+statement: |-
+  The two extreme topologies are extreme about maps as well, in opposite directions.
+
+  Out of a discrete space every map is continuous, whatever the target: the preimage is open because everything is. Into a codiscrete space every map is continuous, whatever the source: the only sets to pull back are the empty one and the whole space, and their preimages are the empty one and the whole space.
+
+  So neither extreme can tell any two maps apart, which is why both are useless alone and useful as bounds.
+concepts:
+- continuity_examples
+stub: |-
+  theorem continuous_from_discrete {X : Type u} {Y : Type v} (T' : Topology Y) (f : X → Y) :
+      (discrete X).Continuous T' f := sorry
+
+  theorem continuous_to_codiscrete {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) :
+      T.Continuous (codiscrete Y) f := sorry
+reference: |-
+  theorem continuous_from_discrete {X : Type u} {Y : Type v} (T' : Topology Y) (f : X → Y) :
+      (discrete X).Continuous T' f :=
+    fun _ _ => trivial
+
+  theorem continuous_to_codiscrete {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) :
+      T.Continuous (codiscrete Y) f := by
+    rintro U (rfl | rfl)
+    · rw [Set.preimage_empty]
+      exact T.empty
+    · rw [Set.preimage_univ]
+      exact T.univ
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T' : Topology Y) (f : X → Y), (discrete X).Continuous T' f := _root_.GeneralTopology.continuous_from_discrete
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y), T.Continuous (codiscrete Y) f := _root_.GeneralTopology.continuous_to_codiscrete
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
+    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+    rwa [Set.sUnion_empty] at h
+
+  def discrete (X : Type u) : Topology X where
+    IsOpen := fun _ => True
+    univ := trivial
+    inter := fun _ _ => trivial
+    sUnion := fun _ => trivial
+
+  theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
+      (hV : V = ∅ ∨ V = Set.univ) : U ∩ V = ∅ ∨ U ∩ V = Set.univ := by
+    rcases hU with rfl | rfl
+    · left; exact Set.empty_inter V
+    · rcases hV with rfl | rfl
+      · left; exact Set.inter_empty _
+      · right; exact Set.inter_self _
+
+  theorem trivial_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ U = Set.univ) : ⋃₀ F = ∅ ∨ ⋃₀ F = Set.univ := by
+    by_cases hu : (Set.univ : Set X) ∈ F
+    · exact Or.inr (Set.Subset.antisymm (Set.subset_univ _) (Set.subset_sUnion_of_mem hu))
+    · refine Or.inl (Set.sUnion_eq_empty.mpr ?_)
+      intro U hUF
+      rcases h U hUF with rfl | rfl
+      · rfl
+      · exact absurd hUF hu
+
+  def codiscrete (X : Type u) : Topology X where
+    IsOpen := fun U => U = ∅ ∨ U = Set.univ
+    univ := Or.inr rfl
+    inter := trivial_inter
+    sUnion := trivial_sUnion
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show the two. The first needs no case analysis at all. For the second, `rintro U (rfl | rfl)` splits the disjunction that defines an open set of the codiscrete topology, and `Set.preimage_empty` and `Set.preimage_univ` name the two preimages.
+stub_names:
+- continuous_from_discrete
+- continuous_to_codiscrete
+namespace: GeneralTopology
+seq: 83
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 355
+  closure_rounds: 1
+  check_kind: theorem

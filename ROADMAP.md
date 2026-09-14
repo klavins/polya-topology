@@ -16,7 +16,7 @@ follows the source.
 
 ## How a section is sized
 
-The four built sections measure 4 to 7 concepts and 9 to 31 problems, in 280 to 780 lines. That
+The five built sections measure 4 to 7 concepts and 9 to 31 problems, in 280 to 780 lines. That
 is the target: **five or six concepts and twelve to eighteen problems**, which is a section a
 coding agent can draft, compile and extract in one sitting. A section wanting more than that is
 two sections. Every proof stays under fifteen lines; where a step will not, the step becomes a
@@ -28,6 +28,9 @@ closure, and the three that characterise the interior — which is a shape the e
 did not use and which is worth reusing wherever a construction is pinned by a universal
 property: the parallel between the two is the lesson, and splitting it across six problems
 would hide it.
+
+§5 came in at 5 concepts, 16 problems and 460 lines, with the longest proof at twelve. It needed
+no new import at all, which is what the previous section's fence growth had already bought.
 
 ## The sections
 
@@ -80,33 +83,41 @@ would hide it.
   - `is_open_iff_interior_eq` is proved from §2's `union_of_opens_inside`, as the flag asked, so
     nothing was restated.
 
+- [x] **5. Continuous Functions** — `Continuity.lean` · 5 concepts, 16 problems
+
+  The ε-δ definition in a metric space, at a point and everywhere; continuity without distances,
+  as openness of preimages, with the identity, the constants and composition; the theorem that the
+  two agree; the closed-set form, the closure form and the pointwise form; and the definition
+  tested on the discrete, codiscrete, Sierpiński and subspace topologies.
+
+  Concepts: `epsilon_delta`, `continuous_maps`, `continuity_bridge`, `continuity_closed`,
+  `continuity_examples`.
+
+  As built, and what it settled:
+
+  - The **`@goal` moved** from §4's `dense_sets` to `continuity_examples`.
+  - **The bridge was not expensive.** The flag budgeted a helper problem in each direction; neither
+    was wanted. Each direction is four lines, because §1 and §2 had already done the translating:
+    a membership in a ball *is* the distance inequality it abbreviates, and `Metric.toTopology`
+    calls open exactly what the metric does, so the ε-δ data and the open-set data are the same
+    data and the proof only rearranges it. The remaining entry in "the four expensive proofs" list
+    below should be read with that in mind — a proof looks expensive until the definitions line up.
+  - **Two universes, at last.** `Topology.Continuous` relates a topology on `X` to one on `Y`, and
+    `sierpinski : Topology Bool` puts `Bool` at `Type 0` against an arbitrary `X : Type u`. So the
+    four continuity definitions and the theorems about them carry `{X : Type u} {Y : Type v}`, and
+    `continuous_comp` carries a third. The "keep both factors in `Type u`" note under **Shapes that
+    cost more than they look** is hereby spent: §7's products and §8's sums should follow suit
+    rather than forcing one universe. The cost is one binder per signature and the stub shows it,
+    so it costs the student nothing.
+  - **The Sierpiński classification is two problems, not one.** That a map `X → Bool` is continuous
+    exactly when `f ⁻¹' {true}` is open needs to know that the space has only three open sets, and
+    the trichotomy is a `Bool` case analysis that would push the main proof past fifteen lines. Split
+    out, it is six lines — `by_cases` twice, and `cases b` inside each — and it is a real statement
+    about the space rather than the membership tedium rule 6 warns against.
+  - `continuous_closure` came out at seven lines, as §4's flag predicted: `Set.image_subset_iff` and
+    then `T.closure_min`, with the preimage of a closed set closed.
+
 ---
-
-- [ ] **5. Continuous Functions** — `Continuity.lean` · 5 concepts, ~16 problems
-
-  The maps a topology admits. Builds on §1 (balls), §2, §3 (the three example topologies) and §4.
-
-  - `epsilon_delta` — continuity of a map between metric spaces at a point and everywhere;
-    constants, the identity, and an affine map of the line.
-  - `continuous_maps` — continuity as: the preimage of every open set is open. The identity,
-    constants, and the composite of two continuous maps.
-  - `continuity_bridge` — for metric spaces the two definitions agree. The theorem of the section.
-  - `continuity_closed` — equivalently, the preimage of every closed set is closed; a continuous
-    map carries the closure of a set into the closure of its image; continuity at a point, stated
-    with neighbourhoods.
-  - `continuity_examples` — every map out of a discrete space and every map into a codiscrete one
-    is continuous; a map to the Sierpiński space is continuous exactly when the preimage of the
-    open point is open, so that space classifies open sets; the inclusion of a subspace is
-    continuous.
-
-  Flags: the bridge is the longest proof here and may want a helper problem in each direction.
-  §4 left `continuity_closed` most of its work done: "carries the closure into the closure of the
-  image" is `T.closure_min` applied to the preimage of the target's closure, which is closed by
-  the concept's own first result and contains the set — three lines, not a section's worth. The
-  `@goal` sits on §4's `dense_sets` and moves here, to this section's last concept. This is also
-  the section that makes density worth having, so `continuity_examples` is the natural home for
-  the remark that two continuous maps agreeing on a dense set agree everywhere — if it is proved,
-  it needs Hausdorff and so belongs after §9, not here.
 
 - [ ] **6. Homeomorphisms** — `Homeomorphisms.lean` · 4 concepts, ~12 problems
 
@@ -125,7 +136,12 @@ would hide it.
     two spaces apart: the discrete and codiscrete topologies on a two-point set, and Sierpiński
     between them.
 
-  Flags: the source's examples here — the open interval homeomorphic to the line, stereographic
+  Flags: the `Homeomorphism` structure relates two spaces, so like §5's `Topology.Continuous` it
+  carries `{X : Type u} {Y : Type v}`, and its two continuity fields are `Topology.Continuous` in
+  each direction. `topological_invariants` has one invariant ready to hand already: §5 showed that
+  a map into the Sierpiński space *is* an open subset, so the two-point spaces are told apart by
+  counting the maps into them, with no new machinery. The source's examples here — the open
+  interval homeomorphic to the line, stereographic
   projection, the circle as a glued interval — need rational or transcendental functions and, for
   the last two, a square root. They are not available; the metric-equivalence example above
   carries the same lesson and costs nothing.
@@ -134,9 +150,11 @@ would hide it.
 
   The first constructions that make new spaces from old. Builds on §3's subspace and §5.
 
-  - `subspace_maps` — the inclusion is continuous; a map into a subspace is continuous exactly
-    when its composite with the inclusion is; the closed sets of a subspace are the traces of
-    closed sets; a subspace of a subspace.
+  - `subspace_maps` — a map into a subspace is continuous exactly when its composite with the
+    inclusion is; the closed sets of a subspace are the traces of closed sets; a subspace of a
+    subspace. **That the inclusion is continuous is already built** — §5's
+    `Topology.continuous_subspace_val`, with `Topology.continuous_restrict` beside it — so cite
+    those rather than restating them, and spend the room on the universal property instead.
   - `induced_topology` — the same construction along any map: the opens are the preimages of
     opens. The subspace topology of §3 is this, for the inclusion — an identification, not a new
     definition.
@@ -154,7 +172,10 @@ would hide it.
   topologies containing the family, and the latter needs a lattice structure on `Topology X` that
   nothing else in the subject wants. Define each construction directly, as §2 did. A *basis* can
   still be had cheaply as a property — every open is a union of members — and boxes shown to be
-  one. Fence grows by `Mathlib.Data.Set.Prod` (tested clean).
+  one. Fence grows by `Mathlib.Data.Set.Prod` (tested clean) — and, per the fence flag below, that
+  import widens the whole subject's fence, so test it against the five forbidden names first.
+  A product of two spaces at `Type u` and `Type v` lands in `Type (max u v)`; §5 already pays the
+  two-universe cost in every continuity signature, so follow it rather than forcing one universe.
 
 - [ ] **8. Quotients and Sums** — `Quotients.lean` · 4 concepts, ~12 problems
 
@@ -360,6 +381,12 @@ one — never a redefinition.
 - `Topology.closure`, `Topology.interior`, `Topology.boundary`, `Topology.Dense`,
   `Topology.closure_min`, `Topology.interior_max`, `Topology.mem_closure_iff`,
   `Metric.mem_closure_iff`, `Topology.dense_iff`, `Topology.compl_closure`, `rationals`
+- `Metric.ContinuousAt`, `Metric.Continuous`, `Topology.Continuous`, `Topology.ContinuousAt`,
+  `Topology.continuous_id`, `Topology.continuous_const`, `Topology.continuous_comp`,
+  `Metric.continuous_iff`, `Topology.continuous_iff_closed`, `Topology.continuous_closure`,
+  `Topology.continuous_iff_continuousAt`, `Topology.continuous_subspace_val`,
+  `Topology.continuous_restrict`, `continuous_from_discrete`, `continuous_to_codiscrete`,
+  `sierpinski_open_cases`, `sierpinski_continuous_iff`, `line_continuous_affine`
 
 Two in particular: §7's `induced_topology` is the shape `Topology.subspace` already has
 (`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it, proved by `rfl`;
@@ -376,16 +403,25 @@ that an open set is its own interior.
   space, prove once that it agrees with the subspace being compact or connected, and never juggle
   subtypes again.
 - **Quotients.** `Quot.lift`'s obligations are where a draft will stall; §8's flag says how.
-- **Universes.** Everything built so far is `Type u`. A product of spaces at two different
-  universes lands in `Type (max u v)`, which is fine but noisy in every signature; keep both
-  factors in `Type u` unless a problem genuinely needs otherwise.
+- **Universes.** §1 to §4 are all `Type u`. §5 is not, and could not be: `Topology.Continuous`
+  relates a topology on `X` to one on `Y`, and `sierpinski : Topology Bool` puts `Bool` at
+  `Type 0` against an arbitrary `X : Type u`, so the continuity definitions carry
+  `{X : Type u} {Y : Type v}` and `continuous_comp` carries a third. Every later construction
+  relating two spaces should do the same from the start rather than forcing one universe and
+  discovering the clash at the first concrete example. The noise is one binder per signature, the
+  stub shows it, and it costs the student nothing.
 - **Choice and computability.** `Classical.choice` is on the check's axiom allowlist, so `choose`
   and proof by contradiction are available, and a `noncomputable def` — which an infimum over a
   set of reals forces — passes the extractor's command allowlist.
 
-### The four expensive proofs
+### The expensive proofs
 
 In the order they arise, these are the ones to budget for and to split into helper problems:
-§5's bridge between ε-δ and open sets; §10's connectedness of an interval; §11's two reverse
-halves, which pick a point from each of a shrinking sequence of balls; and, far above the rest,
-§12's compactness of a closed interval.
+§10's connectedness of an interval; §11's two reverse halves, which pick a point from each of a
+shrinking sequence of balls; and, far above the rest, §12's compactness of a closed interval.
+
+§5's bridge between ε-δ and open sets was on this list and is struck from it: built, it is ten
+lines and wanted no helper, because §1's balls and §2's `Metric.toTopology` had already made the
+two sides the same data. Take the remaining three as estimates of the same kind — a proof looks
+expensive until the definitions line up, and the way to find out is to write the statement and
+see what the earlier sections hand over.

@@ -404,7 +404,6 @@ theorem Topology.boundary_eq_empty_iff {X : Type u} (T : Topology X) (S : Set X)
 @concept dense_sets
 @title Dense Subsets
 @kind definition
-@goal
 
 A set is dense when its closure is the whole space: every point is approached by it, and no nonempty open set avoids it. Density is how a small set stands in for a large one — the rationals for the line — and it is the first property of a subset that the topology alone can see, the metric having nothing to say about it.
 -/

@@ -1,0 +1,83 @@
+slug: continuous_iff_continuous_at
+kind: theorem
+title: Continuous Means Continuous at Each Point
+statement: |-
+  The two forms agree, as they did for a metric, and by the same equivalence the last section ended on: a set is open exactly when it is a neighbourhood of each of its points.
+
+  Forwards, a neighbourhood of `f x` holds an open `U` around `f x`; its preimage is open, contains `x`, and sits inside the preimage of the neighbourhood.
+
+  Backwards, take an open `U` and show its preimage is a neighbourhood of each of its own points. For a point `x` there, `U` is a neighbourhood of `f x`, being open and containing it, so the hypothesis at `x` gives what is wanted.
+concepts:
+- continuity_closed
+stub: |-
+  theorem Topology.continuous_iff_continuousAt {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (f : X → Y) : T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := sorry
+reference: |-
+  theorem Topology.continuous_iff_continuousAt {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (f : X → Y) : T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := by
+    constructor
+    · rintro hf x N ⟨U, hU, hxU, hUN⟩
+      exact ⟨f ⁻¹' U, hf U hU, hxU, fun y hy => hUN hy⟩
+    · intro hf U hU
+      rw [T.isOpen_iff_nbhd]
+      intro x hx
+      exact hf x U (T'.nbhd_of_isOpen hU hx)
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (f : X → Y), T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := _root_.GeneralTopology.Topology.continuous_iff_continuousAt
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
+    constructor
+    · intro hU x hx
+      exact T.nbhd_of_isOpen hU hx
+    · intro h
+      rw [T.union_of_opens_inside U h]
+      exact T.sUnion (fun V hV => hV.1)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  def Topology.ContinuousAt {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) (f : X → Y)
+      (x : X) : Prop :=
+    ∀ N, T'.IsNbhd (f x) N → T.IsNbhd x (f ⁻¹' N)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `T.Continuous T' f` exactly when `T.ContinuousAt T' f x` for every `x`. `T.isOpen_iff_nbhd` turns the goal of the second direction into a statement at each point, and `T'.nbhd_of_isOpen` makes an open set into a neighbourhood of a point of it.
+stub_names:
+- Topology.continuous_iff_continuousAt
+namespace: GeneralTopology
+seq: 82
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 322
+  closure_rounds: 1
+  check_kind: theorem

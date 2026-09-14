@@ -1,0 +1,55 @@
+slug: define_continuous_at
+kind: example
+title: Continuity at a Point, and Everywhere
+statement: |-
+  Let `f` carry one metric space to another. We say `f` is *continuous at* `x` when the image can be held as close to `f x` as we please: for every tolerance `ε > 0` there is a `δ > 0` such that every `x'` within `δ` of `x` has `f x'` within `ε` of `f x`.
+
+  The order of the quantifiers is the whole content. The tolerance `ε` is given first and `δ` is found in answer to it, so `δ` may depend on `ε` — and, since this is continuity at one point, on `x` too.
+
+  `f` is *continuous* when it is continuous at every point.
+concepts:
+- epsilon_delta
+stub: |-
+  def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+      (x : X) : Prop := sorry
+
+  def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop := sorry
+reference: |-
+  def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+      (x : X) : Prop :=
+    ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε
+
+  def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop :=
+    ∀ x, M.ContinuousAt N f x
+spec: |-
+  example {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+      (x : X) : _root_.GeneralTopology.Metric.ContinuousAt M N f x ↔ (∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε) := by unfold _root_.GeneralTopology.Metric.ContinuousAt; first | exact Iff.rfl | grind
+  example {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : _root_.GeneralTopology.Metric.Continuous M N f ↔ (∀ x, M.ContinuousAt N f x) := by unfold _root_.GeneralTopology.Metric.Continuous; first | exact Iff.rfl | grind
+  example (X Y : Type) (M : Metric X) (N : Metric Y) (f : X → Y) (x : X) :
+      (M.ContinuousAt N f x ↔ ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε)
+        ∧ (M.Continuous N f ↔ ∀ x, M.ContinuousAt N f x) :=
+    ⟨Iff.rfl, Iff.rfl⟩
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Metric.ContinuousAt`, taking a metric `M` on `X`, a metric `N` on `Y`, a map `f : X → Y` and a point `x`, and then `Metric.Continuous`, which says `f` is continuous at every point. Write the two distances as `M.dist x x''` and `N.dist (f x) (f x'')`. `∀ ε > 0, p ε` abbreviates `∀ ε, ε > 0 → p ε`.'
+stub_names:
+- Metric.ContinuousAt
+- Metric.Continuous
+namespace: GeneralTopology
+seq: 71
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 24
+  closure_rounds: 1
+  check_kind: mixed

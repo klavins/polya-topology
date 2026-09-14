@@ -1,0 +1,95 @@
+slug: continuous_closure
+kind: theorem
+title: A Continuous Map Respects Closures
+statement: |-
+  If `x` is approached by `S`, then `f x` is approached by the image of `S`. Said with closures: the image of the closure of `S` lies inside the closure of the image of `S`.
+
+  The proof is the closure's least property and nothing else. Pushing the image across, what is to be shown is that `S` lies inside the preimage of the closure of its image. That preimage is closed, being the preimage of a closed set, and it contains `S`, since each point of `S` has its image in the image; so it contains the closure of `S`, which is the claim.
+
+  Equality can fail, and the containment is the useful direction anyway.
+concepts:
+- continuity_closed
+stub: |-
+  theorem Topology.continuous_closure {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) (S : Set X) :
+      f '' (T.closure S) ⊆ T'.closure (f '' S) := sorry
+reference: |-
+  theorem Topology.continuous_closure {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) (S : Set X) :
+      f '' (T.closure S) ⊆ T'.closure (f '' S) := by
+    rw [Set.image_subset_iff]
+    apply T.closure_min
+    · exact (T.continuous_iff_closed T' f).mp hf _ (T'.isClosed_closure (f '' S))
+    · intro x hx
+      exact T'.subset_closure (f '' S) ⟨x, hx, rfl⟩
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) (S : Set X), f '' (T.closure S) ⊆ T'.closure (f '' S) := _root_.GeneralTopology.Topology.continuous_closure
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
+    show T.IsOpen _
+    rw [Set.compl_sInter]
+    apply T.sUnion
+    rintro U ⟨C, hCF, rfl⟩
+    exact h C hCF
+
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+
+  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+    intro x hx C hC
+    exact hC.2 hx
+
+  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed (T.closure S) :=
+    T.isClosed_sInter (fun _ hC => hC.1)
+
+  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+      (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
+    intro x hx
+    exact hx C ⟨hC, hSC⟩
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Topology.continuous_iff_closed {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : T.Continuous T' f ↔ ∀ C, T'.IsClosed C → T.IsClosed (f ⁻¹' C) := by
+    constructor
+    · intro hf C hC
+      show T.IsOpen _
+      rw [← Set.preimage_compl]
+      exact hf Cᶜ hC
+    · intro hf U hU
+      have hc : T'.IsClosed Uᶜ := by
+        show T'.IsOpen _
+        rwa [compl_compl]
+      have h : T.IsOpen (f ⁻¹' Uᶜ)ᶜ := hf Uᶜ hc
+      rw [Set.preimage_compl, compl_compl] at h
+      exact h
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `f '' (T.closure S) ⊆ T'.closure (f '' S)` for continuous `f`. `Set.image_subset_iff` trades the image on the left for a preimage on the right, and then `T.closure_min` asks for exactly the two facts above.
+stub_names:
+- Topology.continuous_closure
+namespace: GeneralTopology
+seq: 80
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 276
+  closure_rounds: 1
+  check_kind: theorem

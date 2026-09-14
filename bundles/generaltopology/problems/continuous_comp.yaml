@@ -1,0 +1,51 @@
+slug: continuous_comp
+kind: theorem
+title: The Composite of Two Continuous Maps
+statement: |-
+  Continuity composes, and the reason is that preimages compose: taking the preimage along `g ∘ f` is taking it along `g` and then along `f`.
+
+  So an open set upstairs is pulled back to an open set by `g`, and that one is pulled back to an open set by `f`. Nothing about topology enters beyond the definition, which is what one wants of a definition — the continuous maps are the ones a composition law can be built on.
+concepts:
+- continuous_maps
+stub: |-
+  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+      (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := sorry
+reference: |-
+  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+      (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := by
+    intro U hU
+    rw [Set.preimage_comp]
+    exact hf _ (hg U hU)
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+      (hf : T.Continuous T' f) (hg : T'.Continuous T'' g), T.Continuous T'' (g ∘ f) := _root_.GeneralTopology.Topology.continuous_comp
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `g ∘ f` is continuous when `f` and `g` are. `Set.preimage_comp` is the equation `g ∘ f ⁻¹' U = f ⁻¹' (g ⁻¹' U)`; after it, apply the two hypotheses in turn.
+stub_names:
+- Topology.continuous_comp
+namespace: GeneralTopology
+seq: 76
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 172
+  closure_rounds: 1
+  check_kind: theorem

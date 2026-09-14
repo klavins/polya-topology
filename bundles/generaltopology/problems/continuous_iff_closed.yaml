@@ -1,0 +1,59 @@
+slug: continuous_iff_closed
+kind: theorem
+title: Preimages of Closed Sets
+statement: |-
+  A map is continuous exactly when the preimage of every closed set is closed. Nothing is added: taking preimages commutes with complementing, `f ⁻¹' Cᶜ = (f ⁻¹' C)ᶜ`, so the two conditions are the same condition written on the two sides.
+
+  That equation, `Set.preimage_compl`, is the whole proof. It is worth noticing why it holds where the corresponding statement for images does not: a point is in the preimage of `Cᶜ` when its image avoids `C`, which is precisely when it avoids the preimage of `C`.
+concepts:
+- continuity_closed
+stub: |-
+  theorem Topology.continuous_iff_closed {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : T.Continuous T' f ↔ ∀ C, T'.IsClosed C → T.IsClosed (f ⁻¹' C) := sorry
+reference: |-
+  theorem Topology.continuous_iff_closed {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : T.Continuous T' f ↔ ∀ C, T'.IsClosed C → T.IsClosed (f ⁻¹' C) := by
+    constructor
+    · intro hf C hC
+      show T.IsOpen _
+      rw [← Set.preimage_compl]
+      exact hf Cᶜ hC
+    · intro hf U hU
+      have hc : T'.IsClosed Uᶜ := by
+        show T'.IsOpen _
+        rwa [compl_compl]
+      have h : T.IsOpen (f ⁻¹' Uᶜ)ᶜ := hf Uᶜ hc
+      rw [Set.preimage_compl, compl_compl] at h
+      exact h
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y), T.Continuous T' f ↔ ∀ C, T'.IsClosed C → T.IsClosed (f ⁻¹' C) := _root_.GeneralTopology.Topology.continuous_iff_closed
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `T.Continuous T' f` exactly when `T.IsClosed (f ⁻¹' C)` for every closed `C`. Both directions restate a closedness as the openness of a complement — `show T.IsOpen _` — and then move the complement across the preimage; `compl_compl` cancels the two that appear on the way back.
+stub_names:
+- Topology.continuous_iff_closed
+namespace: GeneralTopology
+seq: 79
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 249
+  closure_rounds: 1
+  check_kind: theorem

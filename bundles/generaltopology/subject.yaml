@@ -11,6 +11,8 @@ description: |-
 
   **Closure, Interior and Boundary** puts the apparatus to work on an arbitrary set. Every set sits inside a smallest closed set and around a largest open one; what lies between the two is its boundary, and it is empty exactly when the set is both open and closed. A point belongs to the closure exactly when the set is found arbitrarily near it, which in a metric space is a statement about balls. The section ends with the rationals, a countable set whose closure is the whole real line.
 
+  **Continuous Functions** says which maps a topology admits. We give the ε-δ definition first, for metric spaces, and then the definition that needs no distances: a map is continuous when the preimage of every open set is open. The two agree wherever both can be read, which is the theorem that licenses the abstract one. Continuity then has a closed-set form, a closure form and a pointwise form, and the section ends by testing the definition on the example spaces — where the two-point space turns out to record an open subset exactly, so that the maps into it are the open sets of the space they come from.
+
   Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
@@ -628,11 +630,51 @@ concepts:
 - slug: dense_sets
   description: 'A set is dense when its closure is the whole space: every point is approached by it, and no nonempty open set avoids it. Density is how a small set stands in for a large one — the rationals for the line — and it is the first property of a subset that the topology alone can see, the metric having nothing to say about it.'
   kind: definition
-  goal: true
+  goal: false
   section: Closure, Interior and Boundary
   section_order: 3
   title: Dense Subsets
   position: 20
+- slug: epsilon_delta
+  description: 'Continuity was defined for functions of a real variable long before topology existed: the image is held inside any tolerance we are given by holding the argument inside a tolerance we choose. Only distances are needed to say it, so it reads in any metric space — and it is the definition the abstract one will have to agree with.'
+  kind: definition
+  goal: false
+  section: Continuous Functions
+  section_order: 4
+  title: Continuity in a Metric Space
+  position: 21
+- slug: continuous_maps
+  description: 'A topological space has no distances, so continuity must be said without them. There is exactly one way, and it is the fact the last section''s open sets were for: a map is continuous when the preimage of every open set is open. Every statement about maps in the rest of the subject is made in that form.'
+  kind: definition
+  goal: false
+  section: Continuous Functions
+  section_order: 4
+  title: Continuity Without Distances
+  position: 22
+- slug: continuity_bridge
+  description: 'Two definitions of continuity are now in hand, one that needs distances and one that does not. They agree wherever both can be read: a map between metric spaces satisfies the ε-δ condition exactly when it is continuous for the topologies the metrics induce. This is what licenses the abstract definition, and it is the theorem this section is built around.'
+  kind: theorem
+  goal: false
+  section: Continuous Functions
+  section_order: 4
+  title: The Two Definitions Agree
+  position: 23
+- slug: continuity_closed
+  description: Open and closed carry the same information, so continuity has a closed-set form, and the two are one statement read through a complement. From it comes the sentence that says what continuity means for the closure operation — a continuous map does not tear a set away from the points it approaches — and the pointwise form that neighbourhoods make available.
+  kind: theorem
+  goal: false
+  section: Continuous Functions
+  section_order: 4
+  title: Closed Sets, Closures and Points
+  position: 24
+- slug: continuity_examples
+  description: 'The definition is tested against the spaces already built. A discrete space admits every map out of it and a codiscrete space every map into it, so neither constrains anything. The two-point space is the opposite: a map into it is nothing more nor less than an open subset of the space it comes from.'
+  kind: theorem
+  goal: true
+  section: Continuous Functions
+  section_order: 4
+  title: What the Definition Admits
+  position: 25
 edges:
 - - closed_families
   - closure
@@ -641,15 +683,31 @@ edges:
 - - closure
   - closure_points
 - - closure
+  - continuity_closed
+- - closure
   - interior_boundary
 - - closure_points
   - dense_sets
+- - continuous_maps
+  - continuity_bridge
+- - continuous_maps
+  - continuity_closed
+- - continuous_maps
+  - continuity_examples
+- - epsilon_delta
+  - continuity_bridge
+- - extreme_topologies
+  - continuity_examples
 - - metric_space
   - real_line
 - - metric_topology
   - closure_points
+- - metric_topology
+  - continuity_bridge
 - - neighbourhoods
   - closure_points
+- - neighbourhoods
+  - continuity_closed
 - - neighbourhoods
   - interior_boundary
 - - norm_metric
@@ -665,11 +723,19 @@ edges:
 - - open_sets
   - metric_topology
 - - real_line
+  - epsilon_delta
+- - real_line
   - open_ball
+- - sierpinski_space
+  - continuity_examples
+- - subspace_topology
+  - continuity_examples
 - - topological_space
   - closed_sets
 - - topological_space
   - cofinite_topology
+- - topological_space
+  - continuous_maps
 - - topological_space
   - extreme_topologies
 - - topological_space
@@ -686,7 +752,7 @@ provenance:
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: f78ebc246f570a4f3f809fbf6677938b557b4d44
+  commit: 40256f99156435c1f90be60cc08f065ba7a90a76
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

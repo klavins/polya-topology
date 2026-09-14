@@ -1,0 +1,55 @@
+slug: sierpinski_open_cases
+kind: theorem
+title: The Sierpiński Space Has Three Open Sets
+statement: |-
+  Before the map, the space. A subset of `Bool` is open in the Sierpiński topology when containing `false` forces containing `true`, and only three subsets pass: the empty set, `{true}`, and the whole space.
+
+  The argument is two questions. Does the set contain `false`? If so it contains `true` as well, and a subset of `Bool` containing both is everything. If not, does it contain `true`? If so it is `{true}` exactly, and if not it is empty.
+
+  A statement about every element of `Bool` is settled by checking the two, which `cases b` does.
+concepts:
+- continuity_examples
+stub: |-
+  theorem sierpinski_open_cases {U : Set Bool} (hU : sierpinski.IsOpen U) :
+      U = ∅ ∨ U = {true} ∨ U = Set.univ := sorry
+reference: |-
+  theorem sierpinski_open_cases {U : Set Bool} (hU : sierpinski.IsOpen U) :
+      U = ∅ ∨ U = {true} ∨ U = Set.univ := by
+    by_cases hf : false ∈ U
+    · exact Or.inr (Or.inr (Set.eq_univ_of_forall (fun b => by cases b; exacts [hf, hU hf])))
+    · by_cases ht : true ∈ U
+      · exact Or.inr (Or.inl (Set.ext (fun b => by cases b <;> simp [hf, ht])))
+      · exact Or.inl (Set.eq_empty_of_forall_notMem (fun b => by cases b <;> assumption))
+spec: 'example : ∀ {U : Set Bool} (hU : sierpinski.IsOpen U), U = ∅ ∨ U = {true} ∨ U = Set.univ := _root_.GeneralTopology.sierpinski_open_cases'
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def sierpinski : Topology Bool where
+    IsOpen := fun U => false ∈ U → true ∈ U
+    univ := fun _ => trivial
+    inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
+    sUnion := by
+      intro F h hf
+      obtain ⟨U, hUF, hU⟩ := hf
+      exact ⟨U, hUF, h U hUF hU⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that an open set of `sierpinski` is `∅`, `{true}`, or `Set.univ`. Split twice with `by_cases`, and build each equality with `Set.eq_univ_of_forall`, `Set.ext` or `Set.eq_empty_of_forall_notMem`; inside each, `cases b` leaves two goals that the hypotheses in hand close.
+stub_names:
+- sierpinski_open_cases
+namespace: GeneralTopology
+seq: 84
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 384
+  closure_rounds: 1
+  check_kind: theorem

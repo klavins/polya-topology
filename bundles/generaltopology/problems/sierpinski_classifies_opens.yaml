@@ -1,0 +1,78 @@
+slug: sierpinski_classifies_opens
+kind: theorem
+title: A Map to the Sierpiński Space is an Open Set
+statement: |-
+  Now the point of that space. A map `f : X → Bool` is continuous into the Sierpiński topology exactly when `f ⁻¹' {true}` is open — and every open subset of `X` arises this way, from the map sending its points to `true` and the rest to `false`.
+
+  So continuous maps into this one two-point space *are* the open subsets of a space, and the whole of a topology is recorded by the maps into it. This is the first sight of a pattern that runs through the subject: a construction is pinned down by the maps it admits.
+
+  One direction is the definition at `{true}`, which is open. The other is the three cases above.
+concepts:
+- continuity_examples
+stub: |-
+  theorem sierpinski_continuous_iff {X : Type u} (T : Topology X) (f : X → Bool) :
+      T.Continuous sierpinski f ↔ T.IsOpen (f ⁻¹' {true}) := sorry
+reference: |-
+  theorem sierpinski_continuous_iff {X : Type u} (T : Topology X) (f : X → Bool) :
+      T.Continuous sierpinski f ↔ T.IsOpen (f ⁻¹' {true}) := by
+    constructor
+    · intro hf
+      refine hf {true} ?_
+      intro h
+      simp at h
+    · intro h U hU
+      rcases sierpinski_open_cases hU with rfl | rfl | rfl
+      · rw [Set.preimage_empty]
+        exact T.empty
+      · exact h
+      · rw [Set.preimage_univ]
+        exact T.univ
+spec: 'example : ∀ {X : Type u} (T : Topology X) (f : X → Bool), T.Continuous sierpinski f ↔ T.IsOpen (f ⁻¹'' {true}) := _root_.GeneralTopology.sierpinski_continuous_iff'
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
+    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+    rwa [Set.sUnion_empty] at h
+
+  def sierpinski : Topology Bool where
+    IsOpen := fun U => false ∈ U → true ∈ U
+    univ := fun _ => trivial
+    inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
+    sUnion := by
+      intro F h hf
+      obtain ⟨U, hUF, hU⟩ := hf
+      exact ⟨U, hUF, h U hUF hU⟩
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem sierpinski_open_cases {U : Set Bool} (hU : sierpinski.IsOpen U) :
+      U = ∅ ∨ U = {true} ∨ U = Set.univ := by
+    by_cases hf : false ∈ U
+    · exact Or.inr (Or.inr (Set.eq_univ_of_forall (fun b => by cases b; exacts [hf, hU hf])))
+    · by_cases ht : true ∈ U
+      · exact Or.inr (Or.inl (Set.ext (fun b => by cases b <;> simp [hf, ht])))
+      · exact Or.inl (Set.eq_empty_of_forall_notMem (fun b => by cases b <;> assumption))
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `T.Continuous sierpinski f` exactly when `T.IsOpen (f ⁻¹' {true})`. Forwards, apply the hypothesis to `{true}`, whose openness holds because `false ∈ {true}` is absurd — `simp at h` disposes of it. Backwards, `rcases` the three cases and handle each preimage.
+stub_names:
+- sierpinski_continuous_iff
+namespace: GeneralTopology
+seq: 85
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 406
+  closure_rounds: 1
+  check_kind: theorem

@@ -82,6 +82,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@5060c35
   file: PolyaTopology/GeneralTopology/Closure.lean
-  line: 434
+  line: 433
   closure_rounds: 1
   check_kind: theorem

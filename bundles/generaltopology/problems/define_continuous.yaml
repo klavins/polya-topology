@@ -1,0 +1,46 @@
+slug: define_continuous
+kind: definition
+title: The Definition of a Continuous Map
+statement: |-
+  The ε-δ condition cannot be written where there are no distances. What can be written is its consequence: whenever a set is open downstream, the points that land in it form an open set upstream.
+
+  So a map between topological spaces is *continuous* when the preimage of every open set is open. Note the direction. The condition is on preimages and not on images, and a continuous map may well carry an open set to a set that is not open — that is a fact about images, not a defect of the definition.
+
+  We write `f ⁻¹' U` for the preimage `{x | f x ∈ U}`, and `x ∈ f ⁻¹' U` unfolds to `f x ∈ U`.
+concepts:
+- continuous_maps
+stub: |-
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop := sorry
+reference: |-
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+spec: |-
+  example {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : _root_.GeneralTopology.Topology.Continuous T T' f ↔ (∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)) := by unfold _root_.GeneralTopology.Topology.Continuous; first | exact Iff.rfl | grind
+  example (X Y : Type) (T : Topology X) (T' : Topology Y) (f : X → Y) :
+      T.Continuous T' f ↔ ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U) := Iff.rfl
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Topology.Continuous`, taking a topology `T` on `X`, a topology `T''` on `Y` and a map `f : X → Y`: every set `T''` calls open has a preimage `T` calls open.'
+stub_names:
+- Topology.Continuous
+namespace: GeneralTopology
+seq: 74
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 118
+  closure_rounds: 1
+  check_kind: definition

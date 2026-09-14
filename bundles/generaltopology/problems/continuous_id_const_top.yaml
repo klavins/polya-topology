@@ -1,0 +1,64 @@
+slug: continuous_id_const_top
+kind: example
+title: Constants and the Identity Again
+statement: |-
+  The same two maps, now without distances, and the proofs are shorter for it.
+
+  The identity takes each set to itself, so a preimage is the set it came from and openness is the hypothesis. A constant map with value `y` has only two possible preimages: everything, when `y` lies in the set, and nothing, when it does not. Both are open in any topology.
+concepts:
+- continuous_maps
+stub: |-
+  theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := sorry
+
+  theorem Topology.continuous_const {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (y : Y) : T.Continuous T' (fun _ => y) := sorry
+reference: |-
+  theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := by
+    intro U hU
+    rw [Set.preimage_id]
+    exact hU
+
+  theorem Topology.continuous_const {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (y : Y) : T.Continuous T' (fun _ => y) := by
+    intro U _
+    by_cases hy : y ∈ U
+    · rw [show (fun _ => y) ⁻¹' U = (Set.univ : Set X) from Set.eq_univ_of_forall (fun _ => hy)]
+      exact T.univ
+    · rw [show (fun _ => y) ⁻¹' U = (∅ : Set X) from Set.eq_empty_of_forall_notMem (fun _ => hy)]
+      exact T.empty
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X), T.Continuous T id := _root_.GeneralTopology.Topology.continuous_id
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (y : Y), T.Continuous T' (fun _ => y) := _root_.GeneralTopology.Topology.continuous_const
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
+    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+    rwa [Set.sUnion_empty] at h
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that the identity and a constant map are continuous. `Set.preimage_id` rewrites the first; for the second, split on `y ∈ U` with `by_cases` and identify the preimage with `Set.eq_univ_of_forall` or `Set.eq_empty_of_forall_notMem`, each taking a proof that ignores the point.
+stub_names:
+- Topology.continuous_id
+- Topology.continuous_const
+namespace: GeneralTopology
+seq: 75
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Continuity.lean
+  line: 143
+  closure_rounds: 1
+  check_kind: theorem

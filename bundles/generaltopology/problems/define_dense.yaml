@@ -39,6 +39,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@5060c35
   file: PolyaTopology/GeneralTopology/Closure.lean
-  line: 413
+  line: 412
   closure_rounds: 1
   check_kind: definition
