@@ -768,7 +768,7 @@ twice should stop and ask whether one of the two is the other's value at `Set.un
     cover by `{U | ∃ C ∈ E, U = Cᶜ}` and come back by `compl '' G` with `Set.Finite.image`.
     Build it in the section that first wants it.
   - **Nineteen problems, 5 concepts, 609 lines**, with the longest proof at fourteen (four of
-    them) and the longest declaration at sixteen. It is inside the band, which §10 predicted it
+    them) and the longest declaration at seventeen. It is inside the band, which §10 predicted it
     would not be: the twenty-problem budget was for a section stating a notion both of a space
     and of a subset, and defining the space form as the subset form at `Set.univ` is what bought
     the problem back.
