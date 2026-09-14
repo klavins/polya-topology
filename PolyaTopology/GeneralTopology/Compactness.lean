@@ -490,7 +490,6 @@ theorem Topology.exists_min_of_isCompactSet {X : Type u} (T : Topology X) {f : X
 @concept interval_compact
 @title The Closed Interval
 @kind theorem
-@goal
 
 The unit interval is compact, and the least upper bound property is what says so. It is the deepest fact in this section, and it is the reason the theorems above it are theorems of calculus: they hold on a closed interval because a closed interval is compact.
 -/

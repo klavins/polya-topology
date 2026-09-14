@@ -1,0 +1,150 @@
+slug: slice_compact
+kind: theorem
+title: A Fibre of a Product is Compact
+statement: The fibre `{x} ×ˢ B` is the image of `B` under the map pairing a point of the second factor with the fixed `x`, and that map was shown continuous when the product was built. The continuous image of a compact set is compact, so the fibre is compact in the product — and the product topology is never opened up to see it.
+concepts:
+- tube_lemma
+stub: |-
+  theorem Topology.isCompactSet_slice {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      {B : Set Y} (hB : T'.IsCompactSet B) (x : X) : (T.prod T').IsCompactSet ({x} ×ˢ B) := sorry
+reference: |-
+  theorem Topology.isCompactSet_slice {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      {B : Set Y} (hB : T'.IsCompactSet B) (x : X) : (T.prod T').IsCompactSet ({x} ×ˢ B) := by
+    have hc := Topology.isCompactSet_image T' (Topology.continuous_mk_right T T' x) hB
+    have he : (fun y => (x, y)) '' B = {x} ×ˢ B := by
+      apply Set.ext
+      intro p
+      constructor
+      · rintro ⟨y, hy, rfl⟩
+        exact ⟨rfl, hy⟩
+      · rintro ⟨h1, h2⟩
+        have e : p.1 = x := h1
+        exact ⟨p.2, h2, by rw [← e]⟩
+    rwa [he] at hc
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      {B : Set Y} (hB : T'.IsCompactSet B) (x : X), (T.prod T').IsCompactSet ({x} ×ˢ B) := _root_.GeneralTopology.Topology.isCompactSet_slice
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
+    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+    rwa [Set.sUnion_empty] at h
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
+    constructor
+    · intro hU x hx
+      exact T.nbhd_of_isOpen hU hx
+    · intro h
+      rw [T.union_of_opens_inside U h]
+      exact T.sUnion (fun V hV => hV.1)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := by
+    intro U hU
+    rw [Set.preimage_id]
+    exact hU
+
+  theorem Topology.continuous_const {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (y : Y) : T.Continuous T' (fun _ => y) := by
+    intro U _
+    by_cases hy : y ∈ U
+    · rw [show (fun _ => y) ⁻¹' U = (Set.univ : Set X) from Set.eq_univ_of_forall (fun _ => hy)]
+      exact T.univ
+    · rw [show (fun _ => y) ⁻¹' U = (∅ : Set X) from Set.eq_empty_of_forall_notMem (fun _ => hy)]
+      exact T.empty
+
+  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X × Y) where
+    IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
+    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    inter := by
+      rintro W W' hW hW' p hp
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
+      obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
+      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+        ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
+      rintro q ⟨hq1, hq2⟩
+      exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
+    sUnion := by
+      rintro F h p ⟨W, hWF, hpW⟩
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
+      exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
+
+  theorem Topology.continuous_prod_mk {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} (S : Topology Z) {f : Z → X} {g : Z → Y} (hf : S.Continuous T f)
+      (hg : S.Continuous T' g) : S.Continuous (T.prod T') (fun z => (f z, g z)) := by
+    intro W hW
+    rw [Topology.isOpen_iff_nbhd]
+    intro z hz
+    obtain ⟨U, V, hU, hV, hzUV, hsub⟩ := hW (f z, g z) hz
+    refine ⟨f ⁻¹' U ∩ g ⁻¹' V, S.inter (hf U hU) (hg V hV), ⟨hzUV.1, hzUV.2⟩, ?_⟩
+    intro w hw
+    exact hsub ⟨hw.1, hw.2⟩
+
+  theorem Topology.continuous_mk_right {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (x : X) : T'.Continuous (T.prod T') (fun y => (x, y)) :=
+    Topology.continuous_prod_mk T' (Topology.continuous_const T' T x) (Topology.continuous_id T')
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
+      T'.IsCompactSet (f '' S) := by
+    intro F hFo hcov
+    have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
+      intro x hxS
+      obtain ⟨U, hUF, hxU⟩ := hcov ⟨x, hxS, rfl⟩
+      exact ⟨f ⁻¹' U, ⟨U, hUF, rfl⟩, hxU⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hS {V | ∃ U ∈ F, V = f ⁻¹' U}
+      (by rintro V ⟨U, hUF, rfl⟩; exact hf U (hFo U hUF)) hpre
+    refine ⟨{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}, ?_, hGfin.dependent_image _, ?_⟩
+    · rintro U ⟨V, hV, rfl⟩
+      exact (hGF hV).choose_spec.1
+    · rintro y ⟨x, hxS, rfl⟩
+      obtain ⟨V, hVG, hxV⟩ := hGcov hxS
+      rw [(hGF hVG).choose_spec.2] at hxV
+      exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.isCompactSet_slice`. `Topology.continuous_mk_right` is the map and `Topology.isCompactSet_image` carries the compactness across it; what remains is the set equality `(fun y => (x, y)) '' B = {x} ×ˢ B`, proved by `Set.ext` at a point `p` and rebuilt from `p.1` and `p.2`.
+stub_names:
+- Topology.isCompactSet_slice
+namespace: GeneralTopology
+seq: 228
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
+  line: 347
+  closure_rounds: 1
+  check_kind: theorem

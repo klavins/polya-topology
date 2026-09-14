@@ -76,6 +76,12 @@ at `Set.univ`; the second cost four problems, the same as §10's own. **A sectio
 upper bound argument should be budgeted at four problems for it, and a section stating a notion
 twice should stop and ask whether one of the two is the other's value at `Set.univ`.**
 
+§13 came in at 5 concepts, 19 problems and 612 lines, with the longest proof at fifteen. Two of its
+nineteen problems and one of the three inductions below exist only to keep a proof under that limit,
+which is §9's bill again. The thing to carry forward is narrower than a count: **a section whose
+arguments all end in "finitely many, so one set serves them all" should budget one problem per such
+step**, and §13 had three.
+
 ## The sections
 
 - [x] **1. Metric Spaces** — `MetricSpaces.lean` · 7 concepts, 31 problems
@@ -773,7 +779,7 @@ twice should stop and ask whether one of the two is the other's value at `Set.un
     and of a subset, and defining the space form as the subset form at `Set.univ` is what bought
     the problem back.
 
-- [ ] **13. Compact Hausdorff Spaces** — `CompactHausdorff.lean` · 5 concepts, ~13 problems
+- [x] **13. Compact Hausdorff Spaces** — `CompactHausdorff.lean` · 5 concepts, 19 problems
 
   Where compactness and separation meet, and the results that make compact Hausdorff spaces the
   well-behaved corner of the subject. Builds on §9 and §12.
@@ -838,6 +844,98 @@ twice should stop and ask whether one of the two is the other's value at `Set.un
   with `unitInterval_exists_max` beside it, so `heine_borel` owes only the passage from that one
   interval to any closed interval and the two directions of "closed and bounded".
 
+  As built, and what it settled:
+
+  - The **`@goal` moved** from §12's `interval_compact` to `heine_borel`.
+  - **The section's first instruction was wrong, and the mistake is the most useful thing here.**
+    §12 said the first thing §13 should prove is that a finite intersection of open sets is open.
+    It was not built and should not be: forming `⋂₀` over a finite subcover means recovering, for
+    each member, the open set it was paired with, which is the choice plus
+    `Set.Finite.dependent_image` that §12 paid for. Carrying the *conclusion* through the
+    induction instead costs nothing — `Topology.exists_nbhd_disjoint_sUnion` produces the
+    intersection and its disjointness together and never names a family. **When finitely many
+    things each carry a partner, induct on the statement wanted, not on the intersection.**
+  - **Three inductions on `Set.Finite`, all of that shape, and none of them shareable.**
+    `Topology.exists_nbhd_disjoint_sUnion` (intersect opens to miss a union),
+    `Topology.exists_box_sUnion` (intersect opens so one box covers a union) and
+    `Topology.exists_finite_subcover_sUnion` (unite finitely many finite subcollections). Each is
+    twelve or thirteen lines and each is its own problem. §12's rule — one induction per "finitely
+    many, so there is a largest" — holds verbatim for "finitely many, so one open set serves them
+    all", and a section resting on compactness twice pays it twice.
+  - **A cover can be built to carry what the argument will want back.** Every compactness argument
+    here hands the compact set a cover whose defining predicate holds the datum needed later:
+    `{W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}` in the separation lemma,
+    `{V | T'.IsOpen V ∧ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W}` in the tube lemma,
+    `{U | T.IsOpen U ∧ ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H}` in the product. §12's
+    `Topology.isCompactSet_image` had to choose, with `(hGF hV).choose` and
+    `Set.Finite.dependent_image`, because a *preimage* does not remember what it came from; a cover
+    written for the argument does. **No problem in §13 uses choice**, and `dependent_image` is
+    still used exactly once in the subject.
+  - **One separation lemma carries the first three concepts.**
+    `Topology.exists_separating_of_isCompactSet` — if a set `A` is separated by neighbourhoods
+    from each point of a compact `K`, it is separated from `K` — is stated with a **set** on the
+    left, not a point, and that one generality gives the Hausdorff result (at `{x}`, three lines),
+    regularity (a closed set of a compact space is compact, four lines) and normality (at the
+    second closed set, with `Set.inter_comm` twice, twelve lines). The roadmap budgeted
+    `compact_in_hausdorff` at two problems and it came in at four, but `compact_normal` came in at
+    two, which is the same bill moved one concept earlier. **State a separation with a set on the
+    left from the start.**
+  - **The product is stated of sets, and of spaces only at `Set.univ`** — §12's lesson, applied
+    again and paid a second time. `heine_borel`'s plane needs a compact *box*, not a compact
+    product of spaces, so `Topology.isCompactSet_prod` is the theorem and `Topology.isCompact_prod`
+    is it plus `Set.univ_prod_univ`. Stated of spaces it would have wanted the subspace bridge §12
+    dropped.
+  - **Two topologies that have the same open sets should be proved equal, not merely
+    homeomorphic.** §7 built `supNorm_prod_homeomorphism`; §13 wanted
+    `supNorm.toMetric.toTopology = line.toTopology.prod line.toTopology`, which is
+    `Topology.eq_of_isOpen_iff` on §7's two implications and is three lines
+    (`supNorm_toTopology_eq_prod`). With the equation, `rw` moves a statement between the two
+    spaces and no map is carried through any proof; `Homeomorphic.isCompact` is never needed for
+    the plane. §6's `Metric.Equivalent.toHomeomorphism` is the other place this would pay.
+  - **A declaration name can be too long for the check to read, and the error says nothing about
+    that.** `Topology.exists_separating_point_of_isCompactSet` extracted as
+    `ERROR … could not verify axioms`, for no reason to do with the mathematics: Lean wraps
+    `#print axioms` output at 120 columns, and `'GeneralTopology.' + a 48-character name +
+    "' depends on axioms: [propext, Classical.choice, Quot.sound]"` is 125. `check/lean.py`'s
+    `axioms_of` reads one line and returns nothing. Renamed `Topology.exists_separating_point`, it
+    passes. **Keep a declaration name under about 43 characters** — the namespace prefix spends 16
+    of the budget — and read a bare "could not verify axioms" as a name-length failure before
+    looking for a mathematical one. (The robust fix belongs in MUPolya, not here.)
+  - **Nothing in this section was expensive.** The tube lemma is nine lines, the product of two
+    compact sets fourteen, and `compact_to_hausdorff`'s three results are four, eight and nine.
+    The one proof that ran past fifteen lines was the compactness of a closed interval, and the
+    cut is `line_image_unitInterval`: the affine image of the unit interval, stated on its own and
+    then transported. `field_simp` wants the non-vanishing denominator as a **named hypothesis**
+    (`have hne : b - a ≠ 0`) and closes without `ring` once it has one.
+  - **`Metric.isBounded ∅` needs a point of the space, and both Heine-Borel statements pay.** §12
+    noted it for `Metric.isBounded_of_isCompactSet`; here `Set.eq_empty_or_nonempty` stands at the
+    top of three of the four directions, and in the reverse direction it is also what supplies the
+    point proving the radius non-negative.
+  - **The fence did not move.** Eleven modules, as §12 left them: `Set.prod_empty`,
+    `Set.empty_prod`, `Set.univ_prod_univ`, `Set.image_preimage_eq`, `div_le_one`, `div_nonneg`,
+    `nlinarith` and `field_simp` are all under what §1, §4, §7 and §12 already had.
+  - **What was planned and dropped.** Properness, which the source proves beside the closed-map
+    result: nothing here or below needs it, and it is `Topology.isCompactSet_of_isClosed` twice
+    around `Topology.isClosed_of_isCompactSet`. And `IsSaturated`, which §12 offered as a third
+    problem for `compact_to_hausdorff`: `Topology.eq_coinduced_of_isCompact` proves the
+    recognition directly from the closed-map result and the surjectivity, in nine lines, with no
+    saturation anywhere. §10's `IsConnectedSet Set.univ ↔ IsConnected` is **still not proved** —
+    nothing in §13 wanted it either, so it passes to whatever section first pairs connectedness
+    with compactness at the level of spaces.
+  - **What §13 leaves for a §14.** `Topology.IsCompactSet` with `Topology.IsCompact` its value at
+    `Set.univ`; the subset-and-closed tool `Topology.isCompactSet_of_isClosed_subset`, which is the
+    §12 theorem with `Set.univ` replaced by a compact `K` and which every "compact because it sits
+    inside something compact" argument wants; `Topology.exists_separating_of_isCompactSet` and
+    `Topology.exists_separating_point` for every separation argument; `Topology.tube_lemma` and
+    `Topology.isCompactSet_prod`; `Homeomorphism.ofCompactToHausdorff` as the cheap way to produce
+    a homeomorphism; and `line_isCompactSet_iff` and `supNorm_isCompactSet_iff`, which decide
+    compactness on the line and on the plane by inspection. Local compactness, the one-point
+    compactification and the compact-open topology are the natural next section and are all inside
+    the fence: local compactness is `∀ x, ∃ K, T.IsCompactSet K ∧ T.IsNbhd x K`, the one-point
+    compactification is a topology on `Option X`, and neither needs a root. The compact-open
+    topology needs a topology *generated* by a family, which §7 ruled out — build it as a
+    `where`-bodied definition, as every construction since §7 has been, or leave it.
+
 ## What is deliberately left out
 
 The source continues past where this roadmap stops. These are the results that will not be built,
@@ -850,7 +948,7 @@ and why:
 | Limits and colimits in the category of spaces | the source's framing is categorical; §7 and §8 state each universal property concretely instead, and `Mathlib.CategoryTheory` is not to be imported |
 | Tychonoff's theorem for infinite products | needs Zorn's lemma or ultrafilters, and an infinite product needs a generated topology, which §7 rules out |
 | Urysohn's lemma, partitions of unity, paracompactness | the dyadic construction is a section on its own, and partitions of unity need bump functions, hence analysis |
-| Local compactness, one-point compactification, mapping spaces and the compact-open topology | reachable in principle; a later roadmap's business, once §13 is in |
+| Local compactness, one-point compactification, mapping spaces and the compact-open topology | reachable in principle, and now the natural next section — see what §13 leaves, under its entry above |
 | Sequential compactness equivalent to compactness for metric spaces | §11 defines completeness but proves no space complete, and total boundedness is not built at all; the equivalence needs both as theorems |
 | Locally connected and locally path-connected spaces, and π₀ as a space | the source wants them for the decomposition of a space into the disjoint union of its components, which needs an infinite sum; §10 stops at the components themselves |
 | Cell complexes, vector bundles, manifolds, tangent bundles | the source's part 2; needs analysis and smoothness, so out of reach entirely |
@@ -892,8 +990,10 @@ taken as an instance binder, which costs no import at all. §12 is the first sec
 `Set.Finite.sUnion` and `Set.Finite.dependent_image` live — neither is under
 `Mathlib.Data.Set.Finite.Basic`, which §3 already had, and a section about finite subcovers cannot
 do without them. It is clean against the five forbidden names, and the subject's fence is now the
-eleven modules `polya extract` reports. Test any further import
-before adding it; the command is in `STYLE.md`, and the message to grep for is
+eleven modules `polya extract` reports. §13 added nothing, so those eleven are the fence of the
+whole subject: `Set.prod_empty`, `Set.empty_prod`, `Set.univ_prod_univ`, `Set.image_preimage_eq`,
+`div_le_one`, `div_nonneg`, `nlinarith` and `field_simp` all sit under what §1, §4, §7 and §12
+already had. Test any further import before adding it; the command is in `STYLE.md`, and the message to grep for is
 `unknownIdentifier`, which Lean capitalizes.
 
 `Mathlib.Data.Real.Archimedean` is **deprecated** in this toolchain and emits a warning naming
@@ -1010,6 +1110,18 @@ one — never a redefinition.
   `Topology.exists_min_of_isCompactSet`
 - `CoveredUpTo`, `coveredUpTo_zero`, `coveredUpTo_insert`, `exists_coveredUpTo_of_isLUB`,
   `unitInterval_isCompactSet`, `unitInterval_exists_max`
+- `Topology.exists_nbhd_disjoint_sUnion`, `Topology.exists_separating_of_isCompactSet`,
+  `Topology.exists_separating_point`, `Topology.isClosed_of_isCompactSet`,
+  `Topology.isCompactSet_iff_isClosed`
+- `Topology.isClosedMap_of_isCompact`, `Homeomorphism.ofClosedMap`,
+  `Homeomorphism.ofCompactToHausdorff`, `Topology.eq_coinduced_of_isCompact`,
+  `Topology.isRegular_of_isCompact`, `Topology.isNormal_of_isCompact`
+- `Topology.exists_box_sUnion`, `Topology.tube_lemma`, `Topology.isCompactSet_slice`,
+  `Topology.exists_finite_subcover_sUnion`, `Topology.isCompactSet_prod`,
+  `Topology.isCompact_prod`
+- `Topology.isCompactSet_of_isClosed_subset`, `line_image_unitInterval`,
+  `line_isCompactSet_segment`, `line_isCompactSet_iff`, `supNorm_toTopology_eq_prod`,
+  `supNorm_ball_subset_box`, `supNorm_isCompactSet_box`, `supNorm_isCompactSet_iff`
 
 Two in particular: §7's `Topology.induced` is the shape `Topology.subspace` already had
 (`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it and
@@ -1053,6 +1165,15 @@ field of `Metric`**, so `M.ball a ε` inside a proof is dot notation on a local 
 written `Metric.ball M a ε`. Fields — `M.dist`, `M.symm`, `M.triangle`, `T.IsOpen` — stay in dot
 form wherever they appear, and everything else that is reached through the type of a local
 variable does not.
+
+§13 followed it too and nothing stalled, but it met a different extraction trap, which belongs
+here because the error message is as uninformative: **a declaration name can be too long for the
+check to read.** Lean wraps `#print axioms` output at 120 columns, and
+`'GeneralTopology.' + a 48-character name + "' depends on axioms: [propext, Classical.choice,
+Quot.sound]"` is 125, so `check/lean.py`'s `axioms_of` — which reads one line — returns nothing and
+the problem extracts as `ERROR … could not verify axioms`. Keep a declaration name **under about
+43 characters**, the namespace prefix spending 16 of the budget, and read that message as a
+name-length failure before looking for a mathematical one.
 
 §10 followed §9 exactly, and the line it drew is worth writing down, since it is the one both
 sections used: **dot notation stays in a statement, and never appears in a proof.** A type may say
@@ -1099,6 +1220,23 @@ depends on; a pulled *proof* is closed over its own tokens alone, which is where
   `[Module ℝ V]`: it is one binder in the signature, the stub shows it, and the alternative —
   `Classical.propDecidable` behind an `open Classical in` — cannot stand between a `@problem`
   docstring and its declaration.
+- **A finite intersection, as a lemma of its own.** §12 told §13 to prove first that a finite
+  intersection of open sets is open. Do not: forming `⋂₀` over a finite subcover means recovering,
+  for each member, the open set it was paired with, which is `Exists.choose` plus
+  `Set.Finite.dependent_image`. Carry the *conclusion* through the induction instead — the open
+  set, its property, and its disjointness or containment together — and no family is ever named.
+  §13 did that three times (`Topology.exists_nbhd_disjoint_sUnion`, `Topology.exists_box_sUnion`,
+  `Topology.exists_finite_subcover_sUnion`) and used choice in no problem at all.
+- **A cover built for the argument remembers what it was built from.** §12 had to choose because a
+  preimage does not remember its source. A cover written as
+  `{W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}` carries the partner in its defining
+  predicate, and `rintro`/`.2` takes it back out. Prefer this to a choice wherever the cover is the
+  proof's own construction.
+- **Two topologies on one set: prove the equation, not only the homeomorphism.** §7 gave the plane
+  and the product of two lines as homeomorphic; §13 wanted them equal, which is
+  `Topology.eq_of_isOpen_iff` on §7's two implications and is three lines. With the equation a `rw`
+  moves any statement between the two, and no proof carries a map. The homeomorphism is still the
+  right thing when the two sets differ.
 - **A definition beats its universal property, for a statement about open sets.** §9 planned three
   proofs around `Topology.continuous_prod_mk`, `Topology.continuous_into_subspace` and
   `Topology.isClosed_subspace_iff`, and all three came out shorter by reading `Topology.prod` and
@@ -1114,6 +1252,12 @@ Mathlib names doing the work. Five estimates in a row have come in under their b
 reason is always the one §5 gave: a proof looks expensive until the definitions line up, and the
 way to find out is to write the statement and see what the earlier sections hand over. Nothing in
 §13 is billed as expensive; if something turns out to be, it belongs here with what it cost.
+
+§13 was billed with nothing and cost nothing: the tube lemma is nine lines, the product of two
+compact sets fourteen, and the three results of `compact_to_hausdorff` are four, eight and nine.
+What it did cost is three inductions on `Set.Finite` and one split of an over-long proof
+(`line_image_unitInterval`, cut out of the compactness of a closed interval), which is the shape a
+section resting on compactness should budget for instead.
 
 §10's connectedness of an interval is struck from this list, and what it cost is the estimate to
 carry forward: **four problems and about forty lines of Lean**, of which the argument proper is

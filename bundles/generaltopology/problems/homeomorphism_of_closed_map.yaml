@@ -1,0 +1,227 @@
+slug: homeomorphism_of_closed_map
+kind: example
+title: A Continuous Closed Bijection is a Homeomorphism
+statement: |-
+  A continuous bijection that is an open map is a homeomorphism; one that is a closed map is a homeomorphism too, for the same reason with a complement inserted. The preimage of an open `U` under the inverse is the image of `U` under the map, which is the complement of the image of `Uᶜ` — and the closed-map hypothesis calls that image closed.
+
+  With the last problem the hypothesis comes free. A continuous bijection from a compact space to a Hausdorff space is a homeomorphism, and no property of the inverse has to be checked at all.
+concepts:
+- compact_to_hausdorff
+stub: |-
+  def Homeomorphism.ofClosedMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      {f : X → Y} {g : Y → X} (hf : T.Continuous T' f) (hclosed : T.IsClosedMap T' f)
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) : Homeomorphism T T' := sorry
+
+  def Homeomorphism.ofCompactToHausdorff {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y} {g : Y → X}
+      (hf : T.Continuous T' f) (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) :
+      Homeomorphism T T' := sorry
+reference: |-
+  def Homeomorphism.ofClosedMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      {f : X → Y} {g : Y → X} (hf : T.Continuous T' f) (hclosed : T.IsClosedMap T' f)
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) : Homeomorphism T T' where
+    toFun := f
+    invFun := g
+    left_inv := hgf
+    right_inv := hfg
+    continuous_toFun := hf
+    continuous_invFun := by
+      intro U hU
+      have hc : T.IsClosed Uᶜ := by
+        show T.IsOpen _
+        rw [compl_compl]
+        exact hU
+      have h : T'.IsOpen (f '' Uᶜ)ᶜ := hclosed Uᶜ hc
+      rwa [image_eq_preimage_of_inverse hgf hfg Uᶜ, Set.preimage_compl, compl_compl] at h
+
+  def Homeomorphism.ofCompactToHausdorff {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y} {g : Y → X}
+      (hf : T.Continuous T' f) (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) :
+      Homeomorphism T T' :=
+    Homeomorphism.ofClosedMap hf (Topology.isClosedMap_of_isCompact T T' hX hY hf) hgf hfg
+spec: |-
+  example (X Y : Type) (T : Topology X) (T' : Topology Y) (f : X → Y) (g : Y → X)
+      (hX : T.IsCompact) (hY : T'.IsHausdorff) (hf : T.Continuous T' f)
+      (hclosed : T.IsClosedMap T' f) (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y)
+      (x : X) (y : Y) :
+      (_root_.GeneralTopology.Homeomorphism.ofClosedMap hf hclosed hgf hfg).toFun x = f x
+        ∧ (_root_.GeneralTopology.Homeomorphism.ofClosedMap hf hclosed hgf hfg).invFun y = g y
+        ∧ (_root_.GeneralTopology.Homeomorphism.ofCompactToHausdorff hX hY hf hgf hfg).toFun x = f x
+        ∧ (_root_.GeneralTopology.Homeomorphism.ofCompactToHausdorff hX hY hf hgf hfg).invFun y = g y :=
+    ⟨rfl, rfl, rfl, rfl⟩
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
+    constructor
+    · intro hU x hx
+      exact T.nbhd_of_isOpen hU hx
+    · intro h
+      rw [T.union_of_opens_inside U h]
+      exact T.sUnion (fun V hV => hV.1)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  def Topology.IsClosedMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ C, T.IsClosed C → T'.IsClosed (f '' C)
+
+  theorem image_eq_preimage_of_inverse {X : Type u} {Y : Type v} {f : X → Y} {g : Y → X}
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) (U : Set X) : f '' U = g ⁻¹' U := by
+    apply Set.ext
+    intro y
+    constructor
+    · rintro ⟨x, hx, rfl⟩
+      show g (f x) ∈ U
+      rw [hgf]
+      exact hx
+    · intro hy
+      exact ⟨g y, hy, hfg y⟩
+
+  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+
+  theorem Topology.isCompactSet_of_isClosed {X : Type u} (T : Topology X) (hT : T.IsCompact)
+      {C : Set X} (hC : T.IsClosed C) : T.IsCompactSet C := by
+    intro F hFo hcov
+    have hopen : ∀ U ∈ insert Cᶜ F, T.IsOpen U := by
+      rintro U (rfl | hU)
+      exacts [hC, hFo U hU]
+    have huniv : (Set.univ : Set X) ⊆ ⋃₀ insert Cᶜ F := by
+      intro x _
+      by_cases hxC : x ∈ C
+      · obtain ⟨U, hUF, hxU⟩ := hcov hxC
+        exact ⟨U, Set.mem_insert_of_mem _ hUF, hxU⟩
+      · exact ⟨Cᶜ, Set.mem_insert _ _, hxC⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hT _ hopen huniv
+    refine ⟨G ∩ F, Set.inter_subset_right, hGfin.subset Set.inter_subset_left, fun x hx => ?_⟩
+    obtain ⟨U, hUG, hxU⟩ := hGcov (Set.mem_univ x)
+    exact ⟨U, ⟨hUG, (hGF hUG).resolve_left (fun e => (e ▸ hxU) hx)⟩, hxU⟩
+
+  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
+      T'.IsCompactSet (f '' S) := by
+    intro F hFo hcov
+    have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
+      intro x hxS
+      obtain ⟨U, hUF, hxU⟩ := hcov ⟨x, hxS, rfl⟩
+      exact ⟨f ⁻¹' U, ⟨U, hUF, rfl⟩, hxU⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hS {V | ∃ U ∈ F, V = f ⁻¹' U}
+      (by rintro V ⟨U, hUF, rfl⟩; exact hf U (hFo U hUF)) hpre
+    refine ⟨{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}, ?_, hGfin.dependent_image _, ?_⟩
+    · rintro U ⟨V, hV, rfl⟩
+      exact (hGF hV).choose_spec.1
+    · rintro y ⟨x, hxS, rfl⟩
+      obtain ⟨V, hVG, hxV⟩ := hGcov hxS
+      rw [(hGF hVG).choose_spec.2] at hxV
+      exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
+
+  theorem Topology.exists_nbhd_disjoint_sUnion {X : Type u} (T : Topology X) {A : Set X}
+      {G : Set (Set X)} (hfin : G.Finite)
+      (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ V = ∅) :
+      ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ ⋃₀ G = ∅ := by
+    induction G, hfin using Set.Finite.induction_on with
+    | empty => exact ⟨Set.univ, T.univ, Set.subset_univ A, by rw [Set.sUnion_empty, Set.inter_empty]⟩
+    | insert _ _ ih =>
+      obtain ⟨U, hUo, hAU, hUV⟩ := h _ (Set.mem_insert _ _)
+      obtain ⟨W, hWo, hAW, hWG⟩ := ih (fun V hV => h V (Set.mem_insert_of_mem _ hV))
+      refine ⟨U ∩ W, T.inter hUo hWo, Set.subset_inter hAU hAW, ?_⟩
+      rw [Set.sUnion_insert]
+      apply Set.eq_empty_of_forall_notMem
+      rintro z ⟨⟨hzU, hzW⟩, hz⟩
+      rcases hz with hz | hz
+      · exact Set.eq_empty_iff_forall_notMem.mp hUV z ⟨hzU, hz⟩
+      · exact Set.eq_empty_iff_forall_notMem.mp hWG z ⟨hzW, hz⟩
+
+  theorem Topology.exists_separating_of_isCompactSet {X : Type u} (T : Topology X)
+      {A K : Set X} (hK : T.IsCompactSet K)
+      (h : ∀ y ∈ K, ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ y ∈ V ∧ U ∩ V = ∅) :
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ K ⊆ V ∧ U ∩ V = ∅ := by
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}
+      (fun W hW => hW.1) (fun y hy => by
+        obtain ⟨U, V, hU, hV, hAU, hyV, hUV⟩ := h y hy
+        exact ⟨V, ⟨hV, U, hU, hAU, hUV⟩, hyV⟩)
+    obtain ⟨U, hUo, hAU, hUG⟩ :=
+      Topology.exists_nbhd_disjoint_sUnion T hGfin (fun W hW => (hGF hW).2)
+    exact ⟨U, ⋃₀ G, hUo, T.sUnion (fun W hW => (hGF hW).1), hAU, hGcov, hUG⟩
+
+  theorem Topology.exists_separating_point {X : Type u} (T : Topology X)
+      (hT : T.IsHausdorff) {K : Set X} (hK : T.IsCompactSet K) {x : X} (hx : x ∉ K) :
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ K ⊆ V ∧ U ∩ V = ∅ := by
+    obtain ⟨U, V, hU, hV, hxU, hKV, hUV⟩ :=
+      Topology.exists_separating_of_isCompactSet (A := {x}) T hK (fun y hy => by
+        obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := hT x y (fun e => hx (e ▸ hy))
+        exact ⟨U, V, hU, hV, Set.singleton_subset_iff.mpr hxU, hyV, hUV⟩)
+    exact ⟨U, V, hU, hV, hxU rfl, hKV, hUV⟩
+
+  theorem Topology.isClosed_of_isCompactSet {X : Type u} (T : Topology X) (hT : T.IsHausdorff)
+      {K : Set X} (hK : T.IsCompactSet K) : T.IsClosed K := by
+    show T.IsOpen Kᶜ
+    rw [Topology.isOpen_iff_nbhd T]
+    intro x hx
+    obtain ⟨U, V, hU, _, hxU, hKV, hUV⟩ :=
+      Topology.exists_separating_point T hT hK hx
+    exact ⟨U, hU, hxU, fun z hzU hzK => Set.eq_empty_iff_forall_notMem.mp hUV z ⟨hzU, hKV hzK⟩⟩
+
+  theorem Topology.isClosedMap_of_isCompact {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
+      (hf : T.Continuous T' f) : T.IsClosedMap T' f := fun _ hC =>
+    Topology.isClosed_of_isCompactSet T' hY
+      (Topology.isCompactSet_image T hf (Topology.isCompactSet_of_isClosed T hX hC))
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Homeomorphism.ofClosedMap`, from a continuous closed `f` and a two-sided inverse `g`, and then `Homeomorphism.ofCompactToHausdorff`, which discharges the closed-map hypothesis by the last problem. As in `Homeomorphism.ofOpenMap`, the bijection is presented by the map that undoes it, and only `continuous_invFun` needs an argument: `image_eq_preimage_of_inverse`, with `Set.preimage_compl` and `compl_compl` around it.'
+stub_names:
+- Homeomorphism.ofClosedMap
+- Homeomorphism.ofCompactToHausdorff
+namespace: GeneralTopology
+seq: 222
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
+  line: 155
+  closure_rounds: 1
+  check_kind: mixed

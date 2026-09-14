@@ -1,46 +1,36 @@
-slug: interval_compact
-kind: example
-title: The Unit Interval is Compact
+slug: heine_borel_line
+kind: theorem
+title: The Heine-Borel Theorem on the Line
 statement: |-
-  Let `F` be an open cover of the unit interval and let `c` be the least upper bound of the points it covers up to. It exists: `0` is such a point and `1` bounds them all. And `c` lies in the interval, so the last problem applies: it gives a radius `δ` such that `F` covers up to every non-negative point short of `c + δ`.
+  A set of real numbers is compact exactly when it is closed and bounded.
 
-  Then `c` is `1`. If it were less, a point between `c` and the smaller of `1` and `c + δ` would be covered up to and would be a point of the interval above the least upper bound. So `F` covers up to `1`, which is the finite subcover wanted.
+  One direction is the last section's: a compact set of a metric space is bounded, and — the line being a metric space — closed. The other is the two problems above. A bounded set lies inside a closed interval, a closed interval is compact, and a closed subset of a compact set is compact.
 
-  The extreme value theorem of calculus follows: a continuous function on the unit interval attains its largest value.
+  The empty set is looked at separately in the first direction, since boundedness names a centre and the argument that produces one wants a point of the set to start from.
 concepts:
-- interval_compact
+- heine_borel
 stub: |-
-  theorem unitInterval_isCompactSet : line.toTopology.IsCompactSet unitInterval := sorry
-
-  theorem unitInterval_exists_max {f : ℝ → ℝ}
-      (hf : line.toTopology.Continuous line.toTopology f) :
-      ∃ a ∈ unitInterval, ∀ x ∈ unitInterval, f x ≤ f a := sorry
+  theorem line_isCompactSet_iff {K : Set ℝ} :
+      line.toTopology.IsCompactSet K ↔ line.toTopology.IsClosed K ∧ line.IsBounded K := sorry
 reference: |-
-  theorem unitInterval_isCompactSet : line.toTopology.IsCompactSet unitInterval := by
-    intro F hFo hFcov
-    obtain ⟨c, hlub⟩ := Real.exists_isLUB (s := {x | 0 ≤ x ∧ x ≤ 1 ∧ CoveredUpTo F x})
-      ⟨0, le_refl 0, zero_le_one, coveredUpTo_zero hFcov⟩ ⟨1, fun x hx => hx.2.1⟩
-    have hc0 : 0 ≤ c := hlub.1 ⟨le_refl 0, zero_le_one, coveredUpTo_zero hFcov⟩
-    have hc1 : c ≤ 1 := hlub.2 (fun x hx => hx.2.1)
-    obtain ⟨δ, hδ, key⟩ := exists_coveredUpTo_of_isLUB hFo hFcov hc0 hc1 hlub
-    have hc : (1 : ℝ) ≤ c := by
-      by_contra hne
-      have hlt : c < 1 := not_le.mp hne
-      have hz0 : (0 : ℝ) ≤ min 1 (c + δ / 2) := le_min zero_le_one (by linarith)
-      have hzlt : min 1 (c + δ / 2) < c + δ := lt_of_le_of_lt (min_le_right _ _) (by linarith)
-      exact absurd (hlub.1 ⟨hz0, min_le_left _ _, key _ hz0 hzlt⟩)
-        (not_le.mpr (lt_min hlt (by linarith)))
-    exact key 1 zero_le_one (by linarith)
-
-  theorem unitInterval_exists_max {f : ℝ → ℝ}
-      (hf : line.toTopology.Continuous line.toTopology f) :
-      ∃ a ∈ unitInterval, ∀ x ∈ unitInterval, f x ≤ f a :=
-    Topology.exists_max_of_isCompactSet line.toTopology hf unitInterval_isCompactSet
-      ⟨0, le_refl 0, zero_le_one⟩
-spec: |-
-  example : line.toTopology.IsCompactSet unitInterval := _root_.GeneralTopology.unitInterval_isCompactSet
-  example : ∀ {f : ℝ → ℝ}
-      (hf : line.toTopology.Continuous line.toTopology f), ∃ a ∈ unitInterval, ∀ x ∈ unitInterval, f x ≤ f a := _root_.GeneralTopology.unitInterval_exists_max
+  theorem line_isCompactSet_iff {K : Set ℝ} :
+      line.toTopology.IsCompactSet K ↔ line.toTopology.IsClosed K ∧ line.IsBounded K := by
+    refine ⟨fun hK => ⟨Metric.isClosed_of_isCompactSet line hK, ?_⟩, ?_⟩
+    · rcases Set.eq_empty_or_nonempty K with rfl | hne
+      · exact ⟨0, 0, Set.empty_subset _⟩
+      · exact Metric.isBounded_of_isCompactSet line hK hne
+    · rintro ⟨hC, hB⟩
+      rcases Set.eq_empty_or_nonempty K with rfl | ⟨y, hy⟩
+      · exact Topology.isCompactSet_empty line.toTopology
+      obtain ⟨x, ε, hsub⟩ := hB
+      have hy' : |x - y| < ε := hsub hy
+      refine Topology.isCompactSet_of_isClosed_subset line.toTopology
+        (line_isCompactSet_segment (show x - ε ≤ x + ε by linarith [abs_nonneg (x - y)]))
+        hC (fun z hz => ?_)
+      have hz' : |x - z| < ε := hsub hz
+      rw [abs_lt] at hz'
+      exact ⟨by linarith [hz'.2], by linarith [hz'.1]⟩
+spec: 'example : ∀ {K : Set ℝ}, line.toTopology.IsCompactSet K ↔ line.toTopology.IsClosed K ∧ line.IsBounded K := _root_.GeneralTopology.line_isCompactSet_iff'
 preamble: |
   universe u v w
   namespace GeneralTopology
@@ -156,79 +146,45 @@ preamble: |
 
   def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
 
-  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
-    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+  def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+      (x : X) : Prop :=
+    ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε
 
-  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
-      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
-    ⟨U, hU, hx, subset_rfl⟩
+  def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop :=
+    ∀ x, M.ContinuousAt N f x
 
-  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
-      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
-    show T.IsOpen _
-    rw [Set.compl_sInter]
-    apply T.sUnion
-    rintro U ⟨C, hCF, rfl⟩
-    exact h C hCF
-
-  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
-    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
-
-  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
-    intro x hx C hC
-    exact hC.2 hx
-
-  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
-      T.IsClosed (T.closure S) :=
-    T.isClosed_sInter (fun _ hC => hC.1)
-
-  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
-      (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
-    intro x hx
-    exact hx C ⟨hC, hSC⟩
-
-  theorem Topology.isClosed_iff_closure_eq {X : Type u} (T : Topology X) (S : Set X) :
-      T.IsClosed S ↔ T.closure S = S := by
-    constructor
-    · intro hS
-      exact Set.Subset.antisymm (T.closure_min hS subset_rfl) (T.subset_closure S)
-    · intro h
-      rw [← h]
-      exact T.isClosed_closure S
-
-  theorem Topology.mem_closure_iff {X : Type u} (T : Topology X) {S : Set X} {x : X} :
-      x ∈ T.closure S ↔ ∀ N, T.IsNbhd x N → (N ∩ S).Nonempty := by
-    constructor
-    · rintro hx N ⟨U, hU, hxU, hUN⟩
-      by_contra h
-      have hSU : S ⊆ Uᶜ := by
-        intro y hy hyU
-        exact h ⟨y, hUN hyU, hy⟩
-      have hcl : T.IsClosed Uᶜ := by
-        show T.IsOpen _
-        rwa [compl_compl]
-      exact hx Uᶜ ⟨hcl, hSU⟩ hxU
-    · intro h C hC
-      by_contra hxC
-      obtain ⟨y, hyC, hyS⟩ := h Cᶜ ⟨Cᶜ, hC.1, hxC, subset_rfl⟩
-      exact hyC (hC.2 hyS)
-
-  theorem Metric.mem_closure_iff {X : Type u} (M : Metric X) {S : Set X} {x : X} :
-      x ∈ M.toTopology.closure S ↔ ∀ ε > 0, (M.ball x ε ∩ S).Nonempty := by
-    rw [M.toTopology.mem_closure_iff]
-    constructor
-    · intro h ε hε
-      have hN : M.toTopology.IsNbhd x (M.ball x ε) :=
-        M.toTopology.nbhd_of_isOpen (M.isOpenSet_ball x ε) (M.mem_ball_self x ε hε)
-      exact h (M.ball x ε) hN
-    · rintro h N ⟨U, hU, hxU, hUN⟩
-      obtain ⟨ε, hε, hball⟩ := hU x hxU
-      obtain ⟨y, hy, hyS⟩ := h ε hε
-      exact ⟨y, hUN (hball hy), hyS⟩
+  theorem line_continuous_affine (a b : ℝ) (ha : a ≠ 0) :
+      line.Continuous line (fun t => a * t + b) := by
+    intro x ε hε
+    have hpos : 0 < |a| := abs_pos.mpr ha
+    refine ⟨ε / |a|, div_pos hε hpos, ?_⟩
+    intro x' h
+    have hx : |x - x'| < ε / |a| := h
+    show |(a * x + b) - (a * x' + b)| < ε
+    have e : (a * x + b) - (a * x' + b) = a * (x - x') := by ring
+    rw [e, abs_mul]
+    calc |a| * |x - x'| < |a| * (ε / |a|) := mul_lt_mul_of_pos_left hx hpos
+      _ = ε := mul_div_cancel₀ ε (ne_of_gt hpos)
 
   def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Metric.continuous_iff {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) :
+      M.Continuous N f ↔ M.toTopology.Continuous N.toTopology f := by
+    constructor
+    · intro hf U hU x hx
+      obtain ⟨ε, hε, hball⟩ := hU (f x) hx
+      obtain ⟨δ, hδ, hδ'⟩ := hf x ε hε
+      exact ⟨δ, hδ, fun y hy => hball (hδ' y hy)⟩
+    · intro hf x ε hε
+      have hopen := hf (N.ball (f x) ε) (N.isOpenSet_ball (f x) ε)
+      obtain ⟨δ, hδ, hsub⟩ := hopen x (N.mem_ball_self (f x) ε hε)
+      exact ⟨δ, hδ, fun y hy => hsub hy⟩
+
+  theorem line_continuous_affine_top (a b : ℝ) (ha : a ≠ 0) :
+      line.toTopology.Continuous line.toTopology (fun t => a * t + b) :=
+    (line.continuous_iff line _).mp (line_continuous_affine a b ha)
 
   def unitInterval : Set ℝ := {x | 0 ≤ x ∧ x ≤ 1}
 
@@ -240,6 +196,19 @@ preamble: |
   def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
     ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
       ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  theorem Topology.isCompactSet_empty {X : Type u} (T : Topology X) :
+      T.IsCompactSet (∅ : Set X) :=
+    fun _ _ _ => ⟨∅, Set.empty_subset _, Set.finite_empty, Set.empty_subset _⟩
+
+  theorem Topology.isCompactSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsCompactSet {x} := by
+    intro F _ hcov
+    obtain ⟨U, hUF, hxU⟩ := hcov rfl
+    refine ⟨{U}, Set.singleton_subset_iff.mpr hUF, Set.finite_singleton U, ?_⟩
+    intro y hy
+    have e : y = x := hy
+    exact ⟨U, rfl, e ▸ hxU⟩
 
   theorem Metric.isBounded_sUnion {X : Type u} (M : Metric X) (x₀ : X) {G : Set (Set X)}
       (hfin : G.Finite) (h : ∀ U ∈ G, M.IsBounded U) : M.IsBounded (⋃₀ G) := by
@@ -321,42 +290,6 @@ preamble: |
       rw [(hGF hVG).choose_spec.2] at hxV
       exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
 
-  theorem line_bddAbove_bddBelow {K : Set ℝ} (h : line.IsBounded K) : BddAbove K ∧ BddBelow K := by
-    obtain ⟨c, ε, hsub⟩ := h
-    constructor
-    · refine ⟨c + ε, fun x hx => ?_⟩
-      have hx' : |c - x| < ε := hsub hx
-      rw [abs_lt] at hx'
-      linarith [hx'.1]
-    · refine ⟨c - ε, fun x hx => ?_⟩
-      have hx' : |c - x| < ε := hsub hx
-      rw [abs_lt] at hx'
-      linarith [hx'.2]
-
-  theorem line_exists_max {K : Set ℝ} (hK : line.toTopology.IsCompactSet K) (hne : K.Nonempty) :
-      ∃ a ∈ K, ∀ x ∈ K, x ≤ a := by
-    obtain ⟨a, hlub⟩ := Real.exists_isLUB hne
-      (line_bddAbove_bddBelow (Metric.isBounded_of_isCompactSet line hK hne)).1
-    refine ⟨a, ?_, fun x hx => hlub.1 hx⟩
-    have hcl : line.toTopology.closure K = K :=
-      (Topology.isClosed_iff_closure_eq line.toTopology K).mp
-        (Metric.isClosed_of_isCompactSet line hK)
-    rw [← hcl, Metric.mem_closure_iff]
-    intro δ hδ
-    obtain ⟨y, hyK, hy1, hy2⟩ := hlub.exists_between (show a - δ < a by linarith)
-    refine ⟨y, ?_, hyK⟩
-    show |a - y| < δ
-    rw [abs_lt]
-    constructor <;> linarith
-
-  theorem Topology.exists_max_of_isCompactSet {X : Type u} (T : Topology X) {f : X → ℝ}
-      (hf : T.Continuous line.toTopology f) {S : Set X} (hS : T.IsCompactSet S) (hne : S.Nonempty) :
-      ∃ a ∈ S, ∀ x ∈ S, f x ≤ f a := by
-    obtain ⟨b, hbK, hbmax⟩ :=
-      line_exists_max (Topology.isCompactSet_image T hf hS) (hne.image f)
-    obtain ⟨a, haS, rfl⟩ := hbK
-    exact ⟨a, haS, fun x hx => hbmax (f x) ⟨x, hx, rfl⟩⟩
-
   def CoveredUpTo (F : Set (Set ℝ)) (x : ℝ) : Prop :=
     ∃ G ⊆ F, G.Finite ∧ {y | 0 ≤ y ∧ y ≤ x} ⊆ ⋃₀ G
 
@@ -388,18 +321,75 @@ preamble: |
     rw [abs_lt]
     constructor <;> linarith
 
+  theorem unitInterval_isCompactSet : line.toTopology.IsCompactSet unitInterval := by
+    intro F hFo hFcov
+    obtain ⟨c, hlub⟩ := Real.exists_isLUB (s := {x | 0 ≤ x ∧ x ≤ 1 ∧ CoveredUpTo F x})
+      ⟨0, le_refl 0, zero_le_one, coveredUpTo_zero hFcov⟩ ⟨1, fun x hx => hx.2.1⟩
+    have hc0 : 0 ≤ c := hlub.1 ⟨le_refl 0, zero_le_one, coveredUpTo_zero hFcov⟩
+    have hc1 : c ≤ 1 := hlub.2 (fun x hx => hx.2.1)
+    obtain ⟨δ, hδ, key⟩ := exists_coveredUpTo_of_isLUB hFo hFcov hc0 hc1 hlub
+    have hc : (1 : ℝ) ≤ c := by
+      by_contra hne
+      have hlt : c < 1 := not_le.mp hne
+      have hz0 : (0 : ℝ) ≤ min 1 (c + δ / 2) := le_min zero_le_one (by linarith)
+      have hzlt : min 1 (c + δ / 2) < c + δ := lt_of_le_of_lt (min_le_right _ _) (by linarith)
+      exact absurd (hlub.1 ⟨hz0, min_le_left _ _, key _ hz0 hzlt⟩)
+        (not_le.mpr (lt_min hlt (by linarith)))
+    exact key 1 zero_le_one (by linarith)
+
+  theorem Topology.isCompactSet_of_isClosed_subset {X : Type u} (T : Topology X) {K : Set X}
+      (hK : T.IsCompactSet K) {C : Set X} (hC : T.IsClosed C) (hCK : C ⊆ K) :
+      T.IsCompactSet C := by
+    intro F hFo hcov
+    have hopen : ∀ U ∈ insert Cᶜ F, T.IsOpen U := by
+      rintro U (rfl | hU)
+      exacts [hC, hFo U hU]
+    have hKcov : K ⊆ ⋃₀ insert Cᶜ F := by
+      intro x _
+      by_cases hxC : x ∈ C
+      · obtain ⟨U, hUF, hxU⟩ := hcov hxC
+        exact ⟨U, Set.mem_insert_of_mem _ hUF, hxU⟩
+      · exact ⟨Cᶜ, Set.mem_insert _ _, hxC⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hK _ hopen hKcov
+    refine ⟨G ∩ F, Set.inter_subset_right, hGfin.subset Set.inter_subset_left, fun x hx => ?_⟩
+    obtain ⟨U, hUG, hxU⟩ := hGcov (hCK hx)
+    exact ⟨U, ⟨hUG, (hGF hUG).resolve_left (fun e => (e ▸ hxU) hx)⟩, hxU⟩
+
+  theorem line_image_unitInterval {a b : ℝ} (hlt : a < b) :
+      (fun t => (b - a) * t + a) '' unitInterval = {x | a ≤ x ∧ x ≤ b} := by
+    have hne : b - a ≠ 0 := by linarith
+    apply Set.ext
+    rintro x
+    refine ⟨?_, fun hx => ⟨(x - a) / (b - a), ⟨?_, ?_⟩, ?_⟩⟩
+    · rintro ⟨t, ⟨ht0, ht1⟩, rfl⟩
+      exact ⟨by nlinarith, by nlinarith⟩
+    · exact div_nonneg (by linarith [hx.1]) (by linarith)
+    · rw [div_le_one (by linarith)]; linarith [hx.2]
+    · field_simp
+      ring
+
+  theorem line_isCompactSet_segment {a b : ℝ} (hab : a ≤ b) :
+      line.toTopology.IsCompactSet {x | a ≤ x ∧ x ≤ b} := by
+    rcases eq_or_lt_of_le hab with rfl | hlt
+    · have e : {x : ℝ | a ≤ x ∧ x ≤ a} = {a} :=
+        Set.ext (fun x => ⟨fun h => le_antisymm h.2 h.1, fun h => ⟨le_of_eq h.symm, le_of_eq h⟩⟩)
+      rw [e]
+      exact Topology.isCompactSet_singleton line.toTopology a
+    · rw [← line_image_unitInterval hlt]
+      exact Topology.isCompactSet_image line.toTopology
+        (line_continuous_affine_top (b - a) a (by linarith)) unitInterval_isCompactSet
+
   end GeneralTopology
   open GeneralTopology
-description: Prove `unitInterval_isCompactSet` and then `unitInterval_exists_max`. `Real.exists_isLUB` supplies `c` from the point `0` and the bound `1`; `hlub.1` is the upper-bound half and `hlub.2` the least half. The second is the extreme value theorem at this set, whose nonemptiness is witnessed by `0`.
+description: Prove `line_isCompactSet_iff`. `Set.eq_empty_or_nonempty` splits off the empty case in each direction; the interval to use is the one from `x - ε` to `x + ε`, and `abs_lt` turns a membership in the ball into the two inequalities that put a point of the set inside it.
 stub_names:
-- unitInterval_isCompactSet
-- unitInterval_exists_max
+- line_isCompactSet_iff
 namespace: GeneralTopology
-seq: 216
+seq: 233
 provenance:
   license: CC-BY-SA-4.0
   source: extract@9c4b8d6
-  file: PolyaTopology/GeneralTopology/Compactness.lean
-  line: 570
+  file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
+  line: 516
   closure_rounds: 1
   check_kind: theorem

@@ -27,6 +27,8 @@ description: |-
 
   **Compactness** asks a question about covers. Spread open sets over a space until they cover it and infinitely many may be needed; a set is compact when finitely many always suffice. Finitely many points are compact whatever topology they carry, a codiscrete space is compact however large, and a discrete space with infinitely many points is the first space here that is not. Compactness passes to the closed subsets of a compact space and forward along every continuous map, so no homeomorphism can see past it. In a metric space a compact set is held by a single ball and holds every point it approaches, which on the line makes it a set with a largest and a smallest element — and that is the extreme value theorem of calculus, stated for any space at all. The section ends on the theorem the whole of it was built for: the unit interval is compact, proved from the least upper bound property by pushing a finite subcover rightwards as far as it will go, which turns out to be all the way.
 
+  **Compact Hausdorff Spaces** is where the two conditions meet, and between them they make the well-behaved corner of the subject. A compact set in a Hausdorff space is held apart by open sets from every point outside it, so it is closed, and in a space that is both compact and Hausdorff the compact sets and the closed sets are the same sets. A continuous map from a compact space to a Hausdorff one therefore carries closed sets to closed sets, which makes every continuous bijection between them a homeomorphism and every continuous surjection a gluing. The axioms above Hausdorff, which ask that a closed set be held apart from a point and then from a second closed set, hold in such a space for one reason: a closed set there is compact, and a compact set behaves like a point. Products come last. An open set of a product that holds one compact fibre holds a slab around it — the tube lemma — and the product of two compact spaces is compact because of it. The section ends by answering the question the last one raised: a set of the line is compact exactly when it is closed and bounded, and so is a set of the plane.
+
   Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
@@ -958,11 +960,51 @@ concepts:
 - slug: interval_compact
   description: 'The unit interval is compact, and the least upper bound property is what says so. It is the deepest fact in this section, and it is the reason the theorems above it are theorems of calculus: they hold on a closed interval because a closed interval is compact.'
   kind: theorem
-  goal: true
+  goal: false
   section: Compactness
   section_order: 11
   title: The Closed Interval
   position: 59
+- slug: compact_in_hausdorff
+  description: 'Compactness and the Hausdorff condition pull in opposite directions: one asks that a cover be reducible, the other that points be held apart. A space with both is as well behaved as a space with no distances can be, and the first thing the pair buys is that a compact set is separated by open sets from every point outside it, and is therefore closed.'
+  kind: theorem
+  goal: false
+  section: Compact Hausdorff Spaces
+  section_order: 12
+  title: Compact Sets in a Hausdorff Space
+  position: 60
+- slug: compact_to_hausdorff
+  description: 'A continuous map is tested on preimages and says nothing of its own about images. A compact source and a Hausdorff target supply what is missing: such a map carries closed sets to closed sets, and a map that does that is a homeomorphism as soon as it is a bijection. It is the cheapest test for a homeomorphism the subject has.'
+  kind: theorem
+  goal: false
+  section: Compact Hausdorff Spaces
+  section_order: 12
+  title: Maps Out of a Compact Space
+  position: 61
+- slug: compact_normal
+  description: The axioms above Hausdorff ask that a point, and then a closed set, be held apart from a closed set, and no space has yet been shown to satisfy them but the discrete one and the metric ones. A compact Hausdorff space satisfies both, because in it a closed set is compact and a compact set behaves like a point.
+  kind: theorem
+  goal: false
+  section: Compact Hausdorff Spaces
+  section_order: 12
+  title: Compact Hausdorff Spaces are Normal
+  position: 62
+- slug: tube_lemma
+  description: An open set of a product that holds one whole fibre holds a slab around it, provided the fibre is compact. It is the one thing compactness tells us about a product that openness alone does not, and the product of two compact spaces is compact because of it.
+  kind: theorem
+  goal: false
+  section: Compact Hausdorff Spaces
+  section_order: 12
+  title: The Tube Lemma
+  position: 63
+- slug: heine_borel
+  description: Which sets of the line are compact? The last section proved half an answer — a compact set is closed and bounded — and the unit interval supplies the other half. The theorem that results is the one calculus quotes without proving, and the same argument settles the plane, once the plane is known to be a product of two lines.
+  kind: theorem
+  goal: true
+  section: Compact Hausdorff Spaces
+  section_order: 12
+  title: The Heine-Borel Theorem
+  position: 64
 edges:
 - - bounded_set
   - compact_metric
@@ -1000,8 +1042,18 @@ edges:
   - sequential_closure
 - - cofinite_topology
   - separation_examples
+- - compact_basics
+  - compact_in_hausdorff
+- - compact_images
+  - compact_to_hausdorff
 - - compact_images
   - interval_compact
+- - compact_images
+  - tube_lemma
+- - compact_in_hausdorff
+  - compact_normal
+- - compact_in_hausdorff
+  - compact_to_hausdorff
 - - compact_metric
   - compact_images
 - - connected
@@ -1061,6 +1113,8 @@ edges:
 - - extreme_topologies
   - topological_invariants
 - - final_topology
+  - compact_to_hausdorff
+- - final_topology
   - quotient_space
 - - final_topology
   - sum_space
@@ -1075,7 +1129,11 @@ edges:
 - - induced_topology
   - cauchy_complete
 - - induced_topology
+  - compact_to_hausdorff
+- - induced_topology
   - quotient_space
+- - interval_compact
+  - heine_borel
 - - metric_equivalence
   - plane_is_product
 - - metric_space
@@ -1092,6 +1150,8 @@ edges:
   - separation_examples
 - - neighbourhoods
   - closure_points
+- - neighbourhoods
+  - compact_in_hausdorff
 - - neighbourhoods
   - continuity_closed
 - - neighbourhoods
@@ -1111,6 +1171,8 @@ edges:
 - - open_ball
   - open_sets
 - - open_closed_maps
+  - compact_to_hausdorff
+- - open_closed_maps
   - product_maps
 - - open_closed_maps
   - sum_space
@@ -1120,10 +1182,14 @@ edges:
   - compact_metric
 - - open_sets
   - metric_topology
+- - plane_is_product
+  - heine_borel
 - - plane_norms
   - metric_equivalence
 - - product_maps
   - separation_hereditary
+- - product_maps
+  - tube_lemma
 - - product_topology
   - plane_is_product
 - - product_topology
@@ -1140,6 +1206,10 @@ edges:
   - epsilon_delta
 - - real_line
   - open_ball
+- - regular_normal
+  - compact_normal
+- - separation_axioms
+  - compact_in_hausdorff
 - - separation_axioms
   - separation_closures
 - - separation_axioms
@@ -1192,13 +1262,15 @@ edges:
   - sierpinski_space
 - - topological_space
   - subspace_topology
+- - tube_lemma
+  - heine_borel
 provenance:
   source: extract@9c4b8d6
   module: PolyaTopology.GeneralTopology
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: 06d0470aec5e7fbd417355d33955221cc7673efd
+  commit: 23eb26114b13ab42266631a76eb064eb26d17238
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

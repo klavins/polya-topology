@@ -1,0 +1,221 @@
+slug: compact_quotient
+kind: theorem
+title: A Continuous Surjection Exhibits the Quotient Topology
+statement: |-
+  Let `f` be a continuous surjection from a compact space to a Hausdorff space. Then the target's topology is not merely coarse enough for `f` to be continuous: it is the finest topology that is, which is to say the one `f` coinduces.
+
+  One direction is the continuity. For the other, let the preimage of `U` be open. Then the preimage of `Uᶜ` is closed, its image is closed by the last problem but one, and that image is `Uᶜ` itself because `f` is onto — so `U` is open.
+
+  However the target's points were come by, they may as well have been glued together out of the source.
+concepts:
+- compact_to_hausdorff
+stub: |-
+  theorem Topology.eq_coinduced_of_isCompact {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
+      (hf : T.Continuous T' f) (hsurj : Function.Surjective f) : T' = T.coinduced f := sorry
+reference: |-
+  theorem Topology.eq_coinduced_of_isCompact {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
+      (hf : T.Continuous T' f) (hsurj : Function.Surjective f) : T' = T.coinduced f := by
+    apply Topology.eq_of_isOpen_iff
+    intro U
+    refine ⟨fun hU => hf U hU, fun hU => ?_⟩
+    have hc : T.IsClosed (f ⁻¹' Uᶜ) := by
+      show T.IsOpen _
+      rw [Set.preimage_compl, compl_compl]
+      exact hU
+    have h := Topology.isClosedMap_of_isCompact T T' hX hY hf _ hc
+    rw [Set.image_preimage_eq _ hsurj] at h
+    have h2 : T'.IsOpen Uᶜᶜ := h
+    rwa [compl_compl] at h2
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
+      (hf : T.Continuous T' f) (hsurj : Function.Surjective f), T' = T.coinduced f := _root_.GeneralTopology.Topology.eq_coinduced_of_isCompact
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
+    constructor
+    · intro hU x hx
+      exact T.nbhd_of_isOpen hU hx
+    · intro h
+      rw [T.union_of_opens_inside U h]
+      exact T.sUnion (fun V hV => hV.1)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  def Topology.IsClosedMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ C, T.IsClosed C → T'.IsClosed (f '' C)
+
+  theorem Topology.eq_of_isOpen_iff {X : Type u} {T T' : Topology X}
+      (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U) : T = T' := by
+    obtain ⟨o, hu, hi, hs⟩ := T
+    obtain ⟨o', hu', hi', hs'⟩ := T'
+    have e : o = o' := funext (fun U => propext (h U))
+    subst e
+    rfl
+
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨V, hVF, hxV⟩
+      exact ⟨f ⁻¹' V, ⟨V, hVF, rfl⟩, hxV⟩
+    · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
+      exact ⟨V, hVF, hxW⟩
+
+  def Topology.coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) : Topology Y where
+    IsOpen := fun V => T.IsOpen (f ⁻¹' V)
+    univ := by
+      rw [Set.preimage_univ]
+      exact T.univ
+    inter := by
+      intro V W hV hW
+      rw [Set.preimage_inter]
+      exact T.inter hV hW
+    sUnion := by
+      intro F h
+      rw [preimage_sUnion_image]
+      refine T.sUnion ?_
+      rintro W ⟨V, hVF, rfl⟩
+      exact h V hVF
+
+  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+
+  theorem Topology.isCompactSet_of_isClosed {X : Type u} (T : Topology X) (hT : T.IsCompact)
+      {C : Set X} (hC : T.IsClosed C) : T.IsCompactSet C := by
+    intro F hFo hcov
+    have hopen : ∀ U ∈ insert Cᶜ F, T.IsOpen U := by
+      rintro U (rfl | hU)
+      exacts [hC, hFo U hU]
+    have huniv : (Set.univ : Set X) ⊆ ⋃₀ insert Cᶜ F := by
+      intro x _
+      by_cases hxC : x ∈ C
+      · obtain ⟨U, hUF, hxU⟩ := hcov hxC
+        exact ⟨U, Set.mem_insert_of_mem _ hUF, hxU⟩
+      · exact ⟨Cᶜ, Set.mem_insert _ _, hxC⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hT _ hopen huniv
+    refine ⟨G ∩ F, Set.inter_subset_right, hGfin.subset Set.inter_subset_left, fun x hx => ?_⟩
+    obtain ⟨U, hUG, hxU⟩ := hGcov (Set.mem_univ x)
+    exact ⟨U, ⟨hUG, (hGF hUG).resolve_left (fun e => (e ▸ hxU) hx)⟩, hxU⟩
+
+  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
+      T'.IsCompactSet (f '' S) := by
+    intro F hFo hcov
+    have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
+      intro x hxS
+      obtain ⟨U, hUF, hxU⟩ := hcov ⟨x, hxS, rfl⟩
+      exact ⟨f ⁻¹' U, ⟨U, hUF, rfl⟩, hxU⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hS {V | ∃ U ∈ F, V = f ⁻¹' U}
+      (by rintro V ⟨U, hUF, rfl⟩; exact hf U (hFo U hUF)) hpre
+    refine ⟨{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}, ?_, hGfin.dependent_image _, ?_⟩
+    · rintro U ⟨V, hV, rfl⟩
+      exact (hGF hV).choose_spec.1
+    · rintro y ⟨x, hxS, rfl⟩
+      obtain ⟨V, hVG, hxV⟩ := hGcov hxS
+      rw [(hGF hVG).choose_spec.2] at hxV
+      exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
+
+  theorem Topology.exists_nbhd_disjoint_sUnion {X : Type u} (T : Topology X) {A : Set X}
+      {G : Set (Set X)} (hfin : G.Finite)
+      (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ V = ∅) :
+      ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ ⋃₀ G = ∅ := by
+    induction G, hfin using Set.Finite.induction_on with
+    | empty => exact ⟨Set.univ, T.univ, Set.subset_univ A, by rw [Set.sUnion_empty, Set.inter_empty]⟩
+    | insert _ _ ih =>
+      obtain ⟨U, hUo, hAU, hUV⟩ := h _ (Set.mem_insert _ _)
+      obtain ⟨W, hWo, hAW, hWG⟩ := ih (fun V hV => h V (Set.mem_insert_of_mem _ hV))
+      refine ⟨U ∩ W, T.inter hUo hWo, Set.subset_inter hAU hAW, ?_⟩
+      rw [Set.sUnion_insert]
+      apply Set.eq_empty_of_forall_notMem
+      rintro z ⟨⟨hzU, hzW⟩, hz⟩
+      rcases hz with hz | hz
+      · exact Set.eq_empty_iff_forall_notMem.mp hUV z ⟨hzU, hz⟩
+      · exact Set.eq_empty_iff_forall_notMem.mp hWG z ⟨hzW, hz⟩
+
+  theorem Topology.exists_separating_of_isCompactSet {X : Type u} (T : Topology X)
+      {A K : Set X} (hK : T.IsCompactSet K)
+      (h : ∀ y ∈ K, ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ y ∈ V ∧ U ∩ V = ∅) :
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ K ⊆ V ∧ U ∩ V = ∅ := by
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}
+      (fun W hW => hW.1) (fun y hy => by
+        obtain ⟨U, V, hU, hV, hAU, hyV, hUV⟩ := h y hy
+        exact ⟨V, ⟨hV, U, hU, hAU, hUV⟩, hyV⟩)
+    obtain ⟨U, hUo, hAU, hUG⟩ :=
+      Topology.exists_nbhd_disjoint_sUnion T hGfin (fun W hW => (hGF hW).2)
+    exact ⟨U, ⋃₀ G, hUo, T.sUnion (fun W hW => (hGF hW).1), hAU, hGcov, hUG⟩
+
+  theorem Topology.exists_separating_point {X : Type u} (T : Topology X)
+      (hT : T.IsHausdorff) {K : Set X} (hK : T.IsCompactSet K) {x : X} (hx : x ∉ K) :
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ K ⊆ V ∧ U ∩ V = ∅ := by
+    obtain ⟨U, V, hU, hV, hxU, hKV, hUV⟩ :=
+      Topology.exists_separating_of_isCompactSet (A := {x}) T hK (fun y hy => by
+        obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := hT x y (fun e => hx (e ▸ hy))
+        exact ⟨U, V, hU, hV, Set.singleton_subset_iff.mpr hxU, hyV, hUV⟩)
+    exact ⟨U, V, hU, hV, hxU rfl, hKV, hUV⟩
+
+  theorem Topology.isClosed_of_isCompactSet {X : Type u} (T : Topology X) (hT : T.IsHausdorff)
+      {K : Set X} (hK : T.IsCompactSet K) : T.IsClosed K := by
+    show T.IsOpen Kᶜ
+    rw [Topology.isOpen_iff_nbhd T]
+    intro x hx
+    obtain ⟨U, V, hU, _, hxU, hKV, hUV⟩ :=
+      Topology.exists_separating_point T hT hK hx
+    exact ⟨U, hU, hxU, fun z hzU hzK => Set.eq_empty_iff_forall_notMem.mp hUV z ⟨hzU, hKV hzK⟩⟩
+
+  theorem Topology.isClosedMap_of_isCompact {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
+      (hf : T.Continuous T' f) : T.IsClosedMap T' f := fun _ hC =>
+    Topology.isClosed_of_isCompactSet T' hY
+      (Topology.isCompactSet_image T hf (Topology.isCompactSet_of_isClosed T hX hC))
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.eq_coinduced_of_isCompact`. `Topology.eq_of_isOpen_iff` reduces an equality of topologies to an equivalence at each set, and `Set.image_preimage_eq` is where the surjectivity is spent.
+stub_names:
+- Topology.eq_coinduced_of_isCompact
+namespace: GeneralTopology
+seq: 223
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
+  line: 204
+  closure_rounds: 1
+  check_kind: theorem

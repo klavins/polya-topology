@@ -1,0 +1,74 @@
+slug: separate_compact
+kind: theorem
+title: A Compact Set Separated by Neighbourhoods
+statement: |-
+  Let `K` be compact, and suppose `A` is separated from each single point of `K`: for every `y` of `K` there are disjoint open sets, one holding `A` and one holding `y`. Then `A` is separated from the whole of `K` at once.
+
+  Collect the open sets that hold a point of `K` and are missed by an open set around `A` — the ones that come with a partner, so that no partner has to be chosen afterwards. They cover `K`, so finitely many of them do. Their union is open and holds `K`, and the last problem intersects the finitely many partners into one open set around `A` that misses it.
+concepts:
+- compact_in_hausdorff
+stub: |-
+  theorem Topology.exists_separating_of_isCompactSet {X : Type u} (T : Topology X)
+      {A K : Set X} (hK : T.IsCompactSet K)
+      (h : ∀ y ∈ K, ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ y ∈ V ∧ U ∩ V = ∅) :
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ K ⊆ V ∧ U ∩ V = ∅ := sorry
+reference: |-
+  theorem Topology.exists_separating_of_isCompactSet {X : Type u} (T : Topology X)
+      {A K : Set X} (hK : T.IsCompactSet K)
+      (h : ∀ y ∈ K, ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ y ∈ V ∧ U ∩ V = ∅) :
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ K ⊆ V ∧ U ∩ V = ∅ := by
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}
+      (fun W hW => hW.1) (fun y hy => by
+        obtain ⟨U, V, hU, hV, hAU, hyV, hUV⟩ := h y hy
+        exact ⟨V, ⟨hV, U, hU, hAU, hUV⟩, hyV⟩)
+    obtain ⟨U, hUo, hAU, hUG⟩ :=
+      Topology.exists_nbhd_disjoint_sUnion T hGfin (fun W hW => (hGF hW).2)
+    exact ⟨U, ⋃₀ G, hUo, T.sUnion (fun W hW => (hGF hW).1), hAU, hGcov, hUG⟩
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X)
+      {A K : Set X} (hK : T.IsCompactSet K)
+      (h : ∀ y ∈ K, ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ y ∈ V ∧ U ∩ V = ∅), ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ K ⊆ V ∧ U ∩ V = ∅ := _root_.GeneralTopology.Topology.exists_separating_of_isCompactSet
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  theorem Topology.exists_nbhd_disjoint_sUnion {X : Type u} (T : Topology X) {A : Set X}
+      {G : Set (Set X)} (hfin : G.Finite)
+      (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ V = ∅) :
+      ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ ⋃₀ G = ∅ := by
+    induction G, hfin using Set.Finite.induction_on with
+    | empty => exact ⟨Set.univ, T.univ, Set.subset_univ A, by rw [Set.sUnion_empty, Set.inter_empty]⟩
+    | insert _ _ ih =>
+      obtain ⟨U, hUo, hAU, hUV⟩ := h _ (Set.mem_insert _ _)
+      obtain ⟨W, hWo, hAW, hWG⟩ := ih (fun V hV => h V (Set.mem_insert_of_mem _ hV))
+      refine ⟨U ∩ W, T.inter hUo hWo, Set.subset_inter hAU hAW, ?_⟩
+      rw [Set.sUnion_insert]
+      apply Set.eq_empty_of_forall_notMem
+      rintro z ⟨⟨hzU, hzW⟩, hz⟩
+      rcases hz with hz | hz
+      · exact Set.eq_empty_iff_forall_notMem.mp hUV z ⟨hzU, hz⟩
+      · exact Set.eq_empty_iff_forall_notMem.mp hWG z ⟨hzW, hz⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.exists_separating_of_isCompactSet`. The cover to hand to the compactness of `K` is `{W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}`, whose members carry their own partners, and `⋃₀ G` is the second of the two open sets asked for.
+stub_names:
+- Topology.exists_separating_of_isCompactSet
+namespace: GeneralTopology
+seq: 218
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
+  line: 53
+  closure_rounds: 1
+  check_kind: theorem

@@ -109,6 +109,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@9c4b8d6
   file: PolyaTopology/GeneralTopology/Compactness.lean
-  line: 547
+  line: 546
   closure_rounds: 1
   check_kind: theorem

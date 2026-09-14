@@ -1,0 +1,251 @@
+slug: segment_compact
+kind: example
+title: Every Closed Interval is Compact
+statement: |-
+  The unit interval is compact, and so is every closed interval, because an interval is an affine copy of the unit one. The map `t ↦ (b - a) * t + a` carries `0` to `a` and `1` to `b`, and when `a < b` it carries the unit interval onto the interval from `a` to `b` exactly — the point landing on `x` being `(x - a) / (b - a)`. It is continuous, and the continuous image of a compact set is compact.
+
+  The degenerate case is separate: when `a = b` the interval is a single point, compact for the reason any finite set is.
+concepts:
+- heine_borel
+stub: |-
+  theorem line_image_unitInterval {a b : ℝ} (hlt : a < b) :
+      (fun t => (b - a) * t + a) '' unitInterval = {x | a ≤ x ∧ x ≤ b} := sorry
+
+  theorem line_isCompactSet_segment {a b : ℝ} (hab : a ≤ b) :
+      line.toTopology.IsCompactSet {x | a ≤ x ∧ x ≤ b} := sorry
+reference: |-
+  theorem line_image_unitInterval {a b : ℝ} (hlt : a < b) :
+      (fun t => (b - a) * t + a) '' unitInterval = {x | a ≤ x ∧ x ≤ b} := by
+    have hne : b - a ≠ 0 := by linarith
+    apply Set.ext
+    rintro x
+    refine ⟨?_, fun hx => ⟨(x - a) / (b - a), ⟨?_, ?_⟩, ?_⟩⟩
+    · rintro ⟨t, ⟨ht0, ht1⟩, rfl⟩
+      exact ⟨by nlinarith, by nlinarith⟩
+    · exact div_nonneg (by linarith [hx.1]) (by linarith)
+    · rw [div_le_one (by linarith)]; linarith [hx.2]
+    · field_simp
+      ring
+
+  theorem line_isCompactSet_segment {a b : ℝ} (hab : a ≤ b) :
+      line.toTopology.IsCompactSet {x | a ≤ x ∧ x ≤ b} := by
+    rcases eq_or_lt_of_le hab with rfl | hlt
+    · have e : {x : ℝ | a ≤ x ∧ x ≤ a} = {a} :=
+        Set.ext (fun x => ⟨fun h => le_antisymm h.2 h.1, fun h => ⟨le_of_eq h.symm, le_of_eq h⟩⟩)
+      rw [e]
+      exact Topology.isCompactSet_singleton line.toTopology a
+    · rw [← line_image_unitInterval hlt]
+      exact Topology.isCompactSet_image line.toTopology
+        (line_continuous_affine_top (b - a) a (by linarith)) unitInterval_isCompactSet
+spec: |-
+  example : ∀ {a b : ℝ} (hlt : a < b), (fun t => (b - a) * t + a) '' unitInterval = {x | a ≤ x ∧ x ≤ b} := _root_.GeneralTopology.line_image_unitInterval
+  example : ∀ {a b : ℝ} (hab : a ≤ b), line.toTopology.IsCompactSet {x | a ≤ x ∧ x ≤ b} := _root_.GeneralTopology.line_isCompactSet_segment
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
+    M.eq_zero.mpr rfl
+
+  def line : Metric ℝ where
+    dist x y := |x - y|
+    symm {x y} := abs_sub_comm x y
+    triangle x y z := abs_sub_le x y z
+    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  theorem Metric.mem_ball_self {X : Type u} (M : Metric X) (x : X) (ε : ℝ) (h : 0 < ε) :
+      x ∈ M.ball x ε := by
+    rw [M.mem_ball, M.dist_self]
+    exact h
+
+  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+    ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
+
+  theorem Metric.isOpenSet_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.IsOpenSet (M.ball x ε) := by
+    intro y hy
+    rw [M.mem_ball] at hy
+    refine ⟨ε - M.dist x y, by linarith, ?_⟩
+    intro z hz
+    rw [M.mem_ball] at hz ⊢
+    have h := M.triangle x y z
+    linarith
+
+  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+    fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
+
+  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+      (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
+    intro x hx
+    obtain ⟨a, ha, hau⟩ := hU x hx.1
+    obtain ⟨b, hb, hbv⟩ := hV x hx.2
+    refine ⟨min a b, lt_min ha hb, ?_⟩
+    intro y hy
+    rw [M.mem_ball] at hy
+    exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
+
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
+    intro x hx
+    obtain ⟨U, hUF, hxU⟩ := hx
+    obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
+    exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
+
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+    IsOpen := M.IsOpenSet
+    univ := M.isOpenSet_univ
+    inter := M.isOpenSet_inter
+    sUnion := M.isOpenSet_sUnion
+
+  def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+      (x : X) : Prop :=
+    ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε
+
+  def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop :=
+    ∀ x, M.ContinuousAt N f x
+
+  theorem line_continuous_affine (a b : ℝ) (ha : a ≠ 0) :
+      line.Continuous line (fun t => a * t + b) := by
+    intro x ε hε
+    have hpos : 0 < |a| := abs_pos.mpr ha
+    refine ⟨ε / |a|, div_pos hε hpos, ?_⟩
+    intro x' h
+    have hx : |x - x'| < ε / |a| := h
+    show |(a * x + b) - (a * x' + b)| < ε
+    have e : (a * x + b) - (a * x' + b) = a * (x - x') := by ring
+    rw [e, abs_mul]
+    calc |a| * |x - x'| < |a| * (ε / |a|) := mul_lt_mul_of_pos_left hx hpos
+      _ = ε := mul_div_cancel₀ ε (ne_of_gt hpos)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Metric.continuous_iff {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) :
+      M.Continuous N f ↔ M.toTopology.Continuous N.toTopology f := by
+    constructor
+    · intro hf U hU x hx
+      obtain ⟨ε, hε, hball⟩ := hU (f x) hx
+      obtain ⟨δ, hδ, hδ'⟩ := hf x ε hε
+      exact ⟨δ, hδ, fun y hy => hball (hδ' y hy)⟩
+    · intro hf x ε hε
+      have hopen := hf (N.ball (f x) ε) (N.isOpenSet_ball (f x) ε)
+      obtain ⟨δ, hδ, hsub⟩ := hopen x (N.mem_ball_self (f x) ε hε)
+      exact ⟨δ, hδ, fun y hy => hsub hy⟩
+
+  theorem line_continuous_affine_top (a b : ℝ) (ha : a ≠ 0) :
+      line.toTopology.Continuous line.toTopology (fun t => a * t + b) :=
+    (line.continuous_iff line _).mp (line_continuous_affine a b ha)
+
+  def unitInterval : Set ℝ := {x | 0 ≤ x ∧ x ≤ 1}
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  theorem Topology.isCompactSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsCompactSet {x} := by
+    intro F _ hcov
+    obtain ⟨U, hUF, hxU⟩ := hcov rfl
+    refine ⟨{U}, Set.singleton_subset_iff.mpr hUF, Set.finite_singleton U, ?_⟩
+    intro y hy
+    have e : y = x := hy
+    exact ⟨U, rfl, e ▸ hxU⟩
+
+  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
+      T'.IsCompactSet (f '' S) := by
+    intro F hFo hcov
+    have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
+      intro x hxS
+      obtain ⟨U, hUF, hxU⟩ := hcov ⟨x, hxS, rfl⟩
+      exact ⟨f ⁻¹' U, ⟨U, hUF, rfl⟩, hxU⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hS {V | ∃ U ∈ F, V = f ⁻¹' U}
+      (by rintro V ⟨U, hUF, rfl⟩; exact hf U (hFo U hUF)) hpre
+    refine ⟨{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}, ?_, hGfin.dependent_image _, ?_⟩
+    · rintro U ⟨V, hV, rfl⟩
+      exact (hGF hV).choose_spec.1
+    · rintro y ⟨x, hxS, rfl⟩
+      obtain ⟨V, hVG, hxV⟩ := hGcov hxS
+      rw [(hGF hVG).choose_spec.2] at hxV
+      exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
+
+  def CoveredUpTo (F : Set (Set ℝ)) (x : ℝ) : Prop :=
+    ∃ G ⊆ F, G.Finite ∧ {y | 0 ≤ y ∧ y ≤ x} ⊆ ⋃₀ G
+
+  theorem coveredUpTo_zero {F : Set (Set ℝ)} (hcov : unitInterval ⊆ ⋃₀ F) : CoveredUpTo F 0 := by
+    obtain ⟨U, hUF, hU⟩ := hcov ⟨le_refl 0, zero_le_one⟩
+    refine ⟨{U}, Set.singleton_subset_iff.mpr hUF, Set.finite_singleton U, ?_⟩
+    rintro y ⟨hy0, hy1⟩
+    rw [le_antisymm hy1 hy0]
+    exact ⟨U, rfl, hU⟩
+
+  theorem coveredUpTo_insert {F : Set (Set ℝ)} {U : Set ℝ} (hUF : U ∈ F) {x z : ℝ}
+      (h : CoveredUpTo F x) (hU : ∀ y, x < y → y ≤ z → y ∈ U) : CoveredUpTo F z := by
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := h
+    refine ⟨insert U G, Set.insert_subset hUF hGF, hGfin.insert U, ?_⟩
+    rintro y ⟨hy0, hyz⟩
+    by_cases hyx : y ≤ x
+    · exact Set.sUnion_mono (Set.subset_insert U G) (hGcov ⟨hy0, hyx⟩)
+    · exact ⟨U, Set.mem_insert U G, hU y (not_le.mp hyx) hyz⟩
+
+  theorem exists_coveredUpTo_of_isLUB {F : Set (Set ℝ)}
+      (hFo : ∀ U ∈ F, line.toTopology.IsOpen U) (hFcov : unitInterval ⊆ ⋃₀ F) {c : ℝ}
+      (hc0 : 0 ≤ c) (hc1 : c ≤ 1) (hlub : IsLUB {x | 0 ≤ x ∧ x ≤ 1 ∧ CoveredUpTo F x} c) :
+      ∃ δ > 0, ∀ z, 0 ≤ z → z < c + δ → CoveredUpTo F z := by
+    obtain ⟨U, hUF, hcU⟩ := hFcov ⟨hc0, hc1⟩
+    obtain ⟨ε, hε, hball⟩ := hFo U hUF c hcU
+    obtain ⟨x, hxA, hxgt, hxle⟩ := hlub.exists_between (show c - ε < c by linarith)
+    refine ⟨ε, hε, fun z hz0 hzc => coveredUpTo_insert hUF hxA.2.2 (fun y hy1 hy2 => hball ?_)⟩
+    show |c - y| < ε
+    rw [abs_lt]
+    constructor <;> linarith
+
+  theorem unitInterval_isCompactSet : line.toTopology.IsCompactSet unitInterval := by
+    intro F hFo hFcov
+    obtain ⟨c, hlub⟩ := Real.exists_isLUB (s := {x | 0 ≤ x ∧ x ≤ 1 ∧ CoveredUpTo F x})
+      ⟨0, le_refl 0, zero_le_one, coveredUpTo_zero hFcov⟩ ⟨1, fun x hx => hx.2.1⟩
+    have hc0 : 0 ≤ c := hlub.1 ⟨le_refl 0, zero_le_one, coveredUpTo_zero hFcov⟩
+    have hc1 : c ≤ 1 := hlub.2 (fun x hx => hx.2.1)
+    obtain ⟨δ, hδ, key⟩ := exists_coveredUpTo_of_isLUB hFo hFcov hc0 hc1 hlub
+    have hc : (1 : ℝ) ≤ c := by
+      by_contra hne
+      have hlt : c < 1 := not_le.mp hne
+      have hz0 : (0 : ℝ) ≤ min 1 (c + δ / 2) := le_min zero_le_one (by linarith)
+      have hzlt : min 1 (c + δ / 2) < c + δ := lt_of_le_of_lt (min_le_right _ _) (by linarith)
+      exact absurd (hlub.1 ⟨hz0, min_le_left _ _, key _ hz0 hzlt⟩)
+        (not_le.mpr (lt_min hlt (by linarith)))
+    exact key 1 zero_le_one (by linarith)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `line_image_unitInterval`, the image of the unit interval under that map, and then `line_isCompactSet_segment`. For the first, `nlinarith` handles the two products in one direction and `div_le_one` the quotient in the other, with `field_simp` and `ring` for the point that lands on `x`. For the second, `eq_or_lt_of_le` splits the hypothesis and `line_continuous_affine_top` supplies the continuity.
+stub_names:
+- line_image_unitInterval
+- line_isCompactSet_segment
+namespace: GeneralTopology
+seq: 232
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
+  line: 477
+  closure_rounds: 1
+  check_kind: theorem

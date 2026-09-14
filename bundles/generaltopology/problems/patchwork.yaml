@@ -1,0 +1,59 @@
+slug: patchwork
+kind: theorem
+title: Finitely Many Finite Subcovers
+statement: |-
+  Let each member `U` of a finite collection of sets of the first factor come with a finite piece of a cover doing for the slab `U ×ˢ B` above it. Uniting two finite pieces leaves a finite piece, and it does for the slab above the union of the two sets.
+
+  That is the whole of the step, and this is the third induction on a finite set in the section, and the last.
+concepts:
+- tube_lemma
+stub: |-
+  theorem Topology.exists_finite_subcover_sUnion {X : Type u} {Y : Type v} {F : Set (Set (X × Y))}
+      {B : Set Y} {G : Set (Set X)} (hfin : G.Finite)
+      (h : ∀ U ∈ G, ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H) :
+      ∃ H ⊆ F, H.Finite ∧ (⋃₀ G) ×ˢ B ⊆ ⋃₀ H := sorry
+reference: |-
+  theorem Topology.exists_finite_subcover_sUnion {X : Type u} {Y : Type v} {F : Set (Set (X × Y))}
+      {B : Set Y} {G : Set (Set X)} (hfin : G.Finite)
+      (h : ∀ U ∈ G, ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H) :
+      ∃ H ⊆ F, H.Finite ∧ (⋃₀ G) ×ˢ B ⊆ ⋃₀ H := by
+    induction G, hfin using Set.Finite.induction_on with
+    | empty =>
+      refine ⟨∅, Set.empty_subset F, Set.finite_empty, ?_⟩
+      rw [Set.sUnion_empty, Set.empty_prod]
+      exact Set.empty_subset _
+    | insert _ _ ih =>
+      obtain ⟨H, hHF, hHfin, hHsub⟩ := h _ (Set.mem_insert _ _)
+      obtain ⟨H', hH'F, hH'fin, hH'sub⟩ := ih (fun U hU => h U (Set.mem_insert_of_mem _ hU))
+      refine ⟨H ∪ H', Set.union_subset hHF hH'F, hHfin.union hH'fin, ?_⟩
+      rw [Set.sUnion_insert]
+      rintro p ⟨hp1 | hp1, hp2⟩
+      · exact Set.sUnion_mono Set.subset_union_left (hHsub ⟨hp1, hp2⟩)
+      · exact Set.sUnion_mono Set.subset_union_right (hH'sub ⟨hp1, hp2⟩)
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {F : Set (Set (X × Y))}
+      {B : Set Y} {G : Set (Set X)} (hfin : G.Finite)
+      (h : ∀ U ∈ G, ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H), ∃ H ⊆ F, H.Finite ∧ (⋃₀ G) ×ˢ B ⊆ ⋃₀ H := _root_.GeneralTopology.Topology.exists_finite_subcover_sUnion
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove `Topology.exists_finite_subcover_sUnion`: given a finite `G`, each of whose members `U` has a finite `H ⊆ F` with `U ×ˢ B ⊆ ⋃₀ H`, there is one finite `H ⊆ F` with `(⋃₀ G) ×ˢ B ⊆ ⋃₀ H`. `Set.empty_prod` handles the empty collection, `Set.Finite.union` the step, and `Set.sUnion_mono` carries a point of one piece into the union of both.'
+stub_names:
+- Topology.exists_finite_subcover_sUnion
+namespace: GeneralTopology
+seq: 229
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
+  line: 371
+  closure_rounds: 1
+  check_kind: theorem

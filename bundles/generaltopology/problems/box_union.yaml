@@ -1,0 +1,59 @@
+slug: box_union
+kind: theorem
+title: A Box Over Finitely Many Sets
+statement: |-
+  Suppose that for each member `V` of a collection there is an open `U` around a point `x` with the box `U ×ˢ V` inside a given set `W`. For two members, the box over the union is handled by intersecting the two first sides: a point of `U ∩ U'` paired with a point of `V ∪ V'` lies in one of the two boxes already known to be inside `W`.
+
+  Finitely many are two at a time repeated. This is the second induction of that shape in the section: the first intersected open sets to miss a union, and this one intersects them to cover one.
+concepts:
+- tube_lemma
+stub: |-
+  theorem Topology.exists_box_sUnion {X : Type u} {Y : Type v} (T : Topology X) {x : X}
+      {W : Set (X × Y)} {G : Set (Set Y)} (hfin : G.Finite)
+      (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W) :
+      ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ ⋃₀ G ⊆ W := sorry
+reference: |-
+  theorem Topology.exists_box_sUnion {X : Type u} {Y : Type v} (T : Topology X) {x : X}
+      {W : Set (X × Y)} {G : Set (Set Y)} (hfin : G.Finite)
+      (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W) :
+      ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ ⋃₀ G ⊆ W := by
+    induction G, hfin using Set.Finite.induction_on with
+    | empty =>
+      refine ⟨Set.univ, T.univ, trivial, ?_⟩
+      rw [Set.sUnion_empty, Set.prod_empty]
+      exact Set.empty_subset W
+    | insert _ _ ih =>
+      obtain ⟨U, hUo, hxU, hUV⟩ := h _ (Set.mem_insert _ _)
+      obtain ⟨U', hU'o, hxU', hU'G⟩ := ih (fun V hV => h V (Set.mem_insert_of_mem _ hV))
+      refine ⟨U ∩ U', T.inter hUo hU'o, ⟨hxU, hxU'⟩, ?_⟩
+      rw [Set.sUnion_insert]
+      rintro p ⟨hp1, hp2 | hp2⟩
+      · exact hUV ⟨hp1.1, hp2⟩
+      · exact hU'G ⟨hp1.2, hp2⟩
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) {x : X}
+      {W : Set (X × Y)} {G : Set (Set Y)} (hfin : G.Finite)
+      (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W), ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ ⋃₀ G ⊆ W := _root_.GeneralTopology.Topology.exists_box_sUnion
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove `Topology.exists_box_sUnion`: for a finite `G`, one open `U` around `x` has `U ×ˢ ⋃₀ G ⊆ W`. `Set.prod_empty` handles the empty collection, whose union is empty, and `Set.sUnion_insert` the step; a membership `p ∈ U ×ˢ V` is the pair of `p.1 ∈ U` and `p.2 ∈ V`.'
+stub_names:
+- Topology.exists_box_sUnion
+namespace: GeneralTopology
+seq: 226
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
+  line: 292
+  closure_rounds: 1
+  check_kind: theorem
