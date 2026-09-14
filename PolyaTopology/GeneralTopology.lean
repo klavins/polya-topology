@@ -5,6 +5,7 @@ import PolyaTopology.GeneralTopology.Closure
 import PolyaTopology.GeneralTopology.Continuity
 import PolyaTopology.GeneralTopology.Homeomorphisms
 import PolyaTopology.GeneralTopology.Products
+import PolyaTopology.GeneralTopology.Quotients
 
 /-! @subject generaltopology
 @title General Topology
@@ -27,6 +28,8 @@ Topology is the study of nearness without measurement: of which points lie close
 **Homeomorphisms** asks when two spaces are the same space. A map that is continuous, invertible, and whose inverse is continuous carries the open sets of one onto the open sets of the other, and nothing a topology can see then tells the two apart. Such a map is both an open map and a closed map, and a continuous bijection is one exactly when it is open — which a continuous bijection need not be. The section ends by putting the notion to work in both directions: the plane measured by the taxicab length and the plane measured by the supremum length are the same space, though the lengths differ at almost every pair of points, while the three topologies a two-point set carries are shown to be three different spaces.
 
 **Subspaces and Products** makes new spaces out of old, and asks of each what maps it admits. The topology a subset inherits is the one that makes a map into the subset no harder to test than a map into the whole space around it; the same construction along any map at all gives the coarsest topology making that map continuous, and the subspace is one case of it. The product of two spaces calls a set open when every point of it has a box around it inside, the two projections out of it are continuous and — unusually — open, and a map into it is a pair of maps, continuous exactly when both of them are. The section ends where the subject began: the plane under the supremum distance is the product of two copies of the line, because a supremum ball is a square, and the taxicab plane is one too, since the last section made it the same space.
+
+**Quotients and Sums** builds the constructions the last section's are dual to. Reverse the arrow of the induced topology: given a map out of a space, call a set open below when its preimage is open above, and the result is the finest topology that map allows. Gluing points together by an equivalence relation is that construction along the map carrying a point to its class, and laying two spaces side by side is it along the two injections at once. A map out of either is then no harder to test than a map out of what it was built from: a map out of a quotient is a map that does not distinguish related points, and a map out of a sum is a pair of maps. The section ends by collapsing a subset of a space to a single point, and showing that the point a closed subset becomes is a closed point of what is left.
 
 Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 -/

@@ -1,0 +1,93 @@
+slug: sum_universal
+kind: example
+title: A Map Out of a Sum is a Pair of Maps
+statement: |-
+  To give a map from `X ⊕ Y` into `Z` is to give a map from `X` and a map from `Y`, since a point of the sum is one or the other. `Sum.elim f g` is that map: it applies `f` on the first copy and `g` on the second.
+
+  The topology was chosen so that the same holds of continuity, and again the proof is nothing. The preimage of a set under `Sum.elim f g`, read on the first copy, is its preimage under `f`, and read on the second copy, its preimage under `g`.
+concepts:
+- sum_space
+stub: |-
+  theorem Topology.continuous_sum_elim {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} (S : Topology Z) {f : X → Z} {g : Y → Z} (hf : T.Continuous S f)
+      (hg : T'.Continuous S g) : (T.sum T').Continuous S (Sum.elim f g) := sorry
+
+  theorem Topology.continuous_sum_iff {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      (T' : Topology Y) (S : Topology Z) (h : X ⊕ Y → Z) :
+      (T.sum T').Continuous S h ↔
+        T.Continuous S (h ∘ Sum.inl) ∧ T'.Continuous S (h ∘ Sum.inr) := sorry
+reference: |-
+  theorem Topology.continuous_sum_elim {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} (S : Topology Z) {f : X → Z} {g : Y → Z} (hf : T.Continuous S f)
+      (hg : T'.Continuous S g) : (T.sum T').Continuous S (Sum.elim f g) :=
+    fun W hW => ⟨hf W hW, hg W hW⟩
+
+  theorem Topology.continuous_sum_iff {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      (T' : Topology Y) (S : Topology Z) (h : X ⊕ Y → Z) :
+      (T.sum T').Continuous S h ↔
+        T.Continuous S (h ∘ Sum.inl) ∧ T'.Continuous S (h ∘ Sum.inr) := by
+    constructor
+    · intro hh
+      exact ⟨fun W hW => (hh W hW).1, fun W hW => (hh W hW).2⟩
+    · rintro ⟨hf, hg⟩ W hW
+      exact ⟨hf W hW, hg W hW⟩
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} (S : Topology Z) {f : X → Z} {g : Y → Z} (hf : T.Continuous S f)
+      (hg : T'.Continuous S g), (T.sum T').Continuous S (Sum.elim f g) := _root_.GeneralTopology.Topology.continuous_sum_elim
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      (T' : Topology Y) (S : Topology Z) (h : X ⊕ Y → Z), (T.sum T').Continuous S h ↔
+        T.Continuous S (h ∘ Sum.inl) ∧ T'.Continuous S (h ∘ Sum.inr) := _root_.GeneralTopology.Topology.continuous_sum_iff
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨V, hVF, hxV⟩
+      exact ⟨f ⁻¹' V, ⟨V, hVF, rfl⟩, hxV⟩
+    · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
+      exact ⟨V, hVF, hxW⟩
+
+  def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X ⊕ Y) where
+    IsOpen := fun W => T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W)
+    univ := by
+      rw [Set.preimage_univ, Set.preimage_univ]
+      exact ⟨T.univ, T'.univ⟩
+    inter := by
+      intro V W hV hW
+      rw [Set.preimage_inter, Set.preimage_inter]
+      exact ⟨T.inter hV.1 hW.1, T'.inter hV.2 hW.2⟩
+    sUnion := by
+      intro F h
+      rw [preimage_sUnion_image, preimage_sUnion_image]
+      constructor
+      · exact T.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
+      · exact T'.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove that `Sum.elim f g` is continuous when `f` and `g` are, and then that a map `h : X ⊕ Y → Z` is continuous exactly when `h ∘ Sum.inl` and `h ∘ Sum.inr` are. Both are pairs of applications of the hypotheses, and neither needs any rewriting.'
+stub_names:
+- Topology.continuous_sum_elim
+- Topology.continuous_sum_iff
+namespace: GeneralTopology
+seq: 137
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 429
+  closure_rounds: 1
+  check_kind: theorem

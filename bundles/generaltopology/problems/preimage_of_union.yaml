@@ -1,0 +1,35 @@
+slug: preimage_of_union
+kind: theorem
+title: The Preimage of a Union
+statement: |-
+  Everything in this section rests on one fact about preimages: they commute with the three operations a topology is closed under. For the whole space and for an intersection Mathlib states this already. For a union of a family it is worth proving, because the family on the other side has to be built.
+
+  Given a collection `F` of subsets of `Y`, the collection of their preimages is `Set.preimage f '' F`, the image of `F` under the operation that takes a preimage. A point lies in the union of that collection exactly when it lies in the preimage of some member of `F`, which is exactly when its image lies in the union of `F`.
+concepts:
+- final_topology
+stub: |-
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := sorry
+reference: |-
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨V, hVF, hxV⟩
+      exact ⟨f ⁻¹' V, ⟨V, hVF, rfl⟩, hxV⟩
+    · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
+      exact ⟨V, hVF, hxW⟩
+spec: 'example : ∀ {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)), f ⁻¹'' (⋃₀ F) = ⋃₀ (Set.preimage f '''' F) := _root_.GeneralTopology.preimage_sUnion_image'
+preamble: |
+  universe u v w
+description: Prove that `f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F)`. `Set.Subset.antisymm` splits the equality, and each direction takes a membership apart with `rintro` and offers the corresponding member of the other collection.
+stub_names:
+- preimage_sUnion_image
+namespace: GeneralTopology
+seq: 122
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 22
+  closure_rounds: 1
+  check_kind: theorem

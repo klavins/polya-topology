@@ -1,0 +1,81 @@
+slug: coinduced_continuous
+kind: example
+title: The Finest Topology Making a Map Continuous
+statement: |-
+  The coinduced topology was built to make `f` continuous, and it does with nothing to check: the preimage of a set it calls open is open by definition.
+
+  It is the largest topology that does, which is the mirror of what the induced topology satisfied. If `S` is any topology on `Y` for which `f` is continuous, then every set `S` calls open has an open preimage, and an open preimage is all the coinduced topology asks. So the coinduced topology calls open everything `f` permits, where the induced one called open only what its map forced.
+concepts:
+- final_topology
+stub: |-
+  theorem Topology.continuous_coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) :
+      T.Continuous (T.coinduced f) f := sorry
+
+  theorem Topology.coinduced_finest {X : Type u} {Y : Type v} {T : Topology X} {S : Topology Y}
+      {f : X → Y} (hf : T.Continuous S f) {V : Set Y} (hV : S.IsOpen V) :
+      (T.coinduced f).IsOpen V := sorry
+reference: |-
+  theorem Topology.continuous_coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) :
+      T.Continuous (T.coinduced f) f :=
+    fun _ hV => hV
+
+  theorem Topology.coinduced_finest {X : Type u} {Y : Type v} {T : Topology X} {S : Topology Y}
+      {f : X → Y} (hf : T.Continuous S f) {V : Set Y} (hV : S.IsOpen V) :
+      (T.coinduced f).IsOpen V :=
+    hf V hV
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y), T.Continuous (T.coinduced f) f := _root_.GeneralTopology.Topology.continuous_coinduced
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {S : Topology Y}
+      {f : X → Y} (hf : T.Continuous S f) {V : Set Y} (hV : S.IsOpen V), (T.coinduced f).IsOpen V := _root_.GeneralTopology.Topology.coinduced_finest
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨V, hVF, hxV⟩
+      exact ⟨f ⁻¹' V, ⟨V, hVF, rfl⟩, hxV⟩
+    · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
+      exact ⟨V, hVF, hxW⟩
+
+  def Topology.coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) : Topology Y where
+    IsOpen := fun V => T.IsOpen (f ⁻¹' V)
+    univ := by
+      rw [Set.preimage_univ]
+      exact T.univ
+    inter := by
+      intro V W hV hW
+      rw [Set.preimage_inter]
+      exact T.inter hV hW
+    sUnion := by
+      intro F h
+      rw [preimage_sUnion_image]
+      refine T.sUnion ?_
+      rintro W ⟨V, hVF, rfl⟩
+      exact h V hVF
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `f` is continuous from `T` to `T.coinduced f`, and that `T.coinduced f` calls open every set a topology `S` calls open, whenever `f` is continuous into `S`. Each is the hypothesis applied at the set, with nothing in between.
+stub_names:
+- Topology.continuous_coinduced
+- Topology.coinduced_finest
+namespace: GeneralTopology
+seq: 124
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 77
+  closure_rounds: 1
+  check_kind: theorem

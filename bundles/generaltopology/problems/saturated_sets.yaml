@@ -1,0 +1,47 @@
+slug: saturated_sets
+kind: example
+title: Saturated Sets
+statement: |-
+  A projection collapses points, so it carries most sets to sets one can say little about. The exceptions are the sets that are already unions of whole classes: of those, nothing is lost and nothing is added.
+
+  Say that `S` is *saturated* for `f` when `S` is the preimage of its image, `S = f ⁻¹' (f '' S)`. One containment always holds, since a point lies in the preimage of the image of any set it belongs to, so the condition is the other one: no point outside `S` shares an image with a point of `S`.
+
+  Preimages are where they come from. The preimage of any set is saturated, because taking an image and then a preimage adds nothing to a set that was a preimage already.
+concepts:
+- quotient_space
+stub: |-
+  def IsSaturated {X : Type u} {Y : Type v} (f : X → Y) (S : Set X) : Prop := sorry
+
+  theorem isSaturated_preimage {X : Type u} {Y : Type v} (f : X → Y) (V : Set Y) :
+      IsSaturated f (f ⁻¹' V) := sorry
+reference: |-
+  def IsSaturated {X : Type u} {Y : Type v} (f : X → Y) (S : Set X) : Prop :=
+    S = f ⁻¹' (f '' S)
+
+  theorem isSaturated_preimage {X : Type u} {Y : Type v} (f : X → Y) (V : Set Y) :
+      IsSaturated f (f ⁻¹' V) := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      exact ⟨x, hx, rfl⟩
+    · rintro x ⟨y, hy, hxy⟩
+      show f x ∈ V
+      rw [← hxy]
+      exact hy
+spec: |-
+  example {X : Type u} {Y : Type v} (f : X → Y) (S : Set X) : _root_.GeneralTopology.IsSaturated f S ↔ (S = f ⁻¹' (f '' S)) := by unfold _root_.GeneralTopology.IsSaturated; first | exact Iff.rfl | grind
+  example : ∀ {X : Type u} {Y : Type v} (f : X → Y) (V : Set Y), _root_.GeneralTopology.IsSaturated f (f ⁻¹' V) := _root_.GeneralTopology.isSaturated_preimage
+preamble: |
+  universe u v w
+description: Define `IsSaturated f S` as the equation above, in that order, and prove that `f ⁻¹' V` is saturated for every `V`. `Set.Subset.antisymm` splits the equality; the first containment offers the point itself, and the second rewrites backwards along the equation of images the membership carries.
+stub_names:
+- IsSaturated
+- isSaturated_preimage
+namespace: GeneralTopology
+seq: 131
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 260
+  closure_rounds: 1
+  check_kind: mixed

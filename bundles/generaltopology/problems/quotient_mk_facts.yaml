@@ -1,0 +1,43 @@
+slug: quotient_mk_facts
+kind: example
+title: Every Element of a Quotient is a Class
+statement: |-
+  `Quotient s` is the type of classes of `s`, and `Quotient.mk s x` is the class of `x`. Two facts fix it completely.
+
+  Every element of `Quotient s` is the class of some point. The tool is `Quotient.inductionOn`: to prove something of every `q`, it is enough to prove it of every `Quotient.mk s x`.
+
+  Two points have the same class exactly when they are related. The two directions are `Quotient.exact` and `Quotient.sound`, and between them they say what a quotient is: it forgets the relation, and forgets nothing else.
+concepts:
+- lean_quotients
+stub: |-
+  theorem quotient_mk_surjective {X : Type u} (s : Setoid X) (q : Quotient s) :
+      ∃ x, Quotient.mk s x = q := sorry
+
+  theorem quotient_mk_eq_iff {X : Type u} (s : Setoid X) (x y : X) :
+      Quotient.mk s x = Quotient.mk s y ↔ s.r x y := sorry
+reference: |-
+  theorem quotient_mk_surjective {X : Type u} (s : Setoid X) (q : Quotient s) :
+      ∃ x, Quotient.mk s x = q :=
+    Quotient.inductionOn q (fun x => ⟨x, rfl⟩)
+
+  theorem quotient_mk_eq_iff {X : Type u} (s : Setoid X) (x y : X) :
+      Quotient.mk s x = Quotient.mk s y ↔ s.r x y :=
+    ⟨Quotient.exact, Quotient.sound⟩
+spec: |-
+  example : ∀ {X : Type u} (s : Setoid X) (q : Quotient s), ∃ x, Quotient.mk s x = q := _root_.GeneralTopology.quotient_mk_surjective
+  example : ∀ {X : Type u} (s : Setoid X) (x y : X), Quotient.mk s x = Quotient.mk s y ↔ s.r x y := _root_.GeneralTopology.quotient_mk_eq_iff
+preamble: |
+  universe u v w
+description: 'Prove that every `q : Quotient s` is `Quotient.mk s x` for some `x`, and that `Quotient.mk s x = Quotient.mk s y` exactly when `s.r x y`. For the first, apply `Quotient.inductionOn` to `q` and offer the point with `rfl`; the second is the two named theorems as the halves of an anonymous constructor.'
+stub_names:
+- quotient_mk_surjective
+- quotient_mk_eq_iff
+namespace: GeneralTopology
+seq: 127
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 154
+  closure_rounds: 1
+  check_kind: theorem

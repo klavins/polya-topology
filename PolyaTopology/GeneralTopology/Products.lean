@@ -410,7 +410,6 @@ theorem Topology.continuous_mk_right {X : Type u} {Y : Type v} (T : Topology X) 
 @concept plane_is_product
 @title The Plane as a Product
 @kind theorem
-@goal
 
 The plane was built as a set with a distance, the line as a set with a distance, and the two have had no formal relation. The supremum distance is the larger of the two coordinate distances, so a ball of it is a square — a box of two intervals. The plane is therefore the product of two lines, which is where the metric half of the subject meets the topological one.
 -/

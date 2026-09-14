@@ -1,0 +1,93 @@
+slug: sum_injections_open
+kind: example
+title: The Two Injections Are Open Maps
+statement: |-
+  More is true: each injection carries open sets to open sets, which the inclusion of a subspace generally does not.
+
+  Take an open `U` of `X`. Its image under `Sum.inl` meets the first copy in `U` itself, since `Sum.inl` is injective, and meets the second copy in nothing at all, since no term of the sum is both an `inl` and an `inr`. The first of those is open by hypothesis, and the second is the empty set.
+concepts:
+- sum_space
+stub: |-
+  theorem Topology.isOpenMap_inl {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      T.IsOpenMap (T.sum T') Sum.inl := sorry
+
+  theorem Topology.isOpenMap_inr {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      T'.IsOpenMap (T.sum T') Sum.inr := sorry
+reference: |-
+  theorem Topology.isOpenMap_inl {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      T.IsOpenMap (T.sum T') Sum.inl := by
+    intro U hU
+    constructor
+    · rw [Set.preimage_image_eq U Sum.inl_injective]
+      exact hU
+    · rw [Set.preimage_inr_image_inl]
+      exact Topology.empty T'
+
+  theorem Topology.isOpenMap_inr {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      T'.IsOpenMap (T.sum T') Sum.inr := by
+    intro U hU
+    constructor
+    · rw [Set.preimage_inl_image_inr]
+      exact Topology.empty T
+    · rw [Set.preimage_image_eq U Sum.inr_injective]
+      exact hU
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), T.IsOpenMap (T.sum T') Sum.inl := _root_.GeneralTopology.Topology.isOpenMap_inl
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), T'.IsOpenMap (T.sum T') Sum.inr := _root_.GeneralTopology.Topology.isOpenMap_inr
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
+    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+    rwa [Set.sUnion_empty] at h
+
+  def Topology.IsOpenMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T.IsOpen U → T'.IsOpen (f '' U)
+
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨V, hVF, hxV⟩
+      exact ⟨f ⁻¹' V, ⟨V, hVF, rfl⟩, hxV⟩
+    · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
+      exact ⟨V, hVF, hxW⟩
+
+  def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X ⊕ Y) where
+    IsOpen := fun W => T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W)
+    univ := by
+      rw [Set.preimage_univ, Set.preimage_univ]
+      exact ⟨T.univ, T'.univ⟩
+    inter := by
+      intro V W hV hW
+      rw [Set.preimage_inter, Set.preimage_inter]
+      exact ⟨T.inter hV.1 hW.1, T'.inter hV.2 hW.2⟩
+    sUnion := by
+      intro F h
+      rw [preimage_sUnion_image, preimage_sUnion_image]
+      constructor
+      · exact T.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
+      · exact T'.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `Sum.inl` and `Sum.inr` are open maps into `T.sum T'`. `Set.preimage_image_eq`, with `Sum.inl_injective` or `Sum.inr_injective`, gives the preimage on the near side; `Set.preimage_inr_image_inl` and `Set.preimage_inl_image_inr` give the empty one on the far side.
+stub_names:
+- Topology.isOpenMap_inl
+- Topology.isOpenMap_inr
+namespace: GeneralTopology
+seq: 136
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 396
+  closure_rounds: 1
+  check_kind: theorem

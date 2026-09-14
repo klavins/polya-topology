@@ -1,0 +1,82 @@
+slug: define_quotient_topology
+kind: example
+title: The Quotient Topology
+statement: |-
+  Let `s` be a setoid on a space `X`. The quotient carries the final topology along `Quotient.mk s`: a set of classes is open exactly when the set of points belonging to those classes is open in `X`.
+
+  Nothing new has to be built, since the construction is already in hand and this is one instance of it. What the definition buys is a name, and with the name the continuity of the projection — which is the continuity of a map into the topology that map coinduces, and so was proved before the quotient was mentioned.
+concepts:
+- quotient_space
+stub: |-
+  def Topology.quotient {X : Type u} (T : Topology X) (s : Setoid X) : Topology (Quotient s) := sorry
+
+  theorem Topology.continuous_mk {X : Type u} (T : Topology X) (s : Setoid X) :
+      T.Continuous (T.quotient s) (Quotient.mk s) := sorry
+reference: |-
+  def Topology.quotient {X : Type u} (T : Topology X) (s : Setoid X) : Topology (Quotient s) :=
+    T.coinduced (Quotient.mk s)
+
+  theorem Topology.continuous_mk {X : Type u} (T : Topology X) (s : Setoid X) :
+      T.Continuous (T.quotient s) (Quotient.mk s) :=
+    Topology.continuous_coinduced T (Quotient.mk s)
+spec: |-
+  example {X : Type u} (T : Topology X) (s : Setoid X) : _root_.GeneralTopology.Topology.quotient T s = (T.coinduced (Quotient.mk s) : Topology (Quotient s)) := rfl
+  example : ∀ {X : Type u} (T : Topology X) (s : Setoid X), T.Continuous (T.quotient s) (Quotient.mk s) := _root_.GeneralTopology.Topology.continuous_mk
+  example (X : Type) (T : Topology X) (s : Setoid X) (V : Set (Quotient s)) :
+      (T.quotient s).IsOpen V ↔ T.IsOpen (Quotient.mk s ⁻¹' V) := Iff.rfl
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨V, hVF, hxV⟩
+      exact ⟨f ⁻¹' V, ⟨V, hVF, rfl⟩, hxV⟩
+    · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
+      exact ⟨V, hVF, hxW⟩
+
+  def Topology.coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) : Topology Y where
+    IsOpen := fun V => T.IsOpen (f ⁻¹' V)
+    univ := by
+      rw [Set.preimage_univ]
+      exact T.univ
+    inter := by
+      intro V W hV hW
+      rw [Set.preimage_inter]
+      exact T.inter hV hW
+    sUnion := by
+      intro F h
+      rw [preimage_sUnion_image]
+      refine T.sUnion ?_
+      rintro W ⟨V, hVF, rfl⟩
+      exact h V hVF
+
+  theorem Topology.continuous_coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) :
+      T.Continuous (T.coinduced f) f :=
+    fun _ hV => hV
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Topology.quotient` as `T.coinduced (Quotient.mk s)`, and show that `Quotient.mk s` is continuous into it. The second is the corresponding theorem about the coinduced topology, at the map `Quotient.mk s`.
+stub_names:
+- Topology.quotient
+- Topology.continuous_mk
+namespace: GeneralTopology
+seq: 129
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 216
+  closure_rounds: 1
+  check_kind: mixed

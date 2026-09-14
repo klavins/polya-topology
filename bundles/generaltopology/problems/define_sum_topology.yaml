@@ -1,0 +1,63 @@
+slug: define_sum_topology
+kind: definition
+title: The Disjoint Union of Two Spaces
+statement: |-
+  The type `X ⊕ Y` holds a copy of `X` and a copy of `Y` with nothing in common: a term of it is `Sum.inl x` or `Sum.inr y`, and never both. A subset `W` of it meets each copy in a set, namely `Sum.inl ⁻¹' W` and `Sum.inr ⁻¹' W`.
+
+  Call `W` open when both of those are open. As with the coinduced topology, the three conditions hold because a preimage commutes with the three operations — twice over here, once on each side.
+concepts:
+- sum_space
+stub: |-
+  def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X ⊕ Y) := sorry
+reference: |-
+  def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X ⊕ Y) where
+    IsOpen := fun W => T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W)
+    univ := by
+      rw [Set.preimage_univ, Set.preimage_univ]
+      exact ⟨T.univ, T'.univ⟩
+    inter := by
+      intro V W hV hW
+      rw [Set.preimage_inter, Set.preimage_inter]
+      exact ⟨T.inter hV.1 hW.1, T'.inter hV.2 hW.2⟩
+    sUnion := by
+      intro F h
+      rw [preimage_sUnion_image, preimage_sUnion_image]
+      constructor
+      · exact T.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
+      · exact T'.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
+spec: |-
+  example (X Y : Type) (T : Topology X) (T' : Topology Y) (W : Set (X ⊕ Y)) :
+      (T.sum T').IsOpen W ↔ T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W) := Iff.rfl
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨V, hVF, hxV⟩
+      exact ⟨f ⁻¹' V, ⟨V, hVF, rfl⟩, hxV⟩
+    · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
+      exact ⟨V, hVF, hxW⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Topology.sum`, whose `IsOpen W` is the conjunction of `T.IsOpen (Sum.inl ⁻¹' W)` and `T'.IsOpen (Sum.inr ⁻¹' W)`, in that order. Each field rewrites both preimages — the third by the first problem of the section — and then offers the pair of conditions from `T` and `T'`.
+stub_names:
+- Topology.sum
+namespace: GeneralTopology
+seq: 134
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 339
+  closure_rounds: 1
+  check_kind: definition

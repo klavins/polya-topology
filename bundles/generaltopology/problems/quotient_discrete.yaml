@@ -1,0 +1,91 @@
+slug: quotient_discrete
+kind: example
+title: A Quotient of a Discrete Space
+statement: |-
+  The finest topology of all survives every identification. If every subset of `X` is open then every subset of `Y` has an open preimage, whatever the map is, so the coinduced topology calls every subset open and is the discrete topology on `Y`.
+
+  Two topologies are equal as soon as they call the same sets open, and here the two conditions are not merely equivalent but the same proposition. The quotient is the case of the map that takes a point to its class.
+concepts:
+- quotient_space
+stub: |-
+  theorem coinduced_discrete {X : Type u} {Y : Type v} (f : X → Y) :
+      (discrete X).coinduced f = discrete Y := sorry
+
+  theorem quotient_discrete {X : Type u} (s : Setoid X) :
+      (discrete X).quotient s = discrete (Quotient s) := sorry
+reference: |-
+  theorem coinduced_discrete {X : Type u} {Y : Type v} (f : X → Y) :
+      (discrete X).coinduced f = discrete Y :=
+    Topology.eq_of_isOpen_iff (fun _ => Iff.rfl)
+
+  theorem quotient_discrete {X : Type u} (s : Setoid X) :
+      (discrete X).quotient s = discrete (Quotient s) :=
+    coinduced_discrete (Quotient.mk s)
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (f : X → Y), (discrete X).coinduced f = discrete Y := _root_.GeneralTopology.coinduced_discrete
+  example : ∀ {X : Type u} (s : Setoid X), (discrete X).quotient s = discrete (Quotient s) := _root_.GeneralTopology.quotient_discrete
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def discrete (X : Type u) : Topology X where
+    IsOpen := fun _ => True
+    univ := trivial
+    inter := fun _ _ => trivial
+    sUnion := fun _ => trivial
+
+  theorem Topology.eq_of_isOpen_iff {X : Type u} {T T' : Topology X}
+      (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U) : T = T' := by
+    obtain ⟨o, hu, hi, hs⟩ := T
+    obtain ⟨o', hu', hi', hs'⟩ := T'
+    have e : o = o' := funext (fun U => propext (h U))
+    subst e
+    rfl
+
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨V, hVF, hxV⟩
+      exact ⟨f ⁻¹' V, ⟨V, hVF, rfl⟩, hxV⟩
+    · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
+      exact ⟨V, hVF, hxW⟩
+
+  def Topology.coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) : Topology Y where
+    IsOpen := fun V => T.IsOpen (f ⁻¹' V)
+    univ := by
+      rw [Set.preimage_univ]
+      exact T.univ
+    inter := by
+      intro V W hV hW
+      rw [Set.preimage_inter]
+      exact T.inter hV hW
+    sUnion := by
+      intro F h
+      rw [preimage_sUnion_image]
+      refine T.sUnion ?_
+      rintro W ⟨V, hVF, rfl⟩
+      exact h V hVF
+
+  def Topology.quotient {X : Type u} (T : Topology X) (s : Setoid X) : Topology (Quotient s) :=
+    T.coinduced (Quotient.mk s)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `(discrete X).coinduced f = discrete Y` for every `f`, and deduce the same of the quotient by any setoid. `Topology.eq_of_isOpen_iff` reduces the first to an equivalence at each set, and both sides of that are `True`.
+stub_names:
+- coinduced_discrete
+- quotient_discrete
+namespace: GeneralTopology
+seq: 133
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 308
+  closure_rounds: 1
+  check_kind: theorem

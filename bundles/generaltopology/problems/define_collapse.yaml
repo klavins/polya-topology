@@ -1,0 +1,39 @@
+slug: define_collapse
+kind: definition
+title: The Relation That Collapses a Subset
+statement: |-
+  Fix a subset `A` of a set `X`. Declare `x` and `y` equivalent when they are equal, or when both of them lie in `A`. Outside `A` this is equality; inside `A` everything is equivalent to everything.
+
+  It is an equivalence relation. Reflexivity is the first disjunct. Symmetry swaps whichever disjunct holds. Transitivity has four cases, and in each the answer can be read off: two equalities compose, an equality on either side carries the pair of memberships across, and two pairs of memberships give the outer one.
+concepts:
+- quotient_examples
+stub: 'def collapse {X : Type u} (A : Set X) : Setoid X := sorry'
+reference: |-
+  def collapse {X : Type u} (A : Set X) : Setoid X where
+    r := fun x y => x = y ∨ (x ∈ A ∧ y ∈ A)
+    iseqv := ⟨fun _ => Or.inl rfl, by
+        rintro x y (rfl | ⟨hx, hy⟩)
+        · exact Or.inl rfl
+        · exact Or.inr ⟨hy, hx⟩, by
+        rintro x y z (rfl | ⟨hx, hy⟩) (rfl | ⟨hy', hz⟩)
+        · exact Or.inl rfl
+        · exact Or.inr ⟨hy', hz⟩
+        · exact Or.inr ⟨hx, hy⟩
+        · exact Or.inr ⟨hx, hz⟩⟩
+spec: |-
+  example (X : Type) (A : Set X) (x y : X) :
+      (_root_.GeneralTopology.collapse A).r x y ↔ (x = y ∨ (x ∈ A ∧ y ∈ A)) := Iff.rfl
+preamble: |
+  universe u v w
+description: Define `collapse A`, whose relation is `fun x y => x = y ∨ (x ∈ A ∧ y ∈ A)`, in that order. Give the three fields of `Equivalence` as an anonymous constructor; a pattern such as `rintro x y (rfl | ⟨hx, hy⟩)` splits a hypothesis, and substituting the equality leaves the other disjunct to offer.
+stub_names:
+- collapse
+namespace: GeneralTopology
+seq: 138
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 468
+  closure_rounds: 1
+  check_kind: definition

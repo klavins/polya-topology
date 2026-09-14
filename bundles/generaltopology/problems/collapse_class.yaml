@@ -1,0 +1,52 @@
+slug: collapse_class
+kind: theorem
+title: The Subset Becomes One Point
+statement: |-
+  The whole of `A` is one point of the quotient, and nothing outside `A` is that point. Said as a preimage: for any `a` of `A`, the set of points whose class is the class of `a` is `A` itself.
+
+  Forwards, a point with the class of `a` is related to `a`, so it is either equal to `a`, which lies in `A`, or it lies in `A` by the second disjunct. Backwards, any two points of `A` are related, so their classes agree.
+concepts:
+- quotient_examples
+stub: |-
+  theorem collapse_preimage_class {X : Type u} {A : Set X} {a : X} (ha : a ∈ A) :
+      Quotient.mk (collapse A) ⁻¹' {Quotient.mk (collapse A) a} = A := sorry
+reference: |-
+  theorem collapse_preimage_class {X : Type u} {A : Set X} {a : X} (ha : a ∈ A) :
+      Quotient.mk (collapse A) ⁻¹' {Quotient.mk (collapse A) a} = A := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      rcases Quotient.exact hx with rfl | ⟨hxA, _⟩
+      · exact ha
+      · exact hxA
+    · intro x hx
+      exact Quotient.sound (Or.inr ⟨hx, ha⟩)
+spec: 'example : ∀ {X : Type u} {A : Set X} {a : X} (ha : a ∈ A), Quotient.mk (collapse A) ⁻¹'' {Quotient.mk (collapse A) a} = A := _root_.GeneralTopology.collapse_preimage_class'
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  def collapse {X : Type u} (A : Set X) : Setoid X where
+    r := fun x y => x = y ∨ (x ∈ A ∧ y ∈ A)
+    iseqv := ⟨fun _ => Or.inl rfl, by
+        rintro x y (rfl | ⟨hx, hy⟩)
+        · exact Or.inl rfl
+        · exact Or.inr ⟨hy, hx⟩, by
+        rintro x y z (rfl | ⟨hx, hy⟩) (rfl | ⟨hy', hz⟩)
+        · exact Or.inl rfl
+        · exact Or.inr ⟨hy', hz⟩
+        · exact Or.inr ⟨hx, hy⟩
+        · exact Or.inr ⟨hx, hz⟩⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `Quotient.mk (collapse A) ⁻¹' {Quotient.mk (collapse A) a} = A` when `a ∈ A`. `Set.Subset.antisymm` splits it. A membership in a singleton is an equation of classes, which `Quotient.exact` turns into the relation and `Quotient.sound` turns back.
+stub_names:
+- collapse_preimage_class
+namespace: GeneralTopology
+seq: 139
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 499
+  closure_rounds: 1
+  check_kind: theorem

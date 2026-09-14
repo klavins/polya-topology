@@ -1,0 +1,89 @@
+slug: coinduced_universal
+kind: theorem
+title: A Map Out of a Coinduced Topology
+statement: |-
+  A subspace was never examined directly: a map into it was tested by composing with the inclusion. The same holds here, in the other direction. A map `g` out of a space carrying the coinduced topology is continuous exactly when `g ∘ f` is, so no open set of `Y` ever has to be looked at.
+
+  One direction is composition with `f`. For the other, the preimage under `g` of an open set of `Z` is called open when its preimage under `f` is open, and that is the preimage under the composite.
+concepts:
+- final_topology
+stub: |-
+  theorem Topology.continuous_out_of_coinduced {X : Type u} {Y : Type v} {Z : Type w}
+      (T : Topology X) (f : X → Y) (S : Topology Z) (g : Y → Z) :
+      (T.coinduced f).Continuous S g ↔ T.Continuous S (g ∘ f) := sorry
+reference: |-
+  theorem Topology.continuous_out_of_coinduced {X : Type u} {Y : Type v} {Z : Type w}
+      (T : Topology X) (f : X → Y) (S : Topology Z) (g : Y → Z) :
+      (T.coinduced f).Continuous S g ↔ T.Continuous S (g ∘ f) := by
+    constructor
+    · intro hg
+      exact Topology.continuous_comp T (Topology.continuous_coinduced T f) hg
+    · intro hg W hW
+      show T.IsOpen (f ⁻¹' (g ⁻¹' W))
+      rw [← Set.preimage_comp]
+      exact hg W hW
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w}
+      (T : Topology X) (f : X → Y) (S : Topology Z) (g : Y → Z), (T.coinduced f).Continuous S g ↔ T.Continuous S (g ∘ f) := _root_.GeneralTopology.Topology.continuous_out_of_coinduced
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+      (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := by
+    intro U hU
+    rw [Set.preimage_comp]
+    exact hf _ (hg U hU)
+
+  theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
+      f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨V, hVF, hxV⟩
+      exact ⟨f ⁻¹' V, ⟨V, hVF, rfl⟩, hxV⟩
+    · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
+      exact ⟨V, hVF, hxW⟩
+
+  def Topology.coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) : Topology Y where
+    IsOpen := fun V => T.IsOpen (f ⁻¹' V)
+    univ := by
+      rw [Set.preimage_univ]
+      exact T.univ
+    inter := by
+      intro V W hV hW
+      rw [Set.preimage_inter]
+      exact T.inter hV hW
+    sUnion := by
+      intro F h
+      rw [preimage_sUnion_image]
+      refine T.sUnion ?_
+      rintro W ⟨V, hVF, rfl⟩
+      exact h V hVF
+
+  theorem Topology.continuous_coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) :
+      T.Continuous (T.coinduced f) f :=
+    fun _ hV => hV
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `(T.coinduced f).Continuous S g` exactly when `T.Continuous S (g ∘ f)`. Forwards, compose with the previous problem. Backwards, restate the goal with `show`, fold the two preimages into one with `← Set.preimage_comp`, and apply the hypothesis.
+stub_names:
+- Topology.continuous_out_of_coinduced
+namespace: GeneralTopology
+seq: 125
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 101
+  closure_rounds: 1
+  check_kind: theorem

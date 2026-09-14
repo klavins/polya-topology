@@ -17,6 +17,8 @@ description: |-
 
   **Subspaces and Products** makes new spaces out of old, and asks of each what maps it admits. The topology a subset inherits is the one that makes a map into the subset no harder to test than a map into the whole space around it; the same construction along any map at all gives the coarsest topology making that map continuous, and the subspace is one case of it. The product of two spaces calls a set open when every point of it has a box around it inside, the two projections out of it are continuous and — unusually — open, and a map into it is a pair of maps, continuous exactly when both of them are. The section ends where the subject began: the plane under the supremum distance is the product of two copies of the line, because a supremum ball is a square, and the taxicab plane is one too, since the last section made it the same space.
 
+  **Quotients and Sums** builds the constructions the last section's are dual to. Reverse the arrow of the induced topology: given a map out of a space, call a set open below when its preimage is open above, and the result is the finest topology that map allows. Gluing points together by an equivalence relation is that construction along the map carrying a point to its class, and laying two spaces side by side is it along the two injections at once. A map out of either is then no harder to test than a map out of what it was built from: a map out of a quotient is a map that does not distinguish related points, and a map out of a sum is a pair of maps. The section ends by collapsing a subset of a space to a single point, and showing that the point a closed subset becomes is a closed point of what is left.
+
   Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
@@ -747,11 +749,51 @@ concepts:
 - slug: plane_is_product
   description: The plane was built as a set with a distance, the line as a set with a distance, and the two have had no formal relation. The supremum distance is the larger of the two coordinate distances, so a ball of it is a square — a box of two intervals. The plane is therefore the product of two lines, which is where the metric half of the subject meets the topological one.
   kind: theorem
-  goal: true
+  goal: false
   section: Subspaces and Products
   section_order: 6
   title: The Plane as a Product
   position: 34
+- slug: final_topology
+  description: 'The induced topology pulls the open sets back along a map into a space. Reverse the arrow: given a map out of a space, call a set open below when its preimage is open above. This is the finest topology making that map continuous, and every space built by gluing — a quotient, a disjoint union — carries it.'
+  kind: definition
+  goal: false
+  section: Quotients and Sums
+  section_order: 7
+  title: The Final Topology
+  position: 35
+- slug: lean_quotients
+  description: 'An equivalence relation on a set gives the set of its classes. In Lean the relation is bundled with its proof of being one as a `Setoid`, and `Quotient` builds the type of classes out of it. Three things are needed of that type: that every element of it is a class, when two classes are equal, and how a map out of it is given. None of them is topology.'
+  kind: definition
+  goal: false
+  section: Quotients and Sums
+  section_order: 7
+  title: Quotients in Lean
+  position: 36
+- slug: quotient_space
+  description: Gluing points together is the first construction that makes a space smaller rather than larger. The set of classes carries the final topology along the map sending a point to its class, so a set of classes is open exactly when the points those classes collect form an open set. Every space made by identification is one of these.
+  kind: definition
+  goal: false
+  section: Quotients and Sums
+  section_order: 7
+  title: The Quotient Space
+  position: 37
+- slug: sum_space
+  description: 'Two spaces laid side by side, touching nowhere. A point is a point of one or a point of the other, and a set is open when the part of it lying in each is open there. This is the construction dual to the product: where a map into a product is a pair of maps, a map out of a sum is a pair of maps.'
+  kind: definition
+  goal: false
+  section: Quotients and Sums
+  section_order: 7
+  title: The Sum of Two Spaces
+  position: 38
+- slug: quotient_examples
+  description: 'The first identification worth making: take a subset, declare all of its points equal, and leave everything else alone. The space that results has one new point where the subset was. What that point inherits from the subset is the question the construction is for, and the answer for a closed subset is the last thing this subject proves.'
+  kind: theorem
+  goal: true
+  section: Quotients and Sums
+  section_order: 7
+  title: Collapsing a Subset
+  position: 39
 edges:
 - - closed_families
   - closure
@@ -759,6 +801,8 @@ edges:
   - closed_families
 - - closed_sets
   - open_closed_maps
+- - closed_sets
+  - quotient_examples
 - - closed_sets
   - subspace_maps
 - - closure
@@ -778,6 +822,8 @@ edges:
 - - continuous_maps
   - continuity_examples
 - - continuous_maps
+  - final_topology
+- - continuous_maps
   - homeomorphism
 - - continuous_maps
   - induced_topology
@@ -786,13 +832,21 @@ edges:
 - - extreme_topologies
   - continuity_examples
 - - extreme_topologies
+  - quotient_space
+- - extreme_topologies
   - topological_invariants
+- - final_topology
+  - quotient_space
+- - final_topology
+  - sum_space
 - - homeomorphism
   - metric_equivalence
 - - homeomorphism
   - open_closed_maps
 - - homeomorphism
   - topological_invariants
+- - induced_topology
+  - quotient_space
 - - metric_equivalence
   - plane_is_product
 - - metric_space
@@ -803,6 +857,8 @@ edges:
   - continuity_bridge
 - - metric_topology
   - metric_equivalence
+- - metric_topology
+  - quotient_examples
 - - neighbourhoods
   - closure_points
 - - neighbourhoods
@@ -823,6 +879,8 @@ edges:
   - open_sets
 - - open_closed_maps
   - product_maps
+- - open_closed_maps
+  - sum_space
 - - open_sets
   - metric_topology
 - - plane_norms
@@ -831,6 +889,8 @@ edges:
   - plane_is_product
 - - product_topology
   - product_maps
+- - quotient_space
+  - quotient_examples
 - - real_line
   - epsilon_delta
 - - real_line
@@ -867,7 +927,7 @@ provenance:
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: 0278afbb79722c743b7328f685f358500132e7fb
+  commit: 318b783352d0e4c0a4fc181288b37d8a61d544ef
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

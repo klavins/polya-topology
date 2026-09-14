@@ -1,0 +1,29 @@
+slug: define_kernel_setoid
+kind: definition
+title: The Relation a Map Induces
+statement: |-
+  A `Setoid X` bundles a relation `r : X → X → Prop` with a proof `iseqv` that it is an equivalence — reflexive, symmetric, transitive — exactly as `Metric` bundled a distance with its axioms. We write `s.r x y` for the relation of a setoid `s`.
+
+  Every map produces one. Call `x` and `y` equivalent when `f x = f y`. This is an equivalence relation because equality is one, and the three fields of `Equivalence` are the three corresponding facts about equality. Any map out of `X` identifies exactly the pairs this relation names, so this is the general shape of a relation worth quotienting by.
+concepts:
+- lean_quotients
+stub: 'def kernelSetoid {X : Type u} {Y : Type v} (f : X → Y) : Setoid X := sorry'
+reference: |-
+  def kernelSetoid {X : Type u} {Y : Type v} (f : X → Y) : Setoid X where
+    r := fun x y => f x = f y
+    iseqv := ⟨fun _ => rfl, fun h => h.symm, fun h h' => h.trans h'⟩
+spec: 'example (X Y : Type) (f : X → Y) (x y : X) : (_root_.GeneralTopology.kernelSetoid f).r x y ↔ f x = f y := Iff.rfl'
+preamble: |
+  universe u v w
+description: 'Define `kernelSetoid f`, whose relation is `fun x y => f x = f y`. The `iseqv` field is an anonymous constructor of three proofs: `rfl` for the first, and `Eq.symm` and `Eq.trans` applied to the hypotheses for the other two.'
+stub_names:
+- kernelSetoid
+namespace: GeneralTopology
+seq: 126
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 132
+  closure_rounds: 1
+  check_kind: definition

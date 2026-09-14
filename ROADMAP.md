@@ -16,7 +16,7 @@ follows the source.
 
 ## How a section is sized
 
-The five built sections measure 4 to 7 concepts and 9 to 31 problems, in 280 to 780 lines. That
+The eight built sections measure 4 to 7 concepts and 9 to 31 problems, in 280 to 780 lines. That
 is the target: **five or six concepts and twelve to eighteen problems**, which is a section a
 coding agent can draft, compile and extract in one sitting. A section wanting more than that is
 two sections. Every proof stays under fifteen lines; where a step will not, the step becomes a
@@ -42,6 +42,13 @@ longest single field of a structure — the intersection condition of the produc
 nine. Five sections running have landed between 16 and 18 problems, so the range at the top of
 this note can be narrowed: **five concepts and sixteen to eighteen problems** is what a section
 is, and the two that fell outside it (§1's 31, §3's 9) are the first section and the shortest.
+
+§8 came in at 5 concepts, 20 problems and 578 lines, with the longest proof at eleven and the
+longest declaration — the four fields of the sum topology — at seventeen. It is the first
+overshoot of the narrowed range, and the cause is nameable: one of its five concepts teaches a
+piece of Lean (`Setoid` and `Quotient`) rather than a piece of topology, and a concept like that
+is four problems whatever the mathematics around it costs. Count such a concept against the
+budget like any other. **Five concepts and sixteen to eighteen problems** still stands.
 
 ## The sections
 
@@ -127,8 +134,6 @@ is, and the two that fell outside it (§1's 31, §3's 9) are the first section a
     about the space rather than the membership tedium rule 6 warns against.
   - `continuous_closure` came out at seven lines, as §4's flag predicted: `Set.image_subset_iff` and
     then `T.closure_min`, with the preimage of a closed set closed.
-
----
 
 - [x] **6. Homeomorphisms** — `Homeomorphisms.lean` · 4 concepts, 18 problems
 
@@ -255,33 +260,87 @@ is, and the two that fell outside it (§1's 31, §3's 9) are the first section a
     an open-set comparison. Read the remaining estimates under **The expensive proofs** with that
     and §5's bridge in mind.
 
-- [ ] **8. Quotients and Sums** — `Quotients.lean` · 4 concepts, ~12 problems
+- [x] **8. Quotients and Sums** — `Quotients.lean` · 5 concepts, 20 problems
 
   The constructions dual to the last section's. Builds on §7.
 
-  - `final_topology` — the topology along a map in the other direction: a set is open below
-    exactly when its preimage is open above. It is a topology because preimage commutes with
-    everything; the map is continuous; a map out of it is continuous exactly when its composite
-    with the map is.
-  - `quotient_space` — the quotient by an equivalence relation, as the final topology along the
-    quotient map; saturated sets; the quotient of a discrete space is discrete.
-  - `sum_space` — the disjoint union of two spaces: a set is open when both of its preimages are;
-    the two injections are continuous open maps; a map out of a sum is a pair of maps.
-  - `quotient_examples` — collapsing a subset to a point, and the quotient of the line by a closed
-    interval.
+  The topology along a map in the other direction: a set is open below exactly when its preimage
+  is open above; that it is a topology, that the map is continuous, that it is the finest such,
+  and that a map out of it is continuous exactly when the composite is. Then `Setoid` and
+  `Quotient` in Lean, before any topology: the relation a map induces, that every element of a
+  quotient is a class and when two classes are equal, and the map a function descends to. Then
+  the quotient space as the final topology along the class map, its universal property,
+  saturated sets, and the quotient of a discrete space. Then the disjoint union of two spaces,
+  whose injections are continuous open maps and out of which a map is a pair of maps. The
+  section ends by collapsing a subset of a space to a single point, and showing that the point
+  a closed subset becomes is a closed point.
 
-  Flags: `final_topology` is `Topology.induced` with the arrow reversed, and it should be written
-  to match it field for field — the open sets are `{V | T.IsOpen (f ⁻¹' V)}` rather than an
-  existential, which makes its three conditions shorter than the induced one's, not longer. Its
-  "a map out of it is continuous exactly when the composite is" is §7's
-  `Topology.continuous_into_subspace` read backwards, and `Topology.eq_of_isOpen_iff` is what
-  proves a quotient of a discrete space discrete. Carry two universes from the start, as §7 did;
-  no clash appeared there even where a concrete example sat at `Type 0`.
-  Beyond that, this is the section with the most Lean friction and the thinnest examples inside the
-  fence — the source's quotients of interest (the circle, the cylinder, the Möbius strip, the
-  torus) are all beyond it. Keep every statement about a quotient phrased through `Quot.mk` and
-  `Quot.lift` rather than by choosing representatives. Nothing after this section depends on it,
-  so it can be deferred past §13 without disturbing the order.
+  Concepts: `final_topology`, `lean_quotients`, `quotient_space`, `sum_space`,
+  `quotient_examples`.
+
+  As built, and what it settled:
+
+  - The **`@goal` moved** from §7's `plane_is_product` to `quotient_examples`.
+  - **No new import at all**, in the section that was billed as the one with the most Lean
+    friction. `Setoid`, `Quotient`, `Quotient.mk`, `.lift`, `.sound`, `.exact`,
+    `.inductionOn`, `Sum`, `Sum.elim`, `Sum.inl_injective`, `Set.preimage_image_eq` and
+    `Set.preimage_inr_image_inl` are all reachable under what §7 left, so the subject's fence is
+    still the ten modules `polya extract` reports. The friction was not where it was expected.
+  - **A concept of pure Lean, `lean_quotients`, placed before any topology.** It is the first
+    concept since §1's `metric_space` with no prerequisites at all — it uses nothing the subject
+    built — and it is on the goal's path only by the syllabus rule, because it is declared before
+    the goal. A section that needs a piece of Lean machinery should do the same rather than
+    teaching it inside the problem that first needs it.
+  - **Favouring `Quotient` over `Quot` cost nothing.** Four names carry the whole of it:
+    `Quotient.inductionOn` for "every element is a class", `Quotient.sound` and `Quotient.exact`
+    for "two classes are equal exactly when the points are related", and `Quotient.lift` for a map
+    out. `Quot.lift`'s raw obligations never appeared, and no proof chose a representative.
+  - **A `Setoid` is passed explicitly, as a `Metric` is**, never as an instance, so the relation
+    is written `s.r x y` and `≈` never appears in the subject. `Quotient.sound` and
+    `Quotient.exact` still unify against it, since `a ≈ b` *is* `@Setoid.r _ s a b`. So the
+    house rule "bundling, not classes" survives a class taken from core, and §11's convergence
+    and §12's covers should assume the same of anything else core bundles as a class.
+  - **`preimage_sUnion_image` was not in the plan and is in the section**, as its first problem.
+    Mathlib's `Set.preimage_sUnion` produces an indexed union, and every construction here wants
+    the `⋃₀` form, so the fact that a preimage carries a union of a family to the union of the
+    preimages has to be proved once. Both `Topology.coinduced` and `Topology.sum` close their
+    third field with it, and it is the one fact the section rests on.
+  - **The coinduced topology is shorter than the induced one, as the flag predicted.** Its
+    `IsOpen V` is `T.IsOpen (f ⁻¹' V)` with no existential, so there is nothing to take apart in
+    any of the three fields. It is named `Topology.coinduced` rather than `Topology.final`, to
+    pair with `Topology.induced`; the prose calls it the final topology.
+  - **The quotient topology is a `def` with a term body** — `T.coinduced (Quotient.mk s)` — and
+    everything about it is inherited rather than restated: the projection's continuity is
+    `Topology.continuous_coinduced`, the universal property is
+    `Topology.continuous_out_of_coinduced` at `Quotient.lift`, and the discrete case is the
+    coinduced one. No field of a topology is written twice in this section.
+  - **`quotient_discrete` is `fun _ => Iff.rfl`.** `Topology.eq_of_isOpen_iff` was the tool the
+    flag named, but the two conditions turn out to be the same proposition and not merely
+    equivalent, so the general statement — the final topology along *any* map out of a discrete
+    space is discrete — costs the same as the quotient case and is built instead.
+  - **`IsSaturated f S` is `S = f ⁻¹' (f '' S)` with no authored spec**, the orientation named in
+    the description, as §7 established for definitions whose shape is the answer. What it buys is
+    two lines: on an open saturated set the final topology's test asks about the preimage of the
+    image, which is the set. §13's recognition of quotient projections is this with closed sets.
+  - **The sum's universal property is free.** `Topology.continuous_sum_elim` is
+    `fun W hW => ⟨hf W hW, hg W hW⟩`, because the preimage of a set under `Sum.elim f g`, read on
+    either copy, *is* its preimage under that copy's map. The two injections' continuity is the
+    same observation with `.1` and `.2`. Only their being open maps needed an argument, and that
+    is `Set.preimage_image_eq` with `Sum.inl_injective` on the near side and
+    `Set.preimage_inr_image_inl` on the far side.
+  - **The examples are thin inside the fence, as the flag said, and the section stops where it
+    should.** The quotient of the line by `[0,1]` is built, and what is proved of it is that the
+    point the interval became is closed — which is `collapse_preimage_class` and one
+    `Set.preimage_compl`. The line with two origins was left to §9, where the failure of Hausdorff
+    is the point; it now costs only a second setoid, since `Topology.sum` and `Topology.quotient`
+    are both here.
+  - **Twenty problems, two above the band**, in 578 lines, with the longest proof at eleven
+    (`unitInterval_closed`) and the longest declaration at seventeen (`Topology.sum`, four fields).
+    Five concepts is right and twenty is two too many: the Lean concept is what pushed it over, and
+    a later section that needs one should count it against the same budget rather than treating it
+    as free.
+
+---
 
 - [ ] **9. Separation Axioms** — `Separation.lean` · 5 concepts, ~15 problems
 
@@ -315,6 +374,18 @@ is, and the two that fell outside it (§1's 31, §3's 9) are the first section a
   a set of reals. It is available (`sInf`, with the definition marked `noncomputable`, which the
   extractor accepts) but it costs a concept of its own; leave it out unless the section is short.
   Urysohn's lemma is out of scope — see the last section below.
+  §8 paid for the source's own counterexample, the **line with two origins**: it is
+  `line.toTopology.sum line.toTopology` quotiented by the relation identifying the two copies of
+  each point except the origin, which is a setoid of the same shape as `collapse` and the only
+  thing the example still owes. Every neighbourhood of one origin then meets every neighbourhood
+  of the other, so the space is T₁ and not Hausdorff, which no example now in the subject
+  separates. Take it if `separation_examples` wants a fifth; `Topology.quotient`,
+  `Topology.sum` and `Topology.continuous_inl` are all in hand.
+  Two more things §8 leaves here. `unitInterval` and `unitInterval_closed` exist, so an example
+  wanting a closed subset of the line need not build one. And a quotient of a T_n space is in
+  general not T_n — which is why `separation_hereditary` is stated for subspaces and products and
+  not for quotients; say so in prose rather than proving it, since the counterexample is
+  `ℝ/ℚ` and that wants the Archimedean argument for its own sake.
 
 - [ ] **10. Connectedness** — `Connectedness.lean` · 5 concepts, ~14 problems
 
@@ -338,6 +409,11 @@ is, and the two that fell outside it (§1's 31, §3's 9) are the first section a
   standard proof that the rationals are totally disconnected wants an irrational number to cut
   them at, and the usual witness is a square root, which the fence excludes; use the discrete
   example instead. `path_connected` is the first concept to drop if the section runs long.
+  §8 makes the source's own phrasing sayable — a space is connected when it is not homeomorphic
+  to a sum of two nonempty spaces — but do not define connectedness that way: the clopen form is
+  what every proof here uses, and `Topology.sum` would drag a homeomorphism into each of them.
+  If the equivalence is wanted, it is one problem at the end, with `Topology.continuous_sum_iff`
+  for the two maps.
 
 - [ ] **11. Sequences and Convergence** — `Sequences.lean` · 5 concepts, ~14 problems
 
@@ -386,6 +462,8 @@ is, and the two that fell outside it (§1's 31, §3's 9) are the first section a
   wants three or four helper problems of its own; budget it as half the section, or give it a
   section. Everything else here is cheap. The extreme value theorem needs a supremum and the fact
   that it is attained — worth a helper.
+  `unitInterval` is defined and `unitInterval_closed` is proved, in §8; `interval_compact` should
+  be stated at that set rather than introducing an interval of its own.
 
 - [ ] **13. Compact Hausdorff Spaces** — `CompactHausdorff.lean` · 5 concepts, ~13 problems
 
@@ -410,6 +488,12 @@ is, and the two that fell outside it (§1's 31, §3's 9) are the first section a
   is cheap *if* §12 landed. The plane case is paid for: §7's `plane_homeomorphic_product` and
   `taxicab_homeomorphic_product` identify both planes with `line.toTopology.prod line.toTopology`,
   and `ball_supNorm_eq_box` turns a supremum ball into a box wherever the argument wants one.
+  §8 makes the source's other compact-Hausdorff result sayable: a continuous surjection from a
+  compact space to a Hausdorff one exhibits the target's topology as the quotient topology, which
+  is the equation `S = T.coinduced f` and is proved by `Topology.eq_of_isOpen_iff` once the map
+  is known closed. `IsSaturated` and `Topology.isOpen_image_of_saturated` are the closed-set form
+  of the recognition; take them if `compact_to_hausdorff` wants a third problem, and skip them
+  otherwise — nothing else in the roadmap needs saturation.
 
 ## What is deliberately left out
 
@@ -448,8 +532,12 @@ So the fence is roomier than it looks: the least-upper-bound property, the Archi
 intervals, finite sets, products of sets and Zorn's lemma are all available, and the square root
 is the one thing that is not. Neither §5 nor §6 needed an addition; §7 added
 `Mathlib.Data.Set.Prod`, which is the only movement since §4, and the subject's fence is now the
-ten modules `polya extract` reports. Test any further import before adding it; the command is in
-`STYLE.md`, and the message to grep for is `unknownIdentifier`, which Lean capitalizes.
+ten modules `polya extract` reports. §8 added nothing either, which is the more surprising of the
+two: `Setoid`, `Quotient` with its four operations, `Sum` with `Sum.elim` and `Sum.inl_injective`,
+and `Set.preimage_image_eq` beside `Set.preimage_inr_image_inl` are all reachable under what §7
+left, so `Mathlib.Data.Sum.Basic` was tested, found clean, and not needed. Test any further import
+before adding it; the command is in `STYLE.md`, and the message to grep for is
+`unknownIdentifier`, which Lean capitalizes.
 
 `Mathlib.Data.Real.Archimedean` is **deprecated** in this toolchain and emits a warning naming
 its replacement. Warnings are errors under publish, so import
@@ -510,11 +598,26 @@ one — never a redefinition.
   `Topology.continuous_mk_left`, `Topology.continuous_mk_right`
 - `ball_supNorm_eq_box`, `isOpen_prod_of_isOpenSet_supNorm`, `isOpenSet_supNorm_of_isOpen_prod`,
   `supNorm_prod_homeomorphism`, `plane_homeomorphic_product`, `taxicab_homeomorphic_product`
+- `preimage_sUnion_image`, `Topology.coinduced`, `Topology.continuous_coinduced`,
+  `Topology.coinduced_finest`, `Topology.continuous_out_of_coinduced`, `coinduced_discrete`
+- `kernelSetoid`, `quotient_mk_surjective`, `quotient_mk_eq_iff`, `kernelLift`,
+  `kernelLift_injective`
+- `Topology.quotient`, `Topology.continuous_mk`, `Topology.continuous_quotient_lift`,
+  `IsSaturated`, `isSaturated_preimage`, `Topology.isOpen_image_of_saturated`, `quotient_discrete`
+- `Topology.sum`, `Topology.continuous_inl`, `Topology.continuous_inr`, `Topology.isOpenMap_inl`,
+  `Topology.isOpenMap_inr`, `Topology.continuous_sum_elim`, `Topology.continuous_sum_iff`
+- `collapse`, `collapse_preimage_class`, `unitInterval`, `unitInterval_closed`,
+  `collapse_point_isClosed`, `line_collapse_interval`
 
 Two in particular: §7's `Topology.induced` is the shape `Topology.subspace` already had
 (`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it and
 `Topology.subspace_eq_induced` is `rfl`; and §4's `interior_boundary` builds on §2's
 `union_of_opens_inside`, which is the statement that an open set is its own interior.
+
+A third, from §8: `Topology.quotient` **is** `Topology.coinduced` at `Quotient.mk`, defined as
+exactly that, so every theorem about the coinduced topology holds of a quotient with nothing
+restated. A later section wanting a property of quotients should look for it on `coinduced`
+first, and state it there unless it is about the class map in particular.
 
 ### What the closure can see
 
@@ -535,6 +638,11 @@ writes the dot form still passes, since the spec checks the data fields — so t
 §5's `Topology.continuous_restrict` has the same shape and has not been pulled anywhere yet; if a
 later section stalls this way, that is the first place to look.
 
+§8 wrote its citations in full from the start — `Topology.continuous_coinduced T (Quotient.mk s)`
+in `Topology.continuous_mk`, `Topology.empty T'` in `Topology.isOpenMap_inl`,
+`Metric.mem_ball line` in `unitInterval_closed` — and nothing stalled. The rule costs nothing when
+it is followed first; follow it in every section from here.
+
 ### Shapes that cost more than they look
 
 - **Generating a topology from a family.** Avoid it — see §7. Every construction in §7 and §8 is
@@ -544,7 +652,10 @@ later section stalls this way, that is the first place to look.
   literature — of a space, and of a subset. Define the subset version with opens of the ambient
   space, prove once that it agrees with the subspace being compact or connected, and never juggle
   subtypes again.
-- **Quotients.** `Quot.lift`'s obligations are where a draft will stall; §8's flag says how.
+- **Quotients.** This bullet is struck. `Quotient.lift` was not where §8 stalled — nothing was.
+  The four names `Quotient.inductionOn`, `.sound`, `.exact` and `.lift` carry every statement
+  about a quotient, the setoid rides as an explicit argument like a `Metric`, and no proof ever
+  chose a representative. Prefer `Quotient` to `Quot` and the obligations are the relation itself.
 - **Universes.** §1 to §4 are all `Type u`. §5 is not, and could not be: `Topology.Continuous`
   relates a topology on `X` to one on `Y`, and `sierpinski : Topology Bool` puts `Bool` at
   `Type 0` against an arbitrary `X : Type u`, so the continuity definitions carry

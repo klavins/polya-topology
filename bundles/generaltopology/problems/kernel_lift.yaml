@@ -1,0 +1,51 @@
+slug: kernel_lift
+kind: example
+title: A Map Out of a Quotient
+statement: |-
+  To give a map out of `Quotient s` is to give a map out of `X` that does not distinguish related points. `Quotient.lift f h` is that map, where `h` proves `f a = f b` whenever `a` and `b` are related, and `Quotient.lift f h (Quotient.mk s x) = f x` holds by definition.
+
+  For the relation a map induces, the obligation is that relation itself, so the proof asked for is the hypothesis unchanged. The map that results is injective: two classes with the same value are the classes of two points with the same image under `f`, and that is what being related means here.
+concepts:
+- lean_quotients
+stub: |-
+  def kernelLift {X : Type u} {Y : Type v} (f : X → Y) : Quotient (kernelSetoid f) → Y := sorry
+
+  theorem kernelLift_injective {X : Type u} {Y : Type v} (f : X → Y)
+      {p q : Quotient (kernelSetoid f)} (h : kernelLift f p = kernelLift f q) : p = q := sorry
+reference: |-
+  def kernelLift {X : Type u} {Y : Type v} (f : X → Y) : Quotient (kernelSetoid f) → Y :=
+    Quotient.lift f (fun _ _ h => h)
+
+  theorem kernelLift_injective {X : Type u} {Y : Type v} (f : X → Y)
+      {p q : Quotient (kernelSetoid f)} (h : kernelLift f p = kernelLift f q) : p = q := by
+    induction p using Quotient.inductionOn with
+    | _ x =>
+      induction q using Quotient.inductionOn with
+      | _ y => exact Quotient.sound h
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (f : X → Y)
+      {p q : Quotient (kernelSetoid f)} (h : _root_.GeneralTopology.kernelLift f p = _root_.GeneralTopology.kernelLift f q), p = q := _root_.GeneralTopology.kernelLift_injective
+  example (X Y : Type) (f : X → Y) (x : X) :
+      _root_.GeneralTopology.kernelLift f (Quotient.mk (kernelSetoid f) x) = f x := rfl
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  def kernelSetoid {X : Type u} {Y : Type v} (f : X → Y) : Setoid X where
+    r := fun x y => f x = f y
+    iseqv := ⟨fun _ => rfl, fun h => h.symm, fun h h' => h.trans h'⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `kernelLift f`, the map `Quotient (kernelSetoid f) → Y` that `f` descends to, and show that it is injective. For the second, take both classes apart with `induction … using Quotient.inductionOn` and close with `Quotient.sound` applied to the hypothesis.
+stub_names:
+- kernelLift
+- kernelLift_injective
+namespace: GeneralTopology
+seq: 128
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Quotients.lean
+  line: 179
+  closure_rounds: 1
+  check_kind: mixed
