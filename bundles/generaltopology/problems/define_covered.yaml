@@ -1,0 +1,47 @@
+slug: define_covered
+kind: example
+title: The Points Covered So Far
+statement: |-
+  Fix a collection `F` of open sets covering the unit interval. Say that `F` *covers up to* `x` when finitely many of its members already cover the stretch from `0` to `x`. What is to be proved is that `F` covers up to `1`, since that stretch is the interval itself.
+
+  It covers up to `0` at once. The stretch from `0` to `0` is the single point `0`, and one member of the collection holds it.
+concepts:
+- interval_compact
+stub: |-
+  def CoveredUpTo (F : Set (Set ℝ)) (x : ℝ) : Prop := sorry
+
+  theorem coveredUpTo_zero {F : Set (Set ℝ)} (hcov : unitInterval ⊆ ⋃₀ F) : CoveredUpTo F 0 := sorry
+reference: |-
+  def CoveredUpTo (F : Set (Set ℝ)) (x : ℝ) : Prop :=
+    ∃ G ⊆ F, G.Finite ∧ {y | 0 ≤ y ∧ y ≤ x} ⊆ ⋃₀ G
+
+  theorem coveredUpTo_zero {F : Set (Set ℝ)} (hcov : unitInterval ⊆ ⋃₀ F) : CoveredUpTo F 0 := by
+    obtain ⟨U, hUF, hU⟩ := hcov ⟨le_refl 0, zero_le_one⟩
+    refine ⟨{U}, Set.singleton_subset_iff.mpr hUF, Set.finite_singleton U, ?_⟩
+    rintro y ⟨hy0, hy1⟩
+    rw [le_antisymm hy1 hy0]
+    exact ⟨U, rfl, hU⟩
+spec: |-
+  example : ∀ {F : Set (Set ℝ)} (hcov : unitInterval ⊆ ⋃₀ F), _root_.GeneralTopology.CoveredUpTo F 0 := _root_.GeneralTopology.coveredUpTo_zero
+  example (F : Set (Set ℝ)) (x : ℝ) :
+      _root_.GeneralTopology.CoveredUpTo F x ↔ ∃ G ⊆ F, G.Finite ∧ {y | 0 ≤ y ∧ y ≤ x} ⊆ ⋃₀ G := Iff.rfl
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  def unitInterval : Set ℝ := {x | 0 ≤ x ∧ x ≤ 1}
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `CoveredUpTo F x`: some `G ⊆ F` has `G.Finite` and `{y | 0 ≤ y ∧ y ≤ x} ⊆ ⋃₀ G`, those two conjuncts in that order. Then prove `coveredUpTo_zero`. A point of the stretch from `0` to `0` is squeezed between two inequalities, and `le_antisymm` turns them into the equation that rewrites it to `0`.'
+stub_names:
+- CoveredUpTo
+- coveredUpTo_zero
+namespace: GeneralTopology
+seq: 213
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 499
+  closure_rounds: 1
+  check_kind: mixed

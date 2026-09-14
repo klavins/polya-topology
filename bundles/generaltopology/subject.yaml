@@ -25,6 +25,8 @@ description: |-
 
   **Sequences and Convergence** returns to the idea analysis began with, and asks how much of it a topology keeps. A sequence converges to a point when its terms end up arbitrarily near that point, which in a metric space is a statement about balls and in any space a statement about neighbourhoods; wherever both readings can be had they agree. Uniqueness of the limit is no part of the idea but a demand on the space: in a codiscrete space every point is a limit of every sequence, in a Hausdorff space there is at most one, and a space with unique limits is at least T₁. Sequences then re-describe what the earlier sections built — a point of the closure of a set is the limit of a sequence in the set, a set is closed exactly when it holds the limits of its own convergent sequences, and a map between metric spaces is continuous exactly when it preserves limits. The section ends where analysis proper begins: a sequence whose terms bunch together need not have anything to bunch up at, and a space in which it always does is complete.
 
+  **Compactness** asks a question about covers. Spread open sets over a space until they cover it and infinitely many may be needed; a set is compact when finitely many always suffice. Finitely many points are compact whatever topology they carry, a codiscrete space is compact however large, and a discrete space with infinitely many points is the first space here that is not. Compactness passes to the closed subsets of a compact space and forward along every continuous map, so no homeomorphism can see past it. In a metric space a compact set is held by a single ball and holds every point it approaches, which on the line makes it a set with a largest and a smallest element — and that is the extreme value theorem of calculus, stated for any space at all. The section ends on the theorem the whole of it was built for: the unit interval is compact, proved from the least upper bound property by pushing a finite subcover rightwards as far as it will go, which turns out to be all the way.
+
   Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
@@ -476,6 +478,7 @@ environment:
   - Mathlib.Data.Set.Finite.Basic
   - Mathlib.Algebra.Order.Archimedean.Real.Basic
   - Mathlib.Data.Set.Prod
+  - Mathlib.Data.Set.Finite.Lattice
   project: mathlib
   toolchain: leanprover/lean4:v4.31.0
   mathlib_rev: v4.31.0
@@ -915,16 +918,62 @@ concepts:
 - slug: cauchy_complete
   description: 'A sequence may bunch up with nothing to bunch up at: its terms grow arbitrarily close to one another while the point they would converge to is missing from the space. A space where that never happens is complete. It is the condition under which a limit may be asserted before it is known, and it is what the real numbers have that the rationals do not.'
   kind: definition
-  goal: true
+  goal: false
   section: Sequences and Convergence
   section_order: 10
   title: Cauchy Sequences and Completeness
   position: 54
+- slug: open_cover
+  description: 'Spread open sets over a space until they cover it and you may need infinitely many of them. A set is compact when finitely many always suffice — when no open cover of it is irreducibly infinite. The condition looks like bookkeeping and is not: it is what a closed interval has and the whole line has not, and it is the reason so many theorems of analysis ask for a closed interval.'
+  kind: definition
+  goal: false
+  section: Compactness
+  section_order: 11
+  title: Open Covers and Compact Sets
+  position: 55
+- slug: compact_basics
+  description: A definition earns its place by what it admits and what it rules out. Finitely many points are always compact, whatever topology they carry; of the two extreme topologies one is compact on every set and the other only on the finite ones. And compactness, once had, passes to the closed subsets — which is how most compact sets are come by.
+  kind: theorem
+  goal: false
+  section: Compactness
+  section_order: 11
+  title: What is Compact, and What is Not
+  position: 56
+- slug: compact_metric
+  description: Where there are distances, a compact set cannot get away. It fits inside a single ball, and it holds every point it approaches. Each is proved the same way — cover the set with balls, keep finitely many, and take the largest or the smallest of the finitely many radii — and together they say what a compact set of real numbers looks like.
+  kind: theorem
+  goal: false
+  section: Compactness
+  section_order: 11
+  title: Compact Sets in a Metric Space
+  position: 57
+- slug: compact_images
+  description: 'A continuous map cannot spread a compact set out: pull a cover of the image back and it covers the set, so finitely many patches suffice on both sides. Nothing a topology can see then tells a compact space from a non-compact one. On the line the consequence is the theorem calculus claims as its own — a continuous function on a compact set attains its largest and its smallest value.'
+  kind: theorem
+  goal: false
+  section: Compactness
+  section_order: 11
+  title: Compactness Under Continuous Maps
+  position: 58
+- slug: interval_compact
+  description: 'The unit interval is compact, and the least upper bound property is what says so. It is the deepest fact in this section, and it is the reason the theorems above it are theorems of calculus: they hold on a closed interval because a closed interval is compact.'
+  kind: theorem
+  goal: true
+  section: Compactness
+  section_order: 11
+  title: The Closed Interval
+  position: 59
 edges:
+- - bounded_set
+  - compact_metric
 - - closed_families
   - closure
 - - closed_sets
   - closed_families
+- - closed_sets
+  - compact_basics
+- - closed_sets
+  - compact_metric
 - - closed_sets
   - connected
 - - closed_sets
@@ -942,6 +991,8 @@ edges:
 - - closure
   - interior_boundary
 - - closure_points
+  - compact_images
+- - closure_points
   - dense_sets
 - - closure_points
   - separation_closures
@@ -949,6 +1000,10 @@ edges:
   - sequential_closure
 - - cofinite_topology
   - separation_examples
+- - compact_images
+  - interval_compact
+- - compact_metric
+  - compact_images
 - - connected
   - components
 - - connected
@@ -957,6 +1012,8 @@ edges:
   - connected_images
 - - connected_examples
   - path_connected
+- - continuity_bridge
+  - compact_images
 - - continuity_bridge
   - path_connected
 - - continuity_bridge
@@ -992,6 +1049,8 @@ edges:
 - - epsilon_delta
   - continuity_bridge
 - - extreme_topologies
+  - compact_basics
+- - extreme_topologies
   - components
 - - extreme_topologies
   - continuity_examples
@@ -1005,6 +1064,8 @@ edges:
   - quotient_space
 - - final_topology
   - sum_space
+- - homeomorphism
+  - compact_images
 - - homeomorphism
   - metric_equivalence
 - - homeomorphism
@@ -1053,6 +1114,10 @@ edges:
   - product_maps
 - - open_closed_maps
   - sum_space
+- - open_cover
+  - compact_basics
+- - open_cover
+  - compact_metric
 - - open_sets
   - metric_topology
 - - plane_norms
@@ -1067,6 +1132,8 @@ edges:
   - separation_closures
 - - quotient_examples
   - connected_examples
+- - quotient_examples
+  - interval_compact
 - - quotient_space
   - quotient_examples
 - - real_line
@@ -1081,6 +1148,8 @@ edges:
   - separation_hereditary
 - - separation_closures
   - regular_normal
+- - separation_examples
+  - compact_metric
 - - separation_examples
   - convergence
 - - separation_examples
@@ -1114,6 +1183,8 @@ edges:
 - - topological_space
   - neighbourhoods
 - - topological_space
+  - open_cover
+- - topological_space
   - product_topology
 - - topological_space
   - separation_axioms
@@ -1127,7 +1198,7 @@ provenance:
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: 60c1a433b423ceb75b8802085ab30aae0630a2d4
+  commit: 06d0470aec5e7fbd417355d33955221cc7673efd
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

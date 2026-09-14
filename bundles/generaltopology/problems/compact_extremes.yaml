@@ -1,0 +1,97 @@
+slug: compact_extremes
+kind: example
+title: The Two Extremes
+statement: |-
+  The codiscrete topology has two open sets, and a cover can only use them. Whichever member of a cover catches a point must be the whole space, since the empty set catches nothing, and that one member covers everything by itself. Every codiscrete space is compact, however many points it has.
+
+  The discrete topology is the other extreme, and it is the subject's first space that is not compact. Every singleton is open, so the singletons cover the space; and no finite collection of them covers a space with infinitely many points, since a finite union of finite sets is finite.
+concepts:
+- compact_basics
+stub: |-
+  theorem codiscrete_isCompact (X : Type u) : (codiscrete X).IsCompact := sorry
+
+  theorem discrete_not_isCompact (X : Type u) [Infinite X] : ¬ (discrete X).IsCompact := sorry
+reference: |-
+  theorem codiscrete_isCompact (X : Type u) : (codiscrete X).IsCompact := by
+    intro F hFo hcov
+    refine ⟨{U | U ∈ F ∧ U = Set.univ}, fun U hU => hU.1,
+      Set.Finite.subset (Set.finite_singleton Set.univ) (fun U hU => hU.2), ?_⟩
+    intro y _
+    obtain ⟨U, hUF, hyU⟩ := hcov (Set.mem_univ y)
+    rcases hFo U hUF with h | h
+    · rw [h] at hyU
+      exact hyU.elim
+    · exact ⟨U, ⟨hUF, h⟩, hyU⟩
+
+  theorem discrete_not_isCompact (X : Type u) [Infinite X] : ¬ (discrete X).IsCompact := by
+    intro h
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := h {U | ∃ x : X, U = {x}} (fun _ _ => trivial)
+      (fun x _ => ⟨{x}, ⟨x, rfl⟩, rfl⟩)
+    refine Set.infinite_univ (α := X) (Set.Finite.subset ?_ hGcov)
+    refine hGfin.sUnion ?_
+    rintro U hU
+    obtain ⟨x, rfl⟩ := hGF hU
+    exact Set.finite_singleton x
+spec: |-
+  example : ∀ (X : Type u), (codiscrete X).IsCompact := _root_.GeneralTopology.codiscrete_isCompact
+  example : ∀ (X : Type u) [Infinite X], ¬ (discrete X).IsCompact := _root_.GeneralTopology.discrete_not_isCompact
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def discrete (X : Type u) : Topology X where
+    IsOpen := fun _ => True
+    univ := trivial
+    inter := fun _ _ => trivial
+    sUnion := fun _ => trivial
+
+  theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
+      (hV : V = ∅ ∨ V = Set.univ) : U ∩ V = ∅ ∨ U ∩ V = Set.univ := by
+    rcases hU with rfl | rfl
+    · left; exact Set.empty_inter V
+    · rcases hV with rfl | rfl
+      · left; exact Set.inter_empty _
+      · right; exact Set.inter_self _
+
+  theorem trivial_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ U = Set.univ) : ⋃₀ F = ∅ ∨ ⋃₀ F = Set.univ := by
+    by_cases hu : (Set.univ : Set X) ∈ F
+    · exact Or.inr (Set.Subset.antisymm (Set.subset_univ _) (Set.subset_sUnion_of_mem hu))
+    · refine Or.inl (Set.sUnion_eq_empty.mpr ?_)
+      intro U hUF
+      rcases h U hUF with rfl | rfl
+      · rfl
+      · exact absurd hUF hu
+
+  def codiscrete (X : Type u) : Topology X where
+    IsOpen := fun U => U = ∅ ∨ U = Set.univ
+    univ := Or.inr rfl
+    inter := trivial_inter
+    sUnion := trivial_sUnion
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `codiscrete_isCompact` and `discrete_not_isCompact`. For the first, keep exactly the members equal to `Set.univ`, a subcollection of `{Set.univ}` and so finite. For the second, `Set.infinite_univ` is the contradiction wanted, `Set.Finite.sUnion` makes the union of a finite collection of finite sets finite, and `trivial` proves whatever the discrete topology asks.
+stub_names:
+- codiscrete_isCompact
+- discrete_not_isCompact
+namespace: GeneralTopology
+seq: 202
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 138
+  closure_rounds: 1
+  check_kind: theorem

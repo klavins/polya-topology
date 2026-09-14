@@ -1,0 +1,87 @@
+slug: homeomorphic_compact
+kind: theorem
+title: Compactness is a Topological Property
+statement: |-
+  Homeomorphic spaces are the same space as far as a topology can tell, and compactness is stated with open sets alone, so it passes from either to the other.
+
+  No new argument is needed. A homeomorphism is onto, so the image of the whole of the first space is the whole of the second; and the image of a compact set is compact. The same reasoning showed connectedness to be a topological property, and it will show as much of any property written in open sets.
+concepts:
+- compact_images
+stub: |-
+  theorem Homeomorphic.isCompact {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsCompact) : T'.IsCompact := sorry
+reference: |-
+  theorem Homeomorphic.isCompact {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsCompact) : T'.IsCompact := by
+    obtain ⟨e⟩ := h
+    have him := Topology.isCompactSet_image T e.continuous_toFun hT
+    rwa [Set.image_univ, Set.range_eq_univ.mpr (Homeomorphism.surjective e)] at him
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsCompact), T'.IsCompact := _root_.GeneralTopology.Homeomorphic.isCompact
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  theorem Homeomorphism.surjective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : Function.Surjective h.toFun :=
+    fun y => ⟨h.invFun y, h.right_inv y⟩
+
+  def Homeomorphic {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) : Prop :=
+    Nonempty (Homeomorphism T T')
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+
+  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
+      T'.IsCompactSet (f '' S) := by
+    intro F hFo hcov
+    have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
+      intro x hxS
+      obtain ⟨U, hUF, hxU⟩ := hcov ⟨x, hxS, rfl⟩
+      exact ⟨f ⁻¹' U, ⟨U, hUF, rfl⟩, hxU⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hS {V | ∃ U ∈ F, V = f ⁻¹' U}
+      (by rintro V ⟨U, hUF, rfl⟩; exact hf U (hFo U hUF)) hpre
+    refine ⟨{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}, ?_, hGfin.dependent_image _, ?_⟩
+    · rintro U ⟨V, hV, rfl⟩
+      exact (hGF hV).choose_spec.1
+    · rintro y ⟨x, hxS, rfl⟩
+      obtain ⟨V, hVG, hxV⟩ := hGcov hxS
+      rw [(hGF hVG).choose_spec.2] at hxV
+      exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show `Homeomorphic.isCompact`. `obtain ⟨e⟩` opens the existence of a homeomorphism, and `Set.image_univ` with `Set.range_eq_univ` turns the image of the whole space into the whole space, which is where `Homeomorphism.surjective` is wanted.
+stub_names:
+- Homeomorphic.isCompact
+namespace: GeneralTopology
+seq: 209
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 375
+  closure_rounds: 1
+  check_kind: theorem

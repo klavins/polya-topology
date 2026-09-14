@@ -1,0 +1,63 @@
+slug: compact_closed_subset
+kind: theorem
+title: A Closed Subset of a Compact Space
+statement: |-
+  Let `C` be closed in a compact space and let `F` cover `C`. Then `F` need not cover the space, but adding the one open set `Cᶜ` to it does: a point outside `C` is caught by `Cᶜ`, and a point inside it by a member of `F`.
+
+  The space is compact, so finitely many of those cover it. Throw `Cᶜ` away again. What is left is a finite subcollection of `F`, and it still covers `C`, because the member that caught a point of `C` was not the one thrown away.
+concepts:
+- compact_basics
+stub: |-
+  theorem Topology.isCompactSet_of_isClosed {X : Type u} (T : Topology X) (hT : T.IsCompact)
+      {C : Set X} (hC : T.IsClosed C) : T.IsCompactSet C := sorry
+reference: |-
+  theorem Topology.isCompactSet_of_isClosed {X : Type u} (T : Topology X) (hT : T.IsCompact)
+      {C : Set X} (hC : T.IsClosed C) : T.IsCompactSet C := by
+    intro F hFo hcov
+    have hopen : ∀ U ∈ insert Cᶜ F, T.IsOpen U := by
+      rintro U (rfl | hU)
+      exacts [hC, hFo U hU]
+    have huniv : (Set.univ : Set X) ⊆ ⋃₀ insert Cᶜ F := by
+      intro x _
+      by_cases hxC : x ∈ C
+      · obtain ⟨U, hUF, hxU⟩ := hcov hxC
+        exact ⟨U, Set.mem_insert_of_mem _ hUF, hxU⟩
+      · exact ⟨Cᶜ, Set.mem_insert _ _, hxC⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hT _ hopen huniv
+    refine ⟨G ∩ F, Set.inter_subset_right, hGfin.subset Set.inter_subset_left, fun x hx => ?_⟩
+    obtain ⟨U, hUG, hxU⟩ := hGcov (Set.mem_univ x)
+    exact ⟨U, ⟨hUG, (hGF hUG).resolve_left (fun e => (e ▸ hxU) hx)⟩, hxU⟩
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) (hT : T.IsCompact)
+      {C : Set X} (hC : T.IsClosed C), T.IsCompactSet C := _root_.GeneralTopology.Topology.isCompactSet_of_isClosed
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.isCompactSet_of_isClosed`. `insert Cᶜ F` is the enlarged cover, and `rintro U (rfl | hU)` splits a member of it into the new set and an old one. `G ∩ F` is the collection with `Cᶜ` thrown away; `Set.Finite.subset` shows it finite, and `Or.resolve_left` rules out the discarded member at a point of `C`.
+stub_names:
+- Topology.isCompactSet_of_isClosed
+namespace: GeneralTopology
+seq: 203
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 174
+  closure_rounds: 1
+  check_kind: theorem

@@ -1,0 +1,65 @@
+slug: compact_image
+kind: theorem
+title: The Continuous Image of a Compact Set
+statement: |-
+  Let `f` be continuous and `S` compact, and let `F` cover `f '' S`. The preimages of the members of `F` are open and they cover `S`, so finitely many of them do — and the members of `F` those came from are finitely many and cover the image.
+
+  Naming those members is the one delicate step. A preimage does not remember the set it came from, so we choose one for each member `V` of the finite subcollection: `hGF hV` is the proof that `V` is a preimage, and its `choose` is the set chosen.
+concepts:
+- compact_images
+stub: |-
+  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
+      T'.IsCompactSet (f '' S) := sorry
+reference: |-
+  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
+      T'.IsCompactSet (f '' S) := by
+    intro F hFo hcov
+    have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
+      intro x hxS
+      obtain ⟨U, hUF, hxU⟩ := hcov ⟨x, hxS, rfl⟩
+      exact ⟨f ⁻¹' U, ⟨U, hUF, rfl⟩, hxU⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hS {V | ∃ U ∈ F, V = f ⁻¹' U}
+      (by rintro V ⟨U, hUF, rfl⟩; exact hf U (hFo U hUF)) hpre
+    refine ⟨{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}, ?_, hGfin.dependent_image _, ?_⟩
+    · rintro U ⟨V, hV, rfl⟩
+      exact (hGF hV).choose_spec.1
+    · rintro y ⟨x, hxS, rfl⟩
+      obtain ⟨V, hVG, hxV⟩ := hGcov hxS
+      rw [(hGF hVG).choose_spec.2] at hxV
+      exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S), T'.IsCompactSet (f '' S) := _root_.GeneralTopology.Topology.isCompactSet_image
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove `Topology.isCompactSet_image`. The pulled-back cover is `{V | ∃ U ∈ F, V = f ⁻¹'' U}`. The subcollection to offer is `{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}`, written in exactly that order because `Set.Finite.dependent_image` — which proves it finite — is stated that way round.'
+stub_names:
+- Topology.isCompactSet_image
+namespace: GeneralTopology
+seq: 208
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 345
+  closure_rounds: 1
+  check_kind: theorem

@@ -1,0 +1,41 @@
+slug: covered_insert
+kind: theorem
+title: Adding One Patch
+statement: 'Suppose `F` covers up to `x`, and let `U` be one of its members holding every point between `x` and some further point `z`. Add `U` to the finitely many sets already kept: one more set is still finitely many, and the enlarged collection covers the stretch from `0` to `z`, since a point of it is either at `x` or below — where the old sets reach — or beyond, where `U` does.'
+concepts:
+- interval_compact
+stub: |-
+  theorem coveredUpTo_insert {F : Set (Set ℝ)} {U : Set ℝ} (hUF : U ∈ F) {x z : ℝ}
+      (h : CoveredUpTo F x) (hU : ∀ y, x < y → y ≤ z → y ∈ U) : CoveredUpTo F z := sorry
+reference: |-
+  theorem coveredUpTo_insert {F : Set (Set ℝ)} {U : Set ℝ} (hUF : U ∈ F) {x z : ℝ}
+      (h : CoveredUpTo F x) (hU : ∀ y, x < y → y ≤ z → y ∈ U) : CoveredUpTo F z := by
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := h
+    refine ⟨insert U G, Set.insert_subset hUF hGF, hGfin.insert U, ?_⟩
+    rintro y ⟨hy0, hyz⟩
+    by_cases hyx : y ≤ x
+    · exact Set.sUnion_mono (Set.subset_insert U G) (hGcov ⟨hy0, hyx⟩)
+    · exact ⟨U, Set.mem_insert U G, hU y (not_le.mp hyx) hyz⟩
+spec: |-
+  example : ∀ {F : Set (Set ℝ)} {U : Set ℝ} (hUF : U ∈ F) {x z : ℝ}
+      (h : CoveredUpTo F x) (hU : ∀ y, x < y → y ≤ z → y ∈ U), CoveredUpTo F z := _root_.GeneralTopology.coveredUpTo_insert
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  def CoveredUpTo (F : Set (Set ℝ)) (x : ℝ) : Prop :=
+    ∃ G ⊆ F, G.Finite ∧ {y | 0 ≤ y ∧ y ≤ x} ⊆ ⋃₀ G
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `coveredUpTo_insert`. `insert U G` adds a set to a collection, `Set.insert_subset` shows the result still inside `F` and `Set.Finite.insert` that it is still finite; `by_cases` on whether the point is past `x` chooses which half of the argument applies, and `Set.sUnion_mono` carries the old union into the new one.
+stub_names:
+- coveredUpTo_insert
+namespace: GeneralTopology
+seq: 214
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 528
+  closure_rounds: 1
+  check_kind: theorem

@@ -43,6 +43,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@9c4b8d6
   file: PolyaTopology/GeneralTopology/Sequences.lean
-  line: 451
+  line: 450
   closure_rounds: 1
   check_kind: definition

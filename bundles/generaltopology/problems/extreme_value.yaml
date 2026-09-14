@@ -1,0 +1,406 @@
+slug: extreme_value
+kind: example
+title: The Extreme Value Theorem
+statement: |-
+  A continuous real-valued function on a nonempty compact set attains its largest and its smallest value. There is no calculation left to do: the image of the set is a compact set of reals, which has a largest element, and that element is the value of the function at some point of the set.
+
+  What the theorem needs of the domain is only compactness. It is a statement about any space at all, and the closed interval enters only when one asks which sets of reals are compact.
+concepts:
+- compact_images
+stub: |-
+  theorem Topology.exists_max_of_isCompactSet {X : Type u} (T : Topology X) {f : X → ℝ}
+      (hf : T.Continuous line.toTopology f) {S : Set X} (hS : T.IsCompactSet S) (hne : S.Nonempty) :
+      ∃ a ∈ S, ∀ x ∈ S, f x ≤ f a := sorry
+
+  theorem Topology.exists_min_of_isCompactSet {X : Type u} (T : Topology X) {f : X → ℝ}
+      (hf : T.Continuous line.toTopology f) {S : Set X} (hS : T.IsCompactSet S) (hne : S.Nonempty) :
+      ∃ a ∈ S, ∀ x ∈ S, f a ≤ f x := sorry
+reference: |-
+  theorem Topology.exists_max_of_isCompactSet {X : Type u} (T : Topology X) {f : X → ℝ}
+      (hf : T.Continuous line.toTopology f) {S : Set X} (hS : T.IsCompactSet S) (hne : S.Nonempty) :
+      ∃ a ∈ S, ∀ x ∈ S, f x ≤ f a := by
+    obtain ⟨b, hbK, hbmax⟩ :=
+      line_exists_max (Topology.isCompactSet_image T hf hS) (hne.image f)
+    obtain ⟨a, haS, rfl⟩ := hbK
+    exact ⟨a, haS, fun x hx => hbmax (f x) ⟨x, hx, rfl⟩⟩
+
+  theorem Topology.exists_min_of_isCompactSet {X : Type u} (T : Topology X) {f : X → ℝ}
+      (hf : T.Continuous line.toTopology f) {S : Set X} (hS : T.IsCompactSet S) (hne : S.Nonempty) :
+      ∃ a ∈ S, ∀ x ∈ S, f a ≤ f x := by
+    obtain ⟨b, hbK, hbmin⟩ :=
+      line_exists_min (Topology.isCompactSet_image T hf hS) (hne.image f)
+    obtain ⟨a, haS, rfl⟩ := hbK
+    exact ⟨a, haS, fun x hx => hbmin (f x) ⟨x, hx, rfl⟩⟩
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) {f : X → ℝ}
+      (hf : T.Continuous line.toTopology f) {S : Set X} (hS : T.IsCompactSet S) (hne : S.Nonempty), ∃ a ∈ S, ∀ x ∈ S, f x ≤ f a := _root_.GeneralTopology.Topology.exists_max_of_isCompactSet
+  example : ∀ {X : Type u} (T : Topology X) {f : X → ℝ}
+      (hf : T.Continuous line.toTopology f) {S : Set X} (hS : T.IsCompactSet S) (hne : S.Nonempty), ∃ a ∈ S, ∀ x ∈ S, f a ≤ f x := _root_.GeneralTopology.Topology.exists_min_of_isCompactSet
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
+    M.eq_zero.mpr rfl
+
+  theorem Metric.nonneg {X : Type u} (M : Metric X) (x y : X) : 0 ≤ M.dist x y := by
+    have h := M.triangle x y x
+    rw [M.dist_self] at h
+    have e : M.dist y x = M.dist x y := M.symm
+    rw [e] at h
+    linarith
+
+  def line : Metric ℝ where
+    dist x y := |x - y|
+    symm {x y} := abs_sub_comm x y
+    triangle x y z := abs_sub_le x y z
+    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  theorem Metric.mem_ball_self {X : Type u} (M : Metric X) (x : X) (ε : ℝ) (h : 0 < ε) :
+      x ∈ M.ball x ε := by
+    rw [M.mem_ball, M.dist_self]
+    exact h
+
+  theorem Metric.ball_mono {X : Type u} (M : Metric X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
+      M.ball x ε ⊆ M.ball x δ :=
+    fun _ hy => lt_of_lt_of_le hy h
+
+  theorem Metric.ball_subset_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ) :
+      M.ball y ε ⊆ M.ball x (M.dist x y + ε) := by
+    intro z hz
+    rw [M.mem_ball] at hz ⊢
+    have h := M.triangle x y z
+    linarith
+
+  def Metric.IsBounded {X : Type u} (M : Metric X) (S : Set X) : Prop :=
+    ∃ (x : X) (ε : ℝ), S ⊆ M.ball x ε
+
+  theorem Metric.isBounded_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.IsBounded (M.ball x ε) :=
+    ⟨x, ε, subset_rfl⟩
+
+  theorem Metric.isBounded_subset {X : Type u} (M : Metric X) (S T : Set X)
+      (h : M.IsBounded S) (hTS : T ⊆ S) : M.IsBounded T := by
+    obtain ⟨x, ε, hx⟩ := h
+    exact ⟨x, ε, fun y hy => hx (hTS hy)⟩
+
+  theorem Metric.isBounded_union {X : Type u} (M : Metric X) (S T : Set X)
+      (hS : M.IsBounded S) (hT : M.IsBounded T) : M.IsBounded (S ∪ T) := by
+    obtain ⟨x, ε, hx⟩ := hS
+    obtain ⟨y, δ, hy⟩ := hT
+    refine ⟨x, max ε (M.dist x y + δ), ?_⟩
+    rintro z (hz | hz)
+    · exact M.ball_mono (le_max_left _ _) (hx hz)
+    · exact M.ball_mono (le_max_right _ _) (M.ball_subset_ball x y δ (hy hz))
+
+  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+    ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
+
+  theorem Metric.isOpenSet_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.IsOpenSet (M.ball x ε) := by
+    intro y hy
+    rw [M.mem_ball] at hy
+    refine ⟨ε - M.dist x y, by linarith, ?_⟩
+    intro z hz
+    rw [M.mem_ball] at hz ⊢
+    have h := M.triangle x y z
+    linarith
+
+  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+    fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
+
+  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+      (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
+    intro x hx
+    obtain ⟨a, ha, hau⟩ := hU x hx.1
+    obtain ⟨b, hb, hbv⟩ := hV x hx.2
+    refine ⟨min a b, lt_min ha hb, ?_⟩
+    intro y hy
+    rw [M.mem_ball] at hy
+    exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
+
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
+    intro x hx
+    obtain ⟨U, hUF, hxU⟩ := hx
+    obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
+    exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
+
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+    IsOpen := M.IsOpenSet
+    univ := M.isOpenSet_univ
+    inter := M.isOpenSet_inter
+    sUnion := M.isOpenSet_sUnion
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
+    show T.IsOpen _
+    rw [Set.compl_sInter]
+    apply T.sUnion
+    rintro U ⟨C, hCF, rfl⟩
+    exact h C hCF
+
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+
+  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+    intro x hx C hC
+    exact hC.2 hx
+
+  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed (T.closure S) :=
+    T.isClosed_sInter (fun _ hC => hC.1)
+
+  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+      (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
+    intro x hx
+    exact hx C ⟨hC, hSC⟩
+
+  theorem Topology.isClosed_iff_closure_eq {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed S ↔ T.closure S = S := by
+    constructor
+    · intro hS
+      exact Set.Subset.antisymm (T.closure_min hS subset_rfl) (T.subset_closure S)
+    · intro h
+      rw [← h]
+      exact T.isClosed_closure S
+
+  theorem Topology.mem_closure_iff {X : Type u} (T : Topology X) {S : Set X} {x : X} :
+      x ∈ T.closure S ↔ ∀ N, T.IsNbhd x N → (N ∩ S).Nonempty := by
+    constructor
+    · rintro hx N ⟨U, hU, hxU, hUN⟩
+      by_contra h
+      have hSU : S ⊆ Uᶜ := by
+        intro y hy hyU
+        exact h ⟨y, hUN hyU, hy⟩
+      have hcl : T.IsClosed Uᶜ := by
+        show T.IsOpen _
+        rwa [compl_compl]
+      exact hx Uᶜ ⟨hcl, hSU⟩ hxU
+    · intro h C hC
+      by_contra hxC
+      obtain ⟨y, hyC, hyS⟩ := h Cᶜ ⟨Cᶜ, hC.1, hxC, subset_rfl⟩
+      exact hyC (hC.2 hyS)
+
+  theorem Metric.mem_closure_iff {X : Type u} (M : Metric X) {S : Set X} {x : X} :
+      x ∈ M.toTopology.closure S ↔ ∀ ε > 0, (M.ball x ε ∩ S).Nonempty := by
+    rw [M.toTopology.mem_closure_iff]
+    constructor
+    · intro h ε hε
+      have hN : M.toTopology.IsNbhd x (M.ball x ε) :=
+        M.toTopology.nbhd_of_isOpen (M.isOpenSet_ball x ε) (M.mem_ball_self x ε hε)
+      exact h (M.ball x ε) hN
+    · rintro h N ⟨U, hU, hxU, hUN⟩
+      obtain ⟨ε, hε, hball⟩ := hU x hxU
+      obtain ⟨y, hy, hyS⟩ := h ε hε
+      exact ⟨y, hUN (hball hy), hyS⟩
+
+  def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+      (x : X) : Prop :=
+    ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε
+
+  def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop :=
+    ∀ x, M.ContinuousAt N f x
+
+  theorem line_continuous_affine (a b : ℝ) (ha : a ≠ 0) :
+      line.Continuous line (fun t => a * t + b) := by
+    intro x ε hε
+    have hpos : 0 < |a| := abs_pos.mpr ha
+    refine ⟨ε / |a|, div_pos hε hpos, ?_⟩
+    intro x' h
+    have hx : |x - x'| < ε / |a| := h
+    show |(a * x + b) - (a * x' + b)| < ε
+    have e : (a * x + b) - (a * x' + b) = a * (x - x') := by ring
+    rw [e, abs_mul]
+    calc |a| * |x - x'| < |a| * (ε / |a|) := mul_lt_mul_of_pos_left hx hpos
+      _ = ε := mul_div_cancel₀ ε (ne_of_gt hpos)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Metric.continuous_iff {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) :
+      M.Continuous N f ↔ M.toTopology.Continuous N.toTopology f := by
+    constructor
+    · intro hf U hU x hx
+      obtain ⟨ε, hε, hball⟩ := hU (f x) hx
+      obtain ⟨δ, hδ, hδ'⟩ := hf x ε hε
+      exact ⟨δ, hδ, fun y hy => hball (hδ' y hy)⟩
+    · intro hf x ε hε
+      have hopen := hf (N.ball (f x) ε) (N.isOpenSet_ball (f x) ε)
+      obtain ⟨δ, hδ, hsub⟩ := hopen x (N.mem_ball_self (f x) ε hε)
+      exact ⟨δ, hδ, fun y hy => hsub hy⟩
+
+  theorem line_continuous_affine_top (a b : ℝ) (ha : a ≠ 0) :
+      line.toTopology.Continuous line.toTopology (fun t => a * t + b) :=
+    (line.continuous_iff line _).mp (line_continuous_affine a b ha)
+
+  theorem Metric.dist_pos {X : Type u} (M : Metric X) {x y : X} (h : x ≠ y) : 0 < M.dist x y := by
+    rcases lt_or_eq_of_le (Metric.nonneg M x y) with hlt | heq
+    · exact hlt
+    · exact absurd (M.eq_zero.mp heq.symm) h
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  theorem Metric.isBounded_sUnion {X : Type u} (M : Metric X) (x₀ : X) {G : Set (Set X)}
+      (hfin : G.Finite) (h : ∀ U ∈ G, M.IsBounded U) : M.IsBounded (⋃₀ G) := by
+    induction G, hfin using Set.Finite.induction_on with
+    | empty => exact ⟨x₀, 0, by rintro z ⟨U, hU, -⟩; exact hU.elim⟩
+    | insert _ _ ih =>
+      rw [Set.sUnion_insert]
+      exact Metric.isBounded_union M _ _ (h _ (Set.mem_insert _ _))
+        (ih (fun U hU => h U (Set.mem_insert_of_mem _ hU)))
+
+  theorem Metric.isBounded_of_isCompactSet {X : Type u} (M : Metric X) {K : Set X}
+      (hK : M.toTopology.IsCompactSet K) (hne : K.Nonempty) : M.IsBounded K := by
+    obtain ⟨x₀, hx₀⟩ := hne
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {U | ∃ y : X, U = Metric.ball M y 1}
+      (by rintro U ⟨y, rfl⟩; exact Metric.isOpenSet_ball M y 1)
+      (fun y _ => ⟨Metric.ball M y 1, ⟨y, rfl⟩, Metric.mem_ball_self M y 1 one_pos⟩)
+    refine Metric.isBounded_subset M _ _ (Metric.isBounded_sUnion M x₀ hGfin ?_) hGcov
+    rintro U hU
+    obtain ⟨y, rfl⟩ := hGF hU
+    exact Metric.isBounded_ball M y 1
+
+  theorem Metric.half_dist_pos {X : Type u} (M : Metric X) {x y : X} (h : x ≠ y) :
+      0 < M.dist x y / 2 := by
+    have := Metric.dist_pos M h
+    linarith
+
+  theorem Metric.le_dist_of_mem_ball_half {X : Type u} (M : Metric X) {x y z : X}
+      (h : z ∈ M.ball y (M.dist x y / 2)) : M.dist x y / 2 ≤ M.dist x z := by
+    have h1 : M.dist y z < M.dist x y / 2 := h
+    have h2 := M.triangle x z y
+    have h3 : M.dist z y = M.dist y z := M.symm
+    linarith
+
+  theorem Metric.exists_dist_ge_sUnion {X : Type u} (M : Metric X) {x : X} {G : Set (Set X)}
+      (hfin : G.Finite) (h : ∀ U ∈ G, ∃ r > 0, ∀ z ∈ U, r ≤ M.dist x z) :
+      ∃ r > 0, ∀ z ∈ ⋃₀ G, r ≤ M.dist x z := by
+    induction G, hfin using Set.Finite.induction_on with
+    | empty => exact ⟨1, one_pos, by rintro z ⟨U, hU, -⟩; exact hU.elim⟩
+    | insert _ _ ih =>
+      obtain ⟨r, hr, hrU⟩ := h _ (Set.mem_insert _ _)
+      obtain ⟨s, hs, hsG⟩ := ih (fun U hU => h U (Set.mem_insert_of_mem _ hU))
+      refine ⟨min r s, lt_min hr hs, ?_⟩
+      rintro z ⟨U, (rfl | hU), hzU⟩
+      · exact le_trans (min_le_left _ _) (hrU z hzU)
+      · exact le_trans (min_le_right _ _) (hsG z ⟨U, hU, hzU⟩)
+
+  theorem Metric.isClosed_of_isCompactSet {X : Type u} (M : Metric X) {K : Set X}
+      (hK : M.toTopology.IsCompactSet K) : M.toTopology.IsClosed K := by
+    intro x hx
+    have hpos : ∀ y ∈ K, 0 < M.dist x y / 2 := fun y hy =>
+      Metric.half_dist_pos M (by rintro rfl; exact hx hy)
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {U | ∃ y ∈ K, U = Metric.ball M y (M.dist x y / 2)}
+      (by rintro U ⟨y, -, rfl⟩; exact Metric.isOpenSet_ball M y _)
+      (fun y hy => ⟨_, ⟨y, hy, rfl⟩, by
+        rw [Metric.mem_ball M, Metric.dist_self M]; exact hpos y hy⟩)
+    obtain ⟨r, hr, hrG⟩ := Metric.exists_dist_ge_sUnion M hGfin (by
+      rintro U hU
+      obtain ⟨y, hy, rfl⟩ := hGF hU
+      exact ⟨_, hpos y hy, fun z hz => Metric.le_dist_of_mem_ball_half M hz⟩)
+    refine ⟨r, hr, fun z hz hzK => ?_⟩
+    have h1 : M.dist x z < r := hz
+    linarith [hrG z (hGcov hzK)]
+
+  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
+      T'.IsCompactSet (f '' S) := by
+    intro F hFo hcov
+    have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
+      intro x hxS
+      obtain ⟨U, hUF, hxU⟩ := hcov ⟨x, hxS, rfl⟩
+      exact ⟨f ⁻¹' U, ⟨U, hUF, rfl⟩, hxU⟩
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hS {V | ∃ U ∈ F, V = f ⁻¹' U}
+      (by rintro V ⟨U, hUF, rfl⟩; exact hf U (hFo U hUF)) hpre
+    refine ⟨{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}, ?_, hGfin.dependent_image _, ?_⟩
+    · rintro U ⟨V, hV, rfl⟩
+      exact (hGF hV).choose_spec.1
+    · rintro y ⟨x, hxS, rfl⟩
+      obtain ⟨V, hVG, hxV⟩ := hGcov hxS
+      rw [(hGF hVG).choose_spec.2] at hxV
+      exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
+
+  theorem line_bddAbove_bddBelow {K : Set ℝ} (h : line.IsBounded K) : BddAbove K ∧ BddBelow K := by
+    obtain ⟨c, ε, hsub⟩ := h
+    constructor
+    · refine ⟨c + ε, fun x hx => ?_⟩
+      have hx' : |c - x| < ε := hsub hx
+      rw [abs_lt] at hx'
+      linarith [hx'.1]
+    · refine ⟨c - ε, fun x hx => ?_⟩
+      have hx' : |c - x| < ε := hsub hx
+      rw [abs_lt] at hx'
+      linarith [hx'.2]
+
+  theorem line_exists_max {K : Set ℝ} (hK : line.toTopology.IsCompactSet K) (hne : K.Nonempty) :
+      ∃ a ∈ K, ∀ x ∈ K, x ≤ a := by
+    obtain ⟨a, hlub⟩ := Real.exists_isLUB hne
+      (line_bddAbove_bddBelow (Metric.isBounded_of_isCompactSet line hK hne)).1
+    refine ⟨a, ?_, fun x hx => hlub.1 hx⟩
+    have hcl : line.toTopology.closure K = K :=
+      (Topology.isClosed_iff_closure_eq line.toTopology K).mp
+        (Metric.isClosed_of_isCompactSet line hK)
+    rw [← hcl, Metric.mem_closure_iff]
+    intro δ hδ
+    obtain ⟨y, hyK, hy1, hy2⟩ := hlub.exists_between (show a - δ < a by linarith)
+    refine ⟨y, ?_, hyK⟩
+    show |a - y| < δ
+    rw [abs_lt]
+    constructor <;> linarith
+
+  theorem line_exists_min {K : Set ℝ} (hK : line.toTopology.IsCompactSet K) (hne : K.Nonempty) :
+      ∃ a ∈ K, ∀ x ∈ K, a ≤ x := by
+    have hc : line.toTopology.IsCompactSet ((fun x => -1 * x + 0) '' K) :=
+      Topology.isCompactSet_image line.toTopology
+        (line_continuous_affine_top (-1) 0 (by norm_num)) hK
+    obtain ⟨b, ⟨a, haK, hab⟩, hmax⟩ := line_exists_max hc (hne.image _)
+    refine ⟨a, haK, fun x hx => ?_⟩
+    have h := hmax (-1 * x + 0) ⟨x, hx, rfl⟩
+    rw [← hab] at h
+    linarith
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.exists_max_of_isCompactSet` and `Topology.exists_min_of_isCompactSet`. Apply the previous problem to the image, whose compactness is `Topology.isCompactSet_image` and whose nonemptiness is `Set.Nonempty.image`; `obtain ⟨a, haS, rfl⟩` then names the point the largest value is taken at.
+stub_names:
+- Topology.exists_max_of_isCompactSet
+- Topology.exists_min_of_isCompactSet
+namespace: GeneralTopology
+seq: 212
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 459
+  closure_rounds: 1
+  check_kind: theorem

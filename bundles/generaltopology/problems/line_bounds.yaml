@@ -1,0 +1,58 @@
+slug: line_bounds
+kind: theorem
+title: Bounded Above and Bounded Below
+statement: |-
+  A set of reals inside a ball is bounded in the order as well as in the metric. The ball about `c` of radius `ε` is the stretch from `c - ε` to `c + ε`, so `c + ε` is above every point of the set and `c - ε` below every point.
+
+  `BddAbove S` says some real is an upper bound of `S`, and `BddBelow S` that some real is a lower bound. They are what the least upper bound property asks for, and the next problem needs both.
+concepts:
+- compact_images
+stub: 'theorem line_bddAbove_bddBelow {K : Set ℝ} (h : line.IsBounded K) : BddAbove K ∧ BddBelow K := sorry'
+reference: |-
+  theorem line_bddAbove_bddBelow {K : Set ℝ} (h : line.IsBounded K) : BddAbove K ∧ BddBelow K := by
+    obtain ⟨c, ε, hsub⟩ := h
+    constructor
+    · refine ⟨c + ε, fun x hx => ?_⟩
+      have hx' : |c - x| < ε := hsub hx
+      rw [abs_lt] at hx'
+      linarith [hx'.1]
+    · refine ⟨c - ε, fun x hx => ?_⟩
+      have hx' : |c - x| < ε := hsub hx
+      rw [abs_lt] at hx'
+      linarith [hx'.2]
+spec: 'example : ∀ {K : Set ℝ} (h : line.IsBounded K), BddAbove K ∧ BddBelow K := _root_.GeneralTopology.line_bddAbove_bddBelow'
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  def line : Metric ℝ where
+    dist x y := |x - y|
+    symm {x y} := abs_sub_comm x y
+    triangle x y z := abs_sub_le x y z
+    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  def Metric.IsBounded {X : Type u} (M : Metric X) (S : Set X) : Prop :=
+    ∃ (x : X) (ε : ℝ), S ⊆ M.ball x ε
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `line_bddAbove_bddBelow`. A bound is offered as a pair of the number and the proof that it bounds. Restate each membership in the ball as the inequality `|c - x| < ε` that it abbreviates, split it with `abs_lt`, and let `linarith` finish.
+stub_names:
+- line_bddAbove_bddBelow
+namespace: GeneralTopology
+seq: 210
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 393
+  closure_rounds: 1
+  check_kind: theorem

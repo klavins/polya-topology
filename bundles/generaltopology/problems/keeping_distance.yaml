@@ -1,0 +1,93 @@
+slug: keeping_distance
+kind: example
+title: Balls That Keep Their Distance
+statement: |-
+  Fix a point `x` and take any other point `y`. The ball about `y` of radius half the distance from `x` to `y` stays away from `x`: a point `z` of it satisfies `d(x, y) ≤ d(x, z) + d(z, y)` with `d(z, y)` less than half of `d(x, y)`, so `d(x, z)` is at least the other half.
+
+  That is one ball. For finitely many sets, each keeping some positive distance from `x`, the smallest of the distances is positive and every one of them keeps it — which is the second place in this section where finiteness is what makes a largest or a smallest exist.
+concepts:
+- compact_metric
+stub: |-
+  theorem Metric.half_dist_pos {X : Type u} (M : Metric X) {x y : X} (h : x ≠ y) :
+      0 < M.dist x y / 2 := sorry
+
+  theorem Metric.le_dist_of_mem_ball_half {X : Type u} (M : Metric X) {x y z : X}
+      (h : z ∈ M.ball y (M.dist x y / 2)) : M.dist x y / 2 ≤ M.dist x z := sorry
+
+  theorem Metric.exists_dist_ge_sUnion {X : Type u} (M : Metric X) {x : X} {G : Set (Set X)}
+      (hfin : G.Finite) (h : ∀ U ∈ G, ∃ r > 0, ∀ z ∈ U, r ≤ M.dist x z) :
+      ∃ r > 0, ∀ z ∈ ⋃₀ G, r ≤ M.dist x z := sorry
+reference: |-
+  theorem Metric.half_dist_pos {X : Type u} (M : Metric X) {x y : X} (h : x ≠ y) :
+      0 < M.dist x y / 2 := by
+    have := Metric.dist_pos M h
+    linarith
+
+  theorem Metric.le_dist_of_mem_ball_half {X : Type u} (M : Metric X) {x y z : X}
+      (h : z ∈ M.ball y (M.dist x y / 2)) : M.dist x y / 2 ≤ M.dist x z := by
+    have h1 : M.dist y z < M.dist x y / 2 := h
+    have h2 := M.triangle x z y
+    have h3 : M.dist z y = M.dist y z := M.symm
+    linarith
+
+  theorem Metric.exists_dist_ge_sUnion {X : Type u} (M : Metric X) {x : X} {G : Set (Set X)}
+      (hfin : G.Finite) (h : ∀ U ∈ G, ∃ r > 0, ∀ z ∈ U, r ≤ M.dist x z) :
+      ∃ r > 0, ∀ z ∈ ⋃₀ G, r ≤ M.dist x z := by
+    induction G, hfin using Set.Finite.induction_on with
+    | empty => exact ⟨1, one_pos, by rintro z ⟨U, hU, -⟩; exact hU.elim⟩
+    | insert _ _ ih =>
+      obtain ⟨r, hr, hrU⟩ := h _ (Set.mem_insert _ _)
+      obtain ⟨s, hs, hsG⟩ := ih (fun U hU => h U (Set.mem_insert_of_mem _ hU))
+      refine ⟨min r s, lt_min hr hs, ?_⟩
+      rintro z ⟨U, (rfl | hU), hzU⟩
+      · exact le_trans (min_le_left _ _) (hrU z hzU)
+      · exact le_trans (min_le_right _ _) (hsG z ⟨U, hU, hzU⟩)
+spec: |-
+  example : ∀ {X : Type u} (M : Metric X) {x y : X} (h : x ≠ y), 0 < M.dist x y / 2 := _root_.GeneralTopology.Metric.half_dist_pos
+  example : ∀ {X : Type u} (M : Metric X) {x y z : X}
+      (h : z ∈ M.ball y (M.dist x y / 2)), M.dist x y / 2 ≤ M.dist x z := _root_.GeneralTopology.Metric.le_dist_of_mem_ball_half
+  example : ∀ {X : Type u} (M : Metric X) {x : X} {G : Set (Set X)}
+      (hfin : G.Finite) (h : ∀ U ∈ G, ∃ r > 0, ∀ z ∈ U, r ≤ M.dist x z), ∃ r > 0, ∀ z ∈ ⋃₀ G, r ≤ M.dist x z := _root_.GeneralTopology.Metric.exists_dist_ge_sUnion
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
+    M.eq_zero.mpr rfl
+
+  theorem Metric.nonneg {X : Type u} (M : Metric X) (x y : X) : 0 ≤ M.dist x y := by
+    have h := M.triangle x y x
+    rw [M.dist_self] at h
+    have e : M.dist y x = M.dist x y := M.symm
+    rw [e] at h
+    linarith
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.dist_pos {X : Type u} (M : Metric X) {x y : X} (h : x ≠ y) : 0 < M.dist x y := by
+    rcases lt_or_eq_of_le (Metric.nonneg M x y) with hlt | heq
+    · exact hlt
+    · exact absurd (M.eq_zero.mp heq.symm) h
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Metric.half_dist_pos`, `Metric.le_dist_of_mem_ball_half` and `Metric.exists_dist_ge_sUnion`. `Metric.dist_pos` from the section on separation is the positive distance between distinct points; restating a membership in a ball as the inequality it abbreviates, together with `Metric.triangle` and `Metric.symm`, gives the second to `linarith`. The third is again an induction on the finiteness, with `min` for the step.
+stub_names:
+- Metric.half_dist_pos
+- Metric.le_dist_of_mem_ball_half
+- Metric.exists_dist_ge_sUnion
+namespace: GeneralTopology
+seq: 206
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 268
+  closure_rounds: 1
+  check_kind: theorem

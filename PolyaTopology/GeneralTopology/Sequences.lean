@@ -393,7 +393,6 @@ theorem Metric.continuous_of_seq {X : Type u} {Y : Type v} (M : Metric X) (N : M
 @concept cauchy_complete
 @title Cauchy Sequences and Completeness
 @kind definition
-@goal
 
 A sequence may bunch up with nothing to bunch up at: its terms grow arbitrarily close to one another while the point they would converge to is missing from the space. A space where that never happens is complete. It is the condition under which a limit may be asserted before it is known, and it is what the real numbers have that the rationals do not.
 -/

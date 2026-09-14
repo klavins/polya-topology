@@ -68,6 +68,14 @@ the first section since §7 to land inside the band with nothing to explain, and
 there is that the two proofs billed as expensive were not. So §10's twenty-problem budget for §12
 should still be read as §10's two causes and not as a new normal.
 
+§12 came in at 5 concepts, 19 problems and 609 lines, with the longest proof at fourteen. §10 had
+budgeted it at twenty on the strength of its two costly shapes — a notion stated both for a space
+and for a subset, and a theorem resting on the least upper bound property — and both bills came in
+lower than billed. The first was avoided outright by *defining* the space form as the subset form
+at `Set.univ`; the second cost four problems, the same as §10's own. **A section carrying a least
+upper bound argument should be budgeted at four problems for it, and a section stating a notion
+twice should stop and ask whether one of the two is the other's value at `Set.univ`.**
+
 ## The sections
 
 - [x] **1. Metric Spaces** — `MetricSpaces.lean` · 7 concepts, 31 problems
@@ -646,7 +654,7 @@ should still be read as §10's two causes and not as a new normal.
     cause is §8's again: it teaches a **construction** inside a concept about a property, and a
     construction is three problems wherever it lands.
 
-- [ ] **12. Compactness** — `Compactness.lean` · 5 concepts, ~15 problems
+- [x] **12. Compactness** — `Compactness.lean` · 5 concepts, 19 problems
 
   The property that makes infinite covers finite, and the last of the three big ones. Builds on
   §7, §9 and §10.
@@ -689,6 +697,81 @@ should still be read as §10's two causes and not as a new normal.
   `discreteMetric_eq_of_dist_lt_one` and `discreteMetric_toTopology`: an infinite discrete space
   is the cheapest non-compact space inside the fence, and a finite one the cheapest compact space
   that is not a subset of the line.
+
+  As built, and what it settled:
+
+  - The **`@goal` moved** from §11's `cauchy_complete` to `interval_compact`.
+  - **The space form is the subset form**, and no bridge was needed between them.
+    `Topology.IsCompact T` is *defined* as `T.IsCompactSet Set.univ`, so every theorem about a
+    compact set reads at the whole space with nothing restated, and §10's complaint — two
+    definitions, two trace lemmas and a bridge before anything is connected — does not arise.
+    Where a notion is stated both of a space and of a subset, **define the subset form and let
+    the space form be its value at `Set.univ`**; that is the whole of the lesson §10 paid three
+    problems to learn.
+  - **The subspace comparison was planned and dropped**, by §10's own rule: nothing in §12 or
+    §13 consumes `(T.subspace A).IsCompact`. Its cost, if a later section wants it, is about
+    eighteen lines, and the cost is not `trace_eq_univ_iff` and `trace_split` — those still
+    work — but the *choice*: a subspace-open is a trace of some ambient open, and recovering
+    that ambient open for every member of a finite subcover wants
+    `Set.Finite.dependent_image` and `Exists.choose`, exactly as `Topology.isCompactSet_image`
+    does below.
+  - **`interval_compact` was not the most expensive item in this roadmap.** It came out at four
+    problems and about forty lines, which is what §10's connected interval cost, and every one
+    of its proofs is under fifteen lines. What made it fit is a named predicate: `CoveredUpTo F x`
+    says that finitely many members of `F` already cover `{y | 0 ≤ y ∧ y ≤ x}`, and the three
+    helpers are `coveredUpTo_zero`, `coveredUpTo_insert` (add one patch to a finite subcover) and
+    `exists_coveredUpTo_of_isLUB` (past the supremum, everything short of `c + δ` is covered).
+    The main proof is then the supremum, `hlub.1`, `hlub.2`, and a `min` to contradict `c < 1`.
+    **The list of expensive proofs is now empty**, and the moral §5 and §7 wrote there has held
+    five times running: a proof looks expensive until the definitions line up.
+  - **It did not copy `line_no_split` after all.** `line_open_right`, `line_open_left` and
+    `IsInterval.mem_of_le` were not wanted: `exists_coveredUpTo_of_isLUB` reaches in both
+    directions from `c` at once, by restating a membership in a ball as `|c - y| < ε` and giving
+    `linarith` the two inequalities. Only `Real.exists_isLUB` and `IsLUB.exists_between` carried
+    over, as §10 said they would.
+  - **A cover is a `Set (Set X)`, and transporting one costs a choice.** `Topology.isCompactSet_image`
+    covers `S` by the preimages of the members of `F` and must then name, for each member of the
+    finite subcover, a set of `F` it is the preimage of; a preimage does not remember what it
+    came from, so `(hGF hV).choose` names it and `Set.Finite.dependent_image` proves the result
+    finite. That lemma states its set as `{y | ∃ x, ∃ hx : x ∈ s, F x hx = y}`, with the equation
+    **that way round**, and the subcollection must be written to match. Any later theorem that
+    transports a cover along a map pays the same price; budget it a line or two, not a problem.
+  - **`Mathlib.Data.Set.Finite.Lattice` is the first fence addition since §7**, and it is the
+    one the section could not do without: `Set.Finite.sUnion` and `Set.Finite.dependent_image`
+    are both in it and in neither of the two `Set.Finite` modules already imported. It is clean
+    against the five forbidden names. Everything else — `Set.Finite.induction_on`,
+    `Set.Finite.insert`, `.union`, `.subset`, `.image`, `Set.finite_singleton`,
+    `Set.infinite_univ`, `Set.sUnion_mono`, `Set.sUnion_insert` — was already under §4's and
+    §7's imports.
+  - **Three of the nineteen problems are an induction on `Set.Finite`**, and all three exist to
+    make a largest or a smallest of finitely many things: `Topology.isCompactSet_of_finite`,
+    `Metric.isBounded_sUnion` (enlarge the ball once per set) and
+    `Metric.exists_dist_ge_sUnion` (take the `min` once per set). The spelling is
+    `induction S, hS using Set.Finite.induction_on with | empty => … | insert _ _ ih => …`, and
+    a hypothesis that mentions the collection needs no `revert`: the tactic generalizes it.
+    **Budget one such induction per "finitely many, so there is a largest" step**; there is no
+    cheaper way inside this fence, since a finite subcover is a `Set.Finite`, not a `Finset`.
+  - **`Metric.isBounded ∅` is false in an empty space**, since boundedness names a centre. So
+    `Metric.isBounded_of_isCompactSet` takes `K.Nonempty`, and `Metric.isBounded_sUnion` takes a
+    point to centre its base case on. Any later statement of the form "a compact set is …
+    somewhere" carries the same hypothesis.
+  - **The closed half of `compact_metric` is the metric argument, not the Hausdorff one.**
+    `Metric.isClosed_of_isCompactSet` covers `K` by the balls `Metric.ball M y (M.dist x y / 2)`
+    and keeps the smallest radius. §13's `compact_in_hausdorff` is the generalization and is
+    still worth its problem — but it will want the finite-intersection tool
+    (`Topology.isOpen_sInter_of_finite`, one more `Set.Finite.induction_on`) that the metric
+    version got for free from `min`, and it will want a choice to recover the point `y` from the
+    open set that surrounds it. Budget it two problems, not one.
+  - **The closed-set form of compactness — the finite intersection property — is not built.**
+    Nothing in §12 or §13 needs it, and it would have been a twentieth problem to fill a quota.
+    It is about twelve lines and needs no choice, since complementation is its own inverse:
+    cover by `{U | ∃ C ∈ E, U = Cᶜ}` and come back by `compl '' G` with `Set.Finite.image`.
+    Build it in the section that first wants it.
+  - **Nineteen problems, 5 concepts, 609 lines**, with the longest proof at fourteen (four of
+    them) and the longest declaration at sixteen. It is inside the band, which §10 predicted it
+    would not be: the twenty-problem budget was for a section stating a notion both of a space
+    and of a subset, and defining the space form as the subset form at `Set.univ` is what bought
+    the problem back.
 
 - [ ] **13. Compact Hausdorff Spaces** — `CompactHausdorff.lean` · 5 concepts, ~13 problems
 
@@ -733,6 +816,27 @@ should still be read as §10's two causes and not as a new normal.
   sequences go. Sequential compactness is in the source and is **not** to be built: its
   equivalence with compactness for a metric space needs completeness and total boundedness, and
   the table below says why neither is in reach.
+  §12 leaves six things here, and its "As built" notes say each at length. The vocabulary is
+  `Topology.IsCompactSet` with `Topology.IsCompact` **defined as its value at `Set.univ`**, so a
+  statement about a compact space is a statement about a compact set and needs no bridge; the
+  facts already proved are `Topology.isCompactSet_of_isClosed`, `Topology.isCompactSet_union`,
+  `Topology.isCompactSet_of_finite`, `Topology.isCompactSet_image`, `Homeomorphic.isCompact`,
+  `Metric.isBounded_of_isCompactSet` and `Metric.isClosed_of_isCompactSet`, and none is to be
+  restated. A cover is a `Set (Set X)`, so **transporting one along a map costs a choice**:
+  `(hGF hV).choose` with `Set.Finite.dependent_image`, whose set is written
+  `{y | ∃ x, ∃ hx : x ∈ s, F x hx = y}` with the equation that way round. Every "finitely many,
+  so there is a largest" step is an induction on `Set.Finite`, spelled
+  `induction G, hfin using Set.Finite.induction_on`; `compact_normal` and `tube_lemma` will each
+  want one, and what they want it for is the fact §12 did not need —
+  **a finite intersection of open sets is open** — which is the first thing §13 should prove.
+  `compact_in_hausdorff` is the generalization of `Metric.isClosed_of_isCompactSet`: the metric
+  proof took the `min` of finitely many radii, and the Hausdorff proof must intersect finitely
+  many opens instead and choose the point each of them separates, so **budget it two problems,
+  not one**. The closed-set form of compactness (the finite intersection property) is **not
+  built** and costs about twelve lines with no choice at all — complementation is its own
+  inverse — if a proof here wants it. And `unitInterval_isCompactSet` is proved at `unitInterval`,
+  with `unitInterval_exists_max` beside it, so `heine_borel` owes only the passage from that one
+  interval to any closed interval and the two directions of "closed and bounded".
 
 ## What is deliberately left out
 
@@ -784,7 +888,11 @@ property arrives as `Real.exists_isLUB` and `IsLUB.exists_between`, both under �
 nothing either — five sections — and it is the second in a row that looked as though it would:
 `exists_nat_gt`, `Nat.cast_le`, `Nat.cast_nonneg` and `div_lt_iff₀` all sit under §4's
 Archimedean module, `Exists.choose` and `split_ifs` are core, and `DecidableEq` is a core class
-taken as an instance binder, which costs no import at all. Test any further import
+taken as an instance binder, which costs no import at all. §12 is the first section since §7 to add one: `Mathlib.Data.Set.Finite.Lattice`, which is where
+`Set.Finite.sUnion` and `Set.Finite.dependent_image` live — neither is under
+`Mathlib.Data.Set.Finite.Basic`, which §3 already had, and a section about finite subcovers cannot
+do without them. It is clean against the five forbidden names, and the subject's fence is now the
+eleven modules `polya extract` reports. Test any further import
 before adding it; the command is in `STYLE.md`, and the message to grep for is
 `unknownIdentifier`, which Lean capitalizes.
 
@@ -890,6 +998,18 @@ one — never a redefinition.
   `Metric.convergesTo_comp`, `Metric.continuous_of_seq`
 - `Metric.IsCauchy`, `Metric.isCauchy_of_convergesTo`, `Metric.IsComplete`, `discreteMetric`,
   `discreteMetric_eq_of_dist_lt_one`, `discreteMetric_toTopology`, `discreteMetric_isComplete`
+- `Topology.IsCompactSet`, `Topology.IsCompact`, `Topology.isCompactSet_empty`,
+  `Topology.isCompactSet_singleton`, `Topology.isCompactSet_union`,
+  `Topology.isCompactSet_of_finite`, `Topology.isCompact_of_finite`, `codiscrete_isCompact`,
+  `discrete_not_isCompact`, `Topology.isCompactSet_of_isClosed`
+- `Metric.isBounded_sUnion`, `Metric.isBounded_of_isCompactSet`, `line_not_isCompact`,
+  `Metric.half_dist_pos`, `Metric.le_dist_of_mem_ball_half`, `Metric.exists_dist_ge_sUnion`,
+  `Metric.isClosed_of_isCompactSet`
+- `Topology.isCompactSet_image`, `Homeomorphic.isCompact`, `line_bddAbove_bddBelow`,
+  `line_exists_max`, `line_exists_min`, `Topology.exists_max_of_isCompactSet`,
+  `Topology.exists_min_of_isCompactSet`
+- `CoveredUpTo`, `coveredUpTo_zero`, `coveredUpTo_insert`, `exists_coveredUpTo_of_isLUB`,
+  `unitInterval_isCompactSet`, `unitInterval_exists_max`
 
 Two in particular: §7's `Topology.induced` is the shape `Topology.subspace` already had
 (`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it and
@@ -949,11 +1069,13 @@ depends on; a pulled *proof* is closed over its own tokens alone, which is where
   `Metric.toTopology`.
 - **Subsets versus subspaces.** Compactness and connectedness are each stated twice in the
   literature — of a space, and of a subset. Define the subset version with opens of the ambient
-  space, prove once that it agrees with the subspace being compact or connected, and never juggle
-  subtypes again. §10 did this and can report the price: **two definitions, two trace lemmas and
-  a bridge, which is three problems before a single example is connected**, and only one direction
-  of the agreement was worth proving. Ask first what needs the space form. If nothing does — and
-  in §10 only path-connectedness did — the subset form alone is a section cheaper.
+  space, and **define the space version as the subset version at `Set.univ`** — not as a second
+  definition to be bridged. §10 did not, and can report the price: **two definitions, two trace
+  lemmas and a bridge, which is three problems before a single example is connected**, and only
+  one direction of the agreement was worth proving. §12 did, and paid nothing at all: `IsCompact`
+  is `IsCompactSet Set.univ`, so every subset theorem reads at the space with no restatement.
+  Comparing either with the *subspace* is a separate question, and the answer is usually not to:
+  ask first what needs it, and in §10 and §12 together only path-connectedness did.
 - **Quotients.** This bullet is struck. `Quotient.lift` was not where §8 stalled — nothing was.
   The four names `Quotient.inductionOn`, `.sound`, `.exact` and `.lift` carry every statement
   about a quotient, the setoid rides as an explicit argument like a `Metric`, and no proof ever
@@ -986,8 +1108,12 @@ depends on; a pulled *proof* is closed over its own tokens alone, which is where
 
 ### The expensive proofs
 
-What is left on this list is one item: §12's compactness of a closed interval, far above the
-rest.
+**This list is empty.** Its last item, §12's compactness of a closed interval, was built at four
+problems and about forty lines — the same as §10's connected interval, and with the same two
+Mathlib names doing the work. Five estimates in a row have come in under their billing, and the
+reason is always the one §5 gave: a proof looks expensive until the definitions line up, and the
+way to find out is to write the statement and see what the earlier sections hand over. Nothing in
+§13 is billed as expensive; if something turns out to be, it belongs here with what it cost.
 
 §10's connectedness of an interval is struck from this list, and what it cost is the estimate to
 carry forward: **four problems and about forty lines of Lean**, of which the argument proper is

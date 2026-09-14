@@ -1,0 +1,59 @@
+slug: compact_small
+kind: example
+title: The Empty Set and a Single Point
+statement: |-
+  Two sets are compact because there is so little of them to cover. The empty set needs no member of the cover at all, so the empty subcollection serves, and it is finite because it has no members.
+
+  A single point needs one. The cover reaches `x`, so some member `U` holds it; `{U}` is a subcollection of one set, and every point of `{x}` — which is to say `x` — lies in it.
+concepts:
+- open_cover
+stub: |-
+  theorem Topology.isCompactSet_empty {X : Type u} (T : Topology X) :
+      T.IsCompactSet (∅ : Set X) := sorry
+
+  theorem Topology.isCompactSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsCompactSet {x} := sorry
+reference: |-
+  theorem Topology.isCompactSet_empty {X : Type u} (T : Topology X) :
+      T.IsCompactSet (∅ : Set X) :=
+    fun _ _ _ => ⟨∅, Set.empty_subset _, Set.finite_empty, Set.empty_subset _⟩
+
+  theorem Topology.isCompactSet_singleton {X : Type u} (T : Topology X) (x : X) :
+      T.IsCompactSet {x} := by
+    intro F _ hcov
+    obtain ⟨U, hUF, hxU⟩ := hcov rfl
+    refine ⟨{U}, Set.singleton_subset_iff.mpr hUF, Set.finite_singleton U, ?_⟩
+    intro y hy
+    have e : y = x := hy
+    exact ⟨U, rfl, e ▸ hxU⟩
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X), T.IsCompactSet (∅ : Set X) := _root_.GeneralTopology.Topology.isCompactSet_empty
+  example : ∀ {X : Type u} (T : Topology X) (x : X), T.IsCompactSet {x} := _root_.GeneralTopology.Topology.isCompactSet_singleton
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.isCompactSet_empty` and `Topology.isCompactSet_singleton`. `Set.empty_subset` proves both obligations of the first. For the second, a membership `y ∈ {x}` is the equation `y = x` and must be named as one before it can be rewritten; `Set.singleton_subset_iff` turns a containment of a singleton into a membership.
+stub_names:
+- Topology.isCompactSet_empty
+- Topology.isCompactSet_singleton
+namespace: GeneralTopology
+seq: 199
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Compactness.lean
+  line: 53
+  closure_rounds: 1
+  check_kind: theorem
