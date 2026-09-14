@@ -8,11 +8,11 @@ statement: |-
 concepts:
 - metric_equivalence
 stub: |-
-  theorem Metric.isOpenSet_of_ball_subset {X : Type u} {M N : Metric X}
+  theorem MetricSpace.isOpenSet_of_ball_subset {X : Type u} {M N : MetricSpace X}
       (h : ∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) {U : Set X}
       (hU : M.IsOpenSet U) : N.IsOpenSet U := sorry
 reference: |-
-  theorem Metric.isOpenSet_of_ball_subset {X : Type u} {M N : Metric X}
+  theorem MetricSpace.isOpenSet_of_ball_subset {X : Type u} {M N : MetricSpace X}
       (h : ∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) {U : Set X}
       (hU : M.IsOpenSet U) : N.IsOpenSet U := by
     intro x hx
@@ -20,35 +20,35 @@ reference: |-
     obtain ⟨δ, hδ, hball⟩ := h x ε hε
     exact ⟨δ, hδ, fun y hy => hsub (hball hy)⟩
 spec: |-
-  example : ∀ {X : Type u} {M N : Metric X}
+  example : ∀ {X : Type u} {M N : MetricSpace X}
       (h : ∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) {U : Set X}
-      (hU : M.IsOpenSet U), N.IsOpenSet U := _root_.GeneralTopology.Metric.isOpenSet_of_ball_subset
+      (hU : M.IsOpenSet U), N.IsOpenSet U := _root_.GeneralTopology.MetricSpace.isOpenSet_of_ball_subset
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+  def MetricSpace.ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+  def MetricSpace.IsOpenSet {X : Type u} (M : MetricSpace X) (U : Set X) : Prop :=
     ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
 
   end GeneralTopology
   open GeneralTopology
 description: Prove that `U` is open for `N` whenever it is open for `M`, given that every `M.ball x ε` with `ε > 0` contains some `N.ball x δ` with `δ > 0`. Take the radius `U`'s openness supplies, then the radius the hypothesis supplies for it, and offer the second; a point of the smaller ball travels through the larger one into `U`.
 stub_names:
-- Metric.isOpenSet_of_ball_subset
+- MetricSpace.isOpenSet_of_ball_subset
 namespace: GeneralTopology
 seq: 97
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
-  line: 360
+  line: 372
   closure_rounds: 1
   check_kind: theorem

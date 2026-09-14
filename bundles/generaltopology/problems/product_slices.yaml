@@ -5,45 +5,53 @@ statement: 'Fixing one coordinate lays a factor along the product: `fun x => (x,
 concepts:
 - product_maps
 stub: |-
-  theorem Topology.continuous_mk_left {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  theorem TopologicalSpace.continuous_mk_left {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (y : Y) : T.Continuous (T.prod T') (fun x => (x, y)) := sorry
 
-  theorem Topology.continuous_mk_right {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  theorem TopologicalSpace.continuous_mk_right {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (x : X) : T'.Continuous (T.prod T') (fun y => (x, y)) := sorry
 reference: |-
-  theorem Topology.continuous_mk_left {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  theorem TopologicalSpace.continuous_mk_left {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (y : Y) : T.Continuous (T.prod T') (fun x => (x, y)) :=
-    Topology.continuous_prod_mk T (Topology.continuous_id T) (Topology.continuous_const T T' y)
+    TopologicalSpace.continuous_prod_mk T (TopologicalSpace.continuous_id T)
+      (TopologicalSpace.continuous_const T T' y)
 
-  theorem Topology.continuous_mk_right {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  theorem TopologicalSpace.continuous_mk_right {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (x : X) : T'.Continuous (T.prod T') (fun y => (x, y)) :=
-    Topology.continuous_prod_mk T' (Topology.continuous_const T' T x) (Topology.continuous_id T')
+    TopologicalSpace.continuous_prod_mk T' (TopologicalSpace.continuous_const T' T x)
+      (TopologicalSpace.continuous_id T')
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      (y : Y), T.Continuous (T.prod T') (fun x => (x, y)) := _root_.GeneralTopology.Topology.continuous_mk_left
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      (x : X), T'.Continuous (T.prod T') (fun y => (x, y)) := _root_.GeneralTopology.Topology.continuous_mk_right
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      (y : Y), T.Continuous (T.prod T') (fun x => (x, y)) := _root_.GeneralTopology.TopologicalSpace.continuous_mk_left
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      (x : X), T'.Continuous (T.prod T') (fun y => (x, y)) := _root_.GeneralTopology.TopologicalSpace.continuous_mk_right
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
-    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+  theorem TopologicalSpace.empty {X : Type u} (T : TopologicalSpace X) : T.IsOpen (∅ : Set X) := by
+    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.isOpen_sUnion (fun _ hU => hU.elim)
     rwa [Set.sUnion_empty] at h
 
-  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+  def TopologicalSpace.IsNbhd {X : Type u} (T : TopologicalSpace X) (x : X) (N : Set X) : Prop :=
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
 
-  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+  theorem TopologicalSpace.nbhd_of_isOpen {X : Type u} (T : TopologicalSpace X) {U : Set X}
       (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
     ⟨U, hU, hx, subset_rfl⟩
 
-  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+  theorem TopologicalSpace.union_of_opens_inside {X : Type u} (T : TopologicalSpace X) (U : Set X)
       (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
     apply Set.Subset.antisymm
     · intro x hx
@@ -52,73 +60,79 @@ preamble: |
     · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
       exact hVU hxV
 
-  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+  theorem TopologicalSpace.isOpen_iff_nbhd {X : Type u} (T : TopologicalSpace X) (U : Set X) :
       T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
     constructor
     · intro hU x hx
       exact T.nbhd_of_isOpen hU hx
     · intro h
       rw [T.union_of_opens_inside U h]
-      exact T.sUnion (fun V hV => hV.1)
+      exact T.isOpen_sUnion (fun V hV => hV.1)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := by
+  theorem TopologicalSpace.continuous_id {X : Type u} (T : TopologicalSpace X) : T.Continuous T id
+      := by
     intro U hU
     rw [Set.preimage_id]
     exact hU
 
-  theorem Topology.continuous_const {X : Type u} {Y : Type v} (T : Topology X)
-      (T' : Topology Y) (y : Y) : T.Continuous T' (fun _ => y) := by
+  theorem TopologicalSpace.continuous_const {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (y : Y) : T.Continuous T' (fun _ => y) := by
     intro U _
     by_cases hy : y ∈ U
     · rw [show (fun _ => y) ⁻¹' U = (Set.univ : Set X) from Set.eq_univ_of_forall (fun _ => hy)]
-      exact T.univ
+      exact T.isOpen_univ
     · rw [show (fun _ => y) ⁻¹' U = (∅ : Set X) from Set.eq_empty_of_forall_notMem (fun _ => hy)]
       exact T.empty
 
-  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X × Y) where
+  def TopologicalSpace.prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X × Y) where
     IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
-    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
-    inter := by
+    isOpen_univ := fun _ _ =>
+      ⟨Set.univ, Set.univ, T.isOpen_univ, T'.isOpen_univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    isOpen_inter := by
       rintro W W' hW hW' p hp
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
       obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
-      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+      refine ⟨U ∩ U', V ∩ V', T.isOpen_inter hU hU', T'.isOpen_inter hV hV',
         ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
       rintro q ⟨hq1, hq2⟩
       exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
-    sUnion := by
+    isOpen_sUnion := by
       rintro F h p ⟨W, hWF, hpW⟩
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
       exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
 
-  theorem Topology.continuous_prod_mk {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-      {T' : Topology Y} (S : Topology Z) {f : Z → X} {g : Z → Y} (hf : S.Continuous T f)
+  theorem TopologicalSpace.continuous_prod_mk {X : Type u} {Y : Type v} {Z : Type w}
+      {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} (S : TopologicalSpace Z) {f : Z → X} {g : Z → Y}
+      (hf : S.Continuous T f)
       (hg : S.Continuous T' g) : S.Continuous (T.prod T') (fun z => (f z, g z)) := by
     intro W hW
-    rw [Topology.isOpen_iff_nbhd]
+    rw [TopologicalSpace.isOpen_iff_nbhd]
     intro z hz
     obtain ⟨U, V, hU, hV, hzUV, hsub⟩ := hW (f z, g z) hz
-    refine ⟨f ⁻¹' U ∩ g ⁻¹' V, S.inter (hf U hU) (hg V hV), ⟨hzUV.1, hzUV.2⟩, ?_⟩
+    refine ⟨f ⁻¹' U ∩ g ⁻¹' V, S.isOpen_inter (hf U hU) (hg V hV), ⟨hzUV.1, hzUV.2⟩, ?_⟩
     intro w hw
     exact hsub ⟨hw.1, hw.2⟩
 
   end GeneralTopology
   open GeneralTopology
-description: Show that `fun x => (x, y)` and `fun y => (x, y)` are continuous into `T.prod T'`. Each is the previous problem applied to `Topology.continuous_id` and `Topology.continuous_const`, in the order the coordinates come.
+description: Show that `fun x => (x, y)` and `fun y => (x, y)` are continuous into `T.prod T'`. Each is the previous problem applied to `TopologicalSpace.continuous_id` and `TopologicalSpace.continuous_const`, in the order the coordinates come.
 stub_names:
-- Topology.continuous_mk_left
-- Topology.continuous_mk_right
+- TopologicalSpace.continuous_mk_left
+- TopologicalSpace.continuous_mk_right
 namespace: GeneralTopology
 seq: 118
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Products.lean
-  line: 389
+  line: 406
   closure_rounds: 1
   check_kind: theorem

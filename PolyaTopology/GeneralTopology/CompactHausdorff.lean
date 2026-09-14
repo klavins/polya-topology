@@ -30,18 +30,19 @@ Let `A` be a set, and suppose an open set `U` holds `A` and misses `V`, while an
 
 Finitely many sets are two at a time repeated. This is the shape a compact set forces on every argument of this section — finitely many things, so an intersection of open sets that is still open.
 @description
-Prove `Topology.exists_nbhd_disjoint_sUnion`: if every member of a finite collection `G` is missed by some open set holding `A`, then one open set holding `A` misses the whole of `⋃₀ G`. The proof is an induction on the finiteness, `induction G, hfin using Set.Finite.induction_on`, with `Set.univ` for the empty collection and `U ∩ U'` for the step; `Set.eq_empty_of_forall_notMem` and `Set.eq_empty_iff_forall_notMem` pass between a disjointness and the point that would refute it.
+Prove `TopologicalSpace.exists_nbhd_disjoint`: if every member of a finite collection `G` is missed by some open set holding `A`, then one open set holding `A` misses the whole of `⋃₀ G`. The proof is an induction on the finiteness, `induction G, hfin using Set.Finite.induction_on`, with `Set.univ` for the empty collection and `U ∩ U'` for the step; `Set.eq_empty_of_forall_notMem` and `Set.eq_empty_iff_forall_notMem` pass between a disjointness and the point that would refute it.
 -/
-theorem Topology.exists_nbhd_disjoint_sUnion {X : Type u} (T : Topology X) {A : Set X}
+theorem TopologicalSpace.exists_nbhd_disjoint {X : Type u} (T : TopologicalSpace X) {A : Set X}
     {G : Set (Set X)} (hfin : G.Finite)
     (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ V = ∅) :
     ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ ⋃₀ G = ∅ := by
   induction G, hfin using Set.Finite.induction_on with
-  | empty => exact ⟨Set.univ, T.univ, Set.subset_univ A, by rw [Set.sUnion_empty, Set.inter_empty]⟩
+  | empty =>
+    exact ⟨Set.univ, T.isOpen_univ, Set.subset_univ A, by rw [Set.sUnion_empty, Set.inter_empty]⟩
   | insert _ _ ih =>
     obtain ⟨U, hUo, hAU, hUV⟩ := h _ (Set.mem_insert _ _)
     obtain ⟨W, hWo, hAW, hWG⟩ := ih (fun V hV => h V (Set.mem_insert_of_mem _ hV))
-    refine ⟨U ∩ W, T.inter hUo hWo, Set.subset_inter hAU hAW, ?_⟩
+    refine ⟨U ∩ W, T.isOpen_inter hUo hWo, Set.subset_inter hAU hAW, ?_⟩
     rw [Set.sUnion_insert]
     apply Set.eq_empty_of_forall_notMem
     rintro z ⟨⟨hzU, hzW⟩, hz⟩
@@ -59,10 +60,10 @@ Let `K` be compact, and suppose `A` is separated from each single point of `K`: 
 
 Collect the open sets that hold a point of `K` and are missed by an open set around `A` — the ones that come with a partner, so that no partner has to be chosen afterwards. They cover `K`, so finitely many of them do. Their union is open and holds `K`, and the last problem intersects the finitely many partners into one open set around `A` that misses it.
 @description
-Prove `Topology.exists_separating_of_isCompactSet`. The cover to hand to the compactness of `K` is `{W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}`, whose members carry their own partners, and `⋃₀ G` is the second of the two open sets asked for.
+Prove `TopologicalSpace.separating_of_compact`. The cover to hand to the compactness of `K` is `{W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}`, whose members carry their own partners, and `⋃₀ G` is the second of the two open sets asked for.
 -/
-theorem Topology.exists_separating_of_isCompactSet {X : Type u} (T : Topology X)
-    {A K : Set X} (hK : T.IsCompactSet K)
+theorem TopologicalSpace.separating_of_compact {X : Type u} (T : TopologicalSpace X)
+    {A K : Set X} (hK : T.IsCompact K)
     (h : ∀ y ∈ K, ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ y ∈ V ∧ U ∩ V = ∅) :
     ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ K ⊆ V ∧ U ∩ V = ∅ := by
   obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}
@@ -70,8 +71,8 @@ theorem Topology.exists_separating_of_isCompactSet {X : Type u} (T : Topology X)
       obtain ⟨U, V, hU, hV, hAU, hyV, hUV⟩ := h y hy
       exact ⟨V, ⟨hV, U, hU, hAU, hUV⟩, hyV⟩)
   obtain ⟨U, hUo, hAU, hUG⟩ :=
-    Topology.exists_nbhd_disjoint_sUnion T hGfin (fun W hW => (hGF hW).2)
-  exact ⟨U, ⋃₀ G, hUo, T.sUnion (fun W hW => (hGF hW).1), hAU, hGcov, hUG⟩
+    TopologicalSpace.exists_nbhd_disjoint T hGfin (fun W hW => (hGF hW).2)
+  exact ⟨U, ⋃₀ G, hUo, T.isOpen_sUnion (fun W hW => (hGF hW).1), hAU, hGcov, hUG⟩
 
 /-!
 @problem compact_closed_hausdorff
@@ -85,25 +86,25 @@ That is already the closedness. The open set around the point misses the open se
 
 The same statement for a metric space was proved by taking the smallest of finitely many radii. Here there are no radii, and the intersection of finitely many open sets does that work.
 @description
-Prove `Topology.exists_separating_point`, which is the last problem at `A = {x}`, and then `Topology.isClosed_of_isCompactSet`. `Set.singleton_subset_iff` passes between `x ∈ U` and `{x} ⊆ U`; for the second, `Topology.isOpen_iff_nbhd` reduces openness of the complement to a neighbourhood at each of its points.
+Prove `TopologicalSpace.exists_separating_point`, which is the last problem at `A = {x}`, and then `TopologicalSpace.isClosed_of_isCompact`. `Set.singleton_subset_iff` passes between `x ∈ U` and `{x} ⊆ U`; for the second, `TopologicalSpace.isOpen_iff_nbhd` reduces openness of the complement to a neighbourhood at each of its points.
 -/
 
-theorem Topology.exists_separating_point {X : Type u} (T : Topology X)
-    (hT : T.IsHausdorff) {K : Set X} (hK : T.IsCompactSet K) {x : X} (hx : x ∉ K) :
+theorem TopologicalSpace.exists_separating_point {X : Type u} (T : TopologicalSpace X)
+    (hT : T.IsT2) {K : Set X} (hK : T.IsCompact K) {x : X} (hx : x ∉ K) :
     ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ K ⊆ V ∧ U ∩ V = ∅ := by
   obtain ⟨U, V, hU, hV, hxU, hKV, hUV⟩ :=
-    Topology.exists_separating_of_isCompactSet (A := {x}) T hK (fun y hy => by
+    TopologicalSpace.separating_of_compact (A := {x}) T hK (fun y hy => by
       obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := hT x y (fun e => hx (e ▸ hy))
       exact ⟨U, V, hU, hV, Set.singleton_subset_iff.mpr hxU, hyV, hUV⟩)
   exact ⟨U, V, hU, hV, hxU rfl, hKV, hUV⟩
 
-theorem Topology.isClosed_of_isCompactSet {X : Type u} (T : Topology X) (hT : T.IsHausdorff)
-    {K : Set X} (hK : T.IsCompactSet K) : T.IsClosed K := by
+theorem TopologicalSpace.isClosed_of_isCompact {X : Type u} (T : TopologicalSpace X) (hT : T.IsT2)
+    {K : Set X} (hK : T.IsCompact K) : T.IsClosed K := by
   show T.IsOpen Kᶜ
-  rw [Topology.isOpen_iff_nbhd T]
+  rw [TopologicalSpace.isOpen_iff_nbhd T]
   intro x hx
   obtain ⟨U, V, hU, _, hxU, hKV, hUV⟩ :=
-    Topology.exists_separating_point T hT hK hx
+    TopologicalSpace.exists_separating_point T hT hK hx
   exact ⟨U, hU, hxU, fun z hzU hzK => Set.eq_empty_iff_forall_notMem.mp hUV z ⟨hzU, hKV hzK⟩⟩
 
 /-! @end -/
@@ -118,12 +119,13 @@ A closed subset of a compact space is compact, and a compact subset of a Hausdor
 
 Neither half is new. What is new is that they fit together, and from here on either word may be used for the other.
 @description
-Prove `Topology.isCompactSet_iff_isClosed` from the previous problem and the earlier `Topology.isCompactSet_of_isClosed`.
+Prove `TopologicalSpace.isCompact_iff_isClosed` from the previous problem and the earlier `TopologicalSpace.isCompact_of_isClosed`.
 -/
-theorem Topology.isCompactSet_iff_isClosed {X : Type u} (T : Topology X) (hX : T.IsCompact)
-    (hT : T.IsHausdorff) (K : Set X) : T.IsCompactSet K ↔ T.IsClosed K :=
-  ⟨fun h => Topology.isClosed_of_isCompactSet T hT h,
-   fun h => Topology.isCompactSet_of_isClosed T hX h⟩
+theorem TopologicalSpace.isCompact_iff_isClosed {X : Type u} (T : TopologicalSpace X)
+    (hX : T.IsCompactSpace)
+    (hT : T.IsT2) (K : Set X) : T.IsCompact K ↔ T.IsClosed K :=
+  ⟨fun h => TopologicalSpace.isClosed_of_isCompact T hT h,
+   fun h => TopologicalSpace.isCompact_of_isClosed T hX h⟩
 
 /-!
 @concept compact_to_hausdorff
@@ -143,13 +145,13 @@ Let `f` be continuous, with a compact source and a Hausdorff target, and let `C`
 
 Nothing else is used, and nothing else is available — the target is not assumed compact, and the source is not assumed Hausdorff.
 @description
-Prove `Topology.isClosedMap_of_isCompact` by composing `Topology.isCompactSet_of_isClosed`, `Topology.isCompactSet_image` and `Topology.isClosed_of_isCompactSet`, in that order.
+Prove `TopologicalSpace.isClosedMap_of_compact` by composing `TopologicalSpace.isCompact_of_isClosed`, `TopologicalSpace.isCompact_image` and `TopologicalSpace.isClosed_of_isCompact`, in that order.
 -/
-theorem Topology.isClosedMap_of_isCompact {X : Type u} {Y : Type v} (T : Topology X)
-    (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
+theorem TopologicalSpace.isClosedMap_of_compact {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) (hX : T.IsCompactSpace) (hY : T'.IsT2) {f : X → Y}
     (hf : T.Continuous T' f) : T.IsClosedMap T' f := fun _ hC =>
-  Topology.isClosed_of_isCompactSet T' hY
-    (Topology.isCompactSet_image T hf (Topology.isCompactSet_of_isClosed T hX hC))
+  TopologicalSpace.isClosed_of_isCompact T' hY
+    (TopologicalSpace.isCompact_image T hf (TopologicalSpace.isCompact_of_isClosed T hX hC))
 
 /-!
 @problem homeomorphism_of_closed_map
@@ -161,12 +163,13 @@ A continuous bijection that is an open map is a homeomorphism; one that is a clo
 
 With the last problem the hypothesis comes free. A continuous bijection from a compact space to a Hausdorff space is a homeomorphism, and no property of the inverse has to be checked at all.
 @description
-Define `Homeomorphism.ofClosedMap`, from a continuous closed `f` and a two-sided inverse `g`, and then `Homeomorphism.ofCompactToHausdorff`, which discharges the closed-map hypothesis by the last problem. As in `Homeomorphism.ofOpenMap`, the bijection is presented by the map that undoes it, and only `continuous_invFun` needs an argument: `image_eq_preimage_of_inverse`, with `Set.preimage_compl` and `compl_compl` around it.
+Define `Homeomorph.ofClosedMap`, from a continuous closed `f` and a two-sided inverse `g`, and then `Homeomorph.ofCompactToHausdorff`, which discharges the closed-map hypothesis by the last problem. As in `Homeomorph.ofOpenMap`, the bijection is presented by the map that undoes it, and only `continuous_invFun` needs an argument: `image_eq_preimage_of_inverse`, with `Set.preimage_compl` and `compl_compl` around it.
 -/
 
-def Homeomorphism.ofClosedMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+def Homeomorph.ofClosedMap {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
     {f : X → Y} {g : Y → X} (hf : T.Continuous T' f) (hclosed : T.IsClosedMap T' f)
-    (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) : Homeomorphism T T' where
+    (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) : Homeomorph T T' where
   toFun := f
   invFun := g
   left_inv := hgf
@@ -181,21 +184,21 @@ def Homeomorphism.ofClosedMap {X : Type u} {Y : Type v} {T : Topology X} {T' : T
     have h : T'.IsOpen (f '' Uᶜ)ᶜ := hclosed Uᶜ hc
     rwa [image_eq_preimage_of_inverse hgf hfg Uᶜ, Set.preimage_compl, compl_compl] at h
 
-def Homeomorphism.ofCompactToHausdorff {X : Type u} {Y : Type v} {T : Topology X}
-    {T' : Topology Y} (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y} {g : Y → X}
+def Homeomorph.ofCompactToHausdorff {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y} (hX : T.IsCompactSpace) (hY : T'.IsT2) {f : X → Y} {g : Y → X}
     (hf : T.Continuous T' f) (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) :
-    Homeomorphism T T' :=
-  Homeomorphism.ofClosedMap hf (Topology.isClosedMap_of_isCompact T T' hX hY hf) hgf hfg
+    Homeomorph T T' :=
+  Homeomorph.ofClosedMap hf (TopologicalSpace.isClosedMap_of_compact T T' hX hY hf) hgf hfg
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) (f : X → Y) (g : Y → X)
-    (hX : T.IsCompact) (hY : T'.IsHausdorff) (hf : T.Continuous T' f)
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (f : X → Y) (g : Y → X)
+    (hX : T.IsCompactSpace) (hY : T'.IsT2) (hf : T.Continuous T' f)
     (hclosed : T.IsClosedMap T' f) (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y)
     (x : X) (y : Y) :
-    (Homeomorphism.ofClosedMap hf hclosed hgf hfg).toFun x = f x
-      ∧ (Homeomorphism.ofClosedMap hf hclosed hgf hfg).invFun y = g y
-      ∧ (Homeomorphism.ofCompactToHausdorff hX hY hf hgf hfg).toFun x = f x
-      ∧ (Homeomorphism.ofCompactToHausdorff hX hY hf hgf hfg).invFun y = g y :=
+    (Homeomorph.ofClosedMap hf hclosed hgf hfg).toFun x = f x
+      ∧ (Homeomorph.ofClosedMap hf hclosed hgf hfg).invFun y = g y
+      ∧ (Homeomorph.ofCompactToHausdorff hX hY hf hgf hfg).toFun x = f x
+      ∧ (Homeomorph.ofCompactToHausdorff hX hY hf hgf hfg).invFun y = g y :=
   ⟨rfl, rfl, rfl, rfl⟩
 
 /-! @end -/
@@ -212,19 +215,19 @@ One direction is the continuity. For the other, let the preimage of `U` be open.
 
 However the target's points were come by, they may as well have been glued together out of the source.
 @description
-Prove `Topology.eq_coinduced_of_isCompact`. `Topology.eq_of_isOpen_iff` reduces an equality of topologies to an equivalence at each set, and `Set.image_preimage_eq` is where the surjectivity is spent.
+Prove `TopologicalSpace.eq_coinduced_of_compact`. `TopologicalSpace.eq_of_isOpen_iff` reduces an equality of topologies to an equivalence at each set, and `Set.image_preimage_eq` is where the surjectivity is spent.
 -/
-theorem Topology.eq_coinduced_of_isCompact {X : Type u} {Y : Type v} (T : Topology X)
-    (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
+theorem TopologicalSpace.eq_coinduced_of_compact {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) (hX : T.IsCompactSpace) (hY : T'.IsT2) {f : X → Y}
     (hf : T.Continuous T' f) (hsurj : Function.Surjective f) : T' = T.coinduced f := by
-  apply Topology.eq_of_isOpen_iff
+  apply TopologicalSpace.eq_of_isOpen_iff
   intro U
   refine ⟨fun hU => hf U hU, fun hU => ?_⟩
   have hc : T.IsClosed (f ⁻¹' Uᶜ) := by
     show T.IsOpen _
     rw [Set.preimage_compl, compl_compl]
     exact hU
-  have h := Topology.isClosedMap_of_isCompact T T' hX hY hf _ hc
+  have h := TopologicalSpace.isClosedMap_of_compact T T' hX hY hf _ hc
   rw [Set.image_preimage_eq _ hsurj] at h
   have h2 : T'.IsOpen Uᶜᶜ := h
   rwa [compl_compl] at h2
@@ -247,13 +250,14 @@ Regularity asks that a point outside a closed set be held apart from it by disjo
 
 The T₁ half comes from the Hausdorff hypothesis, as it does everywhere in the hierarchy.
 @description
-Prove `Topology.isRegular_of_isCompact`. Its two halves are `Topology.isT1_of_isHausdorff` and `Topology.exists_separating_point` applied to `Topology.isCompactSet_of_isClosed`.
+Prove `TopologicalSpace.isT3_of_isCompactSpace`. Its two halves are `TopologicalSpace.isT1_of_isT2` and `TopologicalSpace.exists_separating_point` applied to `TopologicalSpace.isCompact_of_isClosed`.
 -/
-theorem Topology.isRegular_of_isCompact {X : Type u} (T : Topology X) (hX : T.IsCompact)
-    (hT : T.IsHausdorff) : T.IsRegular :=
-  ⟨Topology.isT1_of_isHausdorff hT, fun _ _ hC hx =>
-    Topology.exists_separating_point T hT
-      (Topology.isCompactSet_of_isClosed T hX hC) hx⟩
+theorem TopologicalSpace.isT3_of_isCompactSpace {X : Type u} (T : TopologicalSpace X)
+    (hX : T.IsCompactSpace)
+    (hT : T.IsT2) : T.IsT3 :=
+  ⟨TopologicalSpace.isT1_of_isT2 hT, fun _ _ hC hx =>
+    TopologicalSpace.exists_separating_point T hT
+      (TopologicalSpace.isCompact_of_isClosed T hX hC) hx⟩
 
 /--
 @problem compact_hausdorff_normal
@@ -265,19 +269,20 @@ Normality asks the same of two disjoint closed sets, and both of them are compac
 
 By regularity, each point of the first closed set is held apart from the second: an open set around the point, an open set holding the second, and the two disjoint. The first set is compact, so the separation of a compact set from a set it is pointwise separated from applies with the roles exchanged, and returns the pair normality asked for.
 @description
-Prove `Topology.isNormal_of_isCompact`. The pointwise hypothesis to hand to `Topology.exists_separating_of_isCompactSet` is the last problem at each point of `C`, with `D` standing in the place of `A`; `Set.inter_comm` puts each disjointness the way round the side using it wants.
+Prove `TopologicalSpace.isT4_of_isCompactSpace`. The pointwise hypothesis to hand to `TopologicalSpace.separating_of_compact` is the last problem at each point of `C`, with `D` standing in the place of `A`; `Set.inter_comm` puts each disjointness the way round the side using it wants.
 -/
-theorem Topology.isNormal_of_isCompact {X : Type u} (T : Topology X) (hX : T.IsCompact)
-    (hT : T.IsHausdorff) : T.IsNormal := by
-  refine ⟨Topology.isT1_of_isHausdorff hT, fun C D hC hD hCD => ?_⟩
+theorem TopologicalSpace.isT4_of_isCompactSpace {X : Type u} (T : TopologicalSpace X)
+    (hX : T.IsCompactSpace)
+    (hT : T.IsT2) : T.IsT4 := by
+  refine ⟨TopologicalSpace.isT1_of_isT2 hT, fun C D hC hD hCD => ?_⟩
   have hsep : ∀ y ∈ C, ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ D ⊆ U ∧ y ∈ V ∧ U ∩ V = ∅ := by
     intro y hy
     obtain ⟨V, U, hV, hU, hyV, hDU, hVU⟩ :=
-      (Topology.isRegular_of_isCompact T hX hT).2 y D hD
+      (TopologicalSpace.isT3_of_isCompactSpace T hX hT).2 y D hD
         (fun hyD => Set.eq_empty_iff_forall_notMem.mp hCD y ⟨hy, hyD⟩)
     exact ⟨U, V, hU, hV, hDU, hyV, by rw [Set.inter_comm]; exact hVU⟩
   obtain ⟨U, V, hU, hV, hDU, hCV, hUV⟩ :=
-    Topology.exists_separating_of_isCompactSet T (Topology.isCompactSet_of_isClosed T hX hC) hsep
+    TopologicalSpace.separating_of_compact T (TopologicalSpace.isCompact_of_isClosed T hX hC) hsep
   exact ⟨V, U, hV, hU, hCV, hDU, by rw [Set.inter_comm]; exact hUV⟩
 
 /-!
@@ -298,21 +303,22 @@ Suppose that for each member `V` of a collection there is an open `U` around a p
 
 Finitely many are two at a time repeated. This is the second induction of that shape in the section: the first intersected open sets to miss a union, and this one intersects them to cover one.
 @description
-Prove `Topology.exists_box_sUnion`: for a finite `G`, one open `U` around `x` has `U ×ˢ ⋃₀ G ⊆ W`. `Set.prod_empty` handles the empty collection, whose union is empty, and `Set.sUnion_insert` the step; a membership `p ∈ U ×ˢ V` is the pair of `p.1 ∈ U` and `p.2 ∈ V`.
+Prove `TopologicalSpace.exists_box_sUnion`: for a finite `G`, one open `U` around `x` has `U ×ˢ ⋃₀ G ⊆ W`. `Set.prod_empty` handles the empty collection, whose union is empty, and `Set.sUnion_insert` the step; a membership `p ∈ U ×ˢ V` is the pair of `p.1 ∈ U` and `p.2 ∈ V`.
 -/
-theorem Topology.exists_box_sUnion {X : Type u} {Y : Type v} (T : Topology X) {x : X}
+theorem TopologicalSpace.exists_box_sUnion {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    {x : X}
     {W : Set (X × Y)} {G : Set (Set Y)} (hfin : G.Finite)
     (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W) :
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ ⋃₀ G ⊆ W := by
   induction G, hfin using Set.Finite.induction_on with
   | empty =>
-    refine ⟨Set.univ, T.univ, trivial, ?_⟩
+    refine ⟨Set.univ, T.isOpen_univ, trivial, ?_⟩
     rw [Set.sUnion_empty, Set.prod_empty]
     exact Set.empty_subset W
   | insert _ _ ih =>
     obtain ⟨U, hUo, hxU, hUV⟩ := h _ (Set.mem_insert _ _)
     obtain ⟨U', hU'o, hxU', hU'G⟩ := ih (fun V hV => h V (Set.mem_insert_of_mem _ hV))
-    refine ⟨U ∩ U', T.inter hUo hU'o, ⟨hxU, hxU'⟩, ?_⟩
+    refine ⟨U ∩ U', T.isOpen_inter hUo hU'o, ⟨hxU, hxU'⟩, ?_⟩
     rw [Set.sUnion_insert]
     rintro p ⟨hp1, hp2 | hp2⟩
     · exact hUV ⟨hp1.1, hp2⟩
@@ -330,17 +336,18 @@ By compactness finitely many of them do, and the last problem intersects their f
 
 Compactness is what makes this true. Without it the widths could shrink towards zero along `B`, with no positive width below them all.
 @description
-Prove `Topology.tube_lemma`. The cover to hand to `B` is `{V | T'.IsOpen V ∧ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W}`, each member carrying the first side it was found with — exactly as the cover in `separate_compact` carried its partner.
+Prove `TopologicalSpace.tube_lemma`. The cover to hand to `B` is `{V | T'.IsOpen V ∧ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W}`, each member carrying the first side it was found with — exactly as the cover in `separate_compact` carried its partner.
 -/
-theorem Topology.tube_lemma {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-    {B : Set Y} (hB : T'.IsCompactSet B) {x : X} {W : Set (X × Y)}
+theorem TopologicalSpace.tube_lemma {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
+    {B : Set Y} (hB : T'.IsCompact B) {x : X} {W : Set (X × Y)}
     (hW : (T.prod T').IsOpen W) (hxW : {x} ×ˢ B ⊆ W) :
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ B ⊆ W := by
   obtain ⟨G, hGF, hGfin, hGcov⟩ := hB {V | T'.IsOpen V ∧ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W}
     (fun V hV => hV.1) (fun y hy => by
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW (x, y) (hxW ⟨rfl, hy⟩)
       exact ⟨V, ⟨hV, U, hU, hpUV.1, hsub⟩, hpUV.2⟩)
-  obtain ⟨U, hUo, hxU, hsub⟩ := Topology.exists_box_sUnion T hGfin (fun V hV => (hGF hV).2)
+  obtain ⟨U, hUo, hxU, hsub⟩ := TopologicalSpace.exists_box_sUnion T hGfin (fun V hV => (hGF hV).2)
   exact ⟨U, hUo, hxU, fun p hp => hsub ⟨hp.1, hGcov hp.2⟩⟩
 
 /--
@@ -351,11 +358,12 @@ theorem Topology.tube_lemma {X : Type u} {Y : Type v} (T : Topology X) (T' : Top
 @preamble
 The fibre `{x} ×ˢ B` is the image of `B` under the map pairing a point of the second factor with the fixed `x`, and that map was shown continuous when the product was built. The continuous image of a compact set is compact, so the fibre is compact in the product — and the product topology is never opened up to see it.
 @description
-Prove `Topology.isCompactSet_slice`. `Topology.continuous_mk_right` is the map and `Topology.isCompactSet_image` carries the compactness across it; what remains is the set equality `(fun y => (x, y)) '' B = {x} ×ˢ B`, proved by `Set.ext` at a point `p` and rebuilt from `p.1` and `p.2`.
+Prove `TopologicalSpace.isCompact_slice`. `TopologicalSpace.continuous_mk_right` is the map and `TopologicalSpace.isCompact_image` carries the compactness across it; what remains is the set equality `(fun y => (x, y)) '' B = {x} ×ˢ B`, proved by `Set.ext` at a point `p` and rebuilt from `p.1` and `p.2`.
 -/
-theorem Topology.isCompactSet_slice {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-    {B : Set Y} (hB : T'.IsCompactSet B) (x : X) : (T.prod T').IsCompactSet ({x} ×ˢ B) := by
-  have hc := Topology.isCompactSet_image T' (Topology.continuous_mk_right T T' x) hB
+theorem TopologicalSpace.isCompact_slice {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
+    {B : Set Y} (hB : T'.IsCompact B) (x : X) : (T.prod T').IsCompact ({x} ×ˢ B) := by
+  have hc := TopologicalSpace.isCompact_image T' (TopologicalSpace.continuous_mk_right T T' x) hB
   have he : (fun y => (x, y)) '' B = {x} ×ˢ B := by
     apply Set.ext
     intro p
@@ -377,9 +385,9 @@ Let each member `U` of a finite collection of sets of the first factor come with
 
 That is the whole of the step, and this is the third induction on a finite set in the section, and the last.
 @description
-Prove `Topology.exists_finite_subcover_sUnion`: given a finite `G`, each of whose members `U` has a finite `H ⊆ F` with `U ×ˢ B ⊆ ⋃₀ H`, there is one finite `H ⊆ F` with `(⋃₀ G) ×ˢ B ⊆ ⋃₀ H`. `Set.empty_prod` handles the empty collection, `Set.Finite.union` the step, and `Set.sUnion_mono` carries a point of one piece into the union of both.
+Prove `TopologicalSpace.exists_finite_subcover`: given a finite `G`, each of whose members `U` has a finite `H ⊆ F` with `U ×ˢ B ⊆ ⋃₀ H`, there is one finite `H ⊆ F` with `(⋃₀ G) ×ˢ B ⊆ ⋃₀ H`. `Set.empty_prod` handles the empty collection, `Set.Finite.union` the step, and `Set.sUnion_mono` carries a point of one piece into the union of both.
 -/
-theorem Topology.exists_finite_subcover_sUnion {X : Type u} {Y : Type v} {F : Set (Set (X × Y))}
+theorem TopologicalSpace.exists_finite_subcover {X : Type u} {Y : Type v} {F : Set (Set (X × Y))}
     {B : Set Y} {G : Set (Set X)} (hfin : G.Finite)
     (h : ∀ U ∈ G, ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H) :
     ∃ H ⊆ F, H.Finite ∧ (⋃₀ G) ×ˢ B ⊆ ⋃₀ H := by
@@ -409,27 +417,29 @@ The sets `U` so obtained cover `A`, each carrying the finite piece of `F` that s
 
 The statement about spaces is the case `A = B = Set.univ`, a product of two whole sets being the whole product.
 @description
-Prove `Topology.isCompactSet_prod` and then `Topology.isCompact_prod`. The cover of `A` is `{U | T.IsOpen U ∧ ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H}`, each member carrying its own finite piece, and `Set.univ_prod_univ` reads the second theorem off the first.
+Prove `TopologicalSpace.isCompact_prod` and then `TopologicalSpace.isCompactSpace_prod`. The cover of `A` is `{U | T.IsOpen U ∧ ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H}`, each member carrying its own finite piece, and `Set.univ_prod_univ` reads the second theorem off the first.
 -/
 
-theorem Topology.isCompactSet_prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-    {A : Set X} {B : Set Y} (hA : T.IsCompactSet A) (hB : T'.IsCompactSet B) :
-    (T.prod T').IsCompactSet (A ×ˢ B) := by
+theorem TopologicalSpace.isCompact_prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
+    {A : Set X} {B : Set Y} (hA : T.IsCompact A) (hB : T'.IsCompact B) :
+    (T.prod T').IsCompact (A ×ˢ B) := by
   intro F hFo hFcov
   obtain ⟨G, hGF, hGfin, hGcov⟩ :=
     hA {U | T.IsOpen U ∧ ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H} (fun U hU => hU.1) (fun x hx => by
-      obtain ⟨H, hHF, hHfin, hHcov⟩ := Topology.isCompactSet_slice T T' hB x F hFo
+      obtain ⟨H, hHF, hHfin, hHcov⟩ := TopologicalSpace.isCompact_slice T T' hB x F hFo
         (fun p hp => hFcov ⟨by rw [show p.1 = x from hp.1]; exact hx, hp.2⟩)
-      obtain ⟨U, hUo, hxU, hUsub⟩ := Topology.tube_lemma T T' hB
-        ((T.prod T').sUnion (fun V hV => hFo V (hHF hV))) hHcov
+      obtain ⟨U, hUo, hxU, hUsub⟩ := TopologicalSpace.tube_lemma T T' hB
+        ((T.prod T').isOpen_sUnion (fun V hV => hFo V (hHF hV))) hHcov
       exact ⟨U, ⟨hUo, H, hHF, hHfin, hUsub⟩, hxU⟩)
   obtain ⟨H, hHF, hHfin, hHsub⟩ :=
-    Topology.exists_finite_subcover_sUnion hGfin (fun U hU => (hGF hU).2)
+    TopologicalSpace.exists_finite_subcover hGfin (fun U hU => (hGF hU).2)
   exact ⟨H, hHF, hHfin, fun p hp => hHsub ⟨hGcov hp.1, hp.2⟩⟩
 
-theorem Topology.isCompact_prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-    (hX : T.IsCompact) (hY : T'.IsCompact) : (T.prod T').IsCompact := by
-  have h := Topology.isCompactSet_prod T T' hX hY
+theorem TopologicalSpace.isCompactSpace_prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
+    (hX : T.IsCompactSpace) (hY : T'.IsCompactSpace) : (T.prod T').IsCompactSpace := by
+  have h := TopologicalSpace.isCompact_prod T T' hX hY
   rwa [Set.univ_prod_univ] at h
 
 /-! @end -/
@@ -453,11 +463,11 @@ A closed subset of a compact space is compact, and the proof of that never used 
 
 Stated of a compact set rather than a compact space, the same argument gives what this concept needs: a set is compact as soon as it is closed and lies inside something compact.
 @description
-Prove `Topology.isCompactSet_of_isClosed_subset`, which is the earlier `Topology.isCompactSet_of_isClosed` with `Set.univ` replaced by a compact `K`. `insert Cᶜ F` is the enlarged cover, `G ∩ F` the collection with `Cᶜ` thrown away, and `Or.resolve_left` rules out the discarded member at a point of `C`.
+Prove `TopologicalSpace.isCompact_closed_subset`, which is the earlier `TopologicalSpace.isCompact_of_isClosed` with `Set.univ` replaced by a compact `K`. `insert Cᶜ F` is the enlarged cover, `G ∩ F` the collection with `Cᶜ` thrown away, and `Or.resolve_left` rules out the discarded member at a point of `C`.
 -/
-theorem Topology.isCompactSet_of_isClosed_subset {X : Type u} (T : Topology X) {K : Set X}
-    (hK : T.IsCompactSet K) {C : Set X} (hC : T.IsClosed C) (hCK : C ⊆ K) :
-    T.IsCompactSet C := by
+theorem TopologicalSpace.isCompact_closed_subset {X : Type u} (T : TopologicalSpace X) {K : Set X}
+    (hK : T.IsCompact K) {C : Set X} (hC : T.IsClosed C) (hCK : C ⊆ K) :
+    T.IsCompact C := by
   intro F hFo hcov
   have hopen : ∀ U ∈ insert Cᶜ F, T.IsOpen U := by
     rintro U (rfl | hU)
@@ -483,7 +493,7 @@ The unit interval is compact, and so is every closed interval, because an interv
 
 The degenerate case is separate: when `a = b` the interval is a single point, compact for the reason any finite set is.
 @description
-Prove `line_image_unitInterval`, the image of the unit interval under that map, and then `line_isCompactSet_segment`. For the first, `nlinarith` handles the two products in one direction and `div_le_one` the quotient in the other, with `field_simp` and `ring` for the point that lands on `x`. For the second, `eq_or_lt_of_le` splits the hypothesis and `line_continuous_affine_top` supplies the continuity.
+Prove `line_image_unitInterval`, the image of the unit interval under that map, and then `line_isCompact_segment`. For the first, `nlinarith` handles the two products in one direction and `div_le_one` the quotient in the other, with `field_simp` and `ring` for the point that lands on `x`. For the second, `eq_or_lt_of_le` splits the hypothesis and `line_continuous_affine_top` supplies the continuity.
 -/
 
 theorem line_image_unitInterval {a b : ℝ} (hlt : a < b) :
@@ -499,16 +509,16 @@ theorem line_image_unitInterval {a b : ℝ} (hlt : a < b) :
   · field_simp
     ring
 
-theorem line_isCompactSet_segment {a b : ℝ} (hab : a ≤ b) :
-    line.toTopology.IsCompactSet {x | a ≤ x ∧ x ≤ b} := by
+theorem line_isCompact_segment {a b : ℝ} (hab : a ≤ b) :
+    line.toTopologicalSpace.IsCompact {x | a ≤ x ∧ x ≤ b} := by
   rcases eq_or_lt_of_le hab with rfl | hlt
   · have e : {x : ℝ | a ≤ x ∧ x ≤ a} = {a} :=
       Set.ext (fun x => ⟨fun h => le_antisymm h.2 h.1, fun h => ⟨le_of_eq h.symm, le_of_eq h⟩⟩)
     rw [e]
-    exact Topology.isCompactSet_singleton line.toTopology a
+    exact TopologicalSpace.isCompact_singleton line.toTopologicalSpace a
   · rw [← line_image_unitInterval hlt]
-    exact Topology.isCompactSet_image line.toTopology
-      (line_continuous_affine_top (b - a) a (by linarith)) unitInterval_isCompactSet
+    exact TopologicalSpace.isCompact_image line.toTopologicalSpace
+      (line_continuous_affine_top (b - a) a (by linarith)) unitInterval_isCompact
 
 /-! @end -/
 
@@ -524,21 +534,22 @@ One direction is the last section's: a compact set of a metric space is bounded,
 
 The empty set is looked at separately in the first direction, since boundedness names a centre and the argument that produces one wants a point of the set to start from.
 @description
-Prove `line_isCompactSet_iff`. `Set.eq_empty_or_nonempty` splits off the empty case in each direction; the interval to use is the one from `x - ε` to `x + ε`, and `abs_lt` turns a membership in the ball into the two inequalities that put a point of the set inside it.
+Prove `line_isCompact_iff`. `Set.eq_empty_or_nonempty` splits off the empty case in each direction; the interval to use is the one from `x - ε` to `x + ε`, and `abs_lt` turns a membership in the ball into the two inequalities that put a point of the set inside it.
 -/
-theorem line_isCompactSet_iff {K : Set ℝ} :
-    line.toTopology.IsCompactSet K ↔ line.toTopology.IsClosed K ∧ line.IsBounded K := by
-  refine ⟨fun hK => ⟨Metric.isClosed_of_isCompactSet line hK, ?_⟩, ?_⟩
+theorem line_isCompact_iff {K : Set ℝ} :
+    line.toTopologicalSpace.IsCompact K ↔ line.toTopologicalSpace.IsClosed K ∧ line.IsBounded K
+      := by
+  refine ⟨fun hK => ⟨MetricSpace.isClosed_of_isCompact line hK, ?_⟩, ?_⟩
   · rcases Set.eq_empty_or_nonempty K with rfl | hne
     · exact ⟨0, 0, Set.empty_subset _⟩
-    · exact Metric.isBounded_of_isCompactSet line hK hne
+    · exact MetricSpace.isBounded_of_isCompact line hK hne
   · rintro ⟨hC, hB⟩
     rcases Set.eq_empty_or_nonempty K with rfl | ⟨y, hy⟩
-    · exact Topology.isCompactSet_empty line.toTopology
+    · exact TopologicalSpace.isCompact_empty line.toTopologicalSpace
     obtain ⟨x, ε, hsub⟩ := hB
     have hy' : |x - y| < ε := hsub hy
-    refine Topology.isCompactSet_of_isClosed_subset line.toTopology
-      (line_isCompactSet_segment (show x - ε ≤ x + ε by linarith [abs_nonneg (x - y)]))
+    refine TopologicalSpace.isCompact_closed_subset line.toTopologicalSpace
+      (line_isCompact_segment (show x - ε ≤ x + ε by linarith [abs_nonneg (x - y)]))
       hC (fun z hz => ?_)
     have hz' : |x - z| < ε := hsub hz
     rw [abs_lt] at hz'
@@ -554,16 +565,17 @@ The supremum plane and the product of two lines call the same sets open. They ar
 
 A supremum ball is a square, so it lies inside the closed box of the same radius about the same centre; and a closed box is a product of two closed intervals, which the last concept and the last problem make compact.
 @description
-Prove `supNorm_toTopology_eq_prod` from `Topology.eq_of_isOpen_iff` and the two implications proved when the plane was identified with a product. Then `supNorm_ball_subset_box`, where `max_lt_iff` and `abs_lt` restate a membership in a supremum ball as four inequalities. Then `supNorm_isCompactSet_box`, which rewrites by the first and applies `Topology.isCompactSet_prod`.
+Prove `supNorm_toTopologicalSpace_eq_prod` from `TopologicalSpace.eq_of_isOpen_iff` and the two implications proved when the plane was identified with a product. Then `supNorm_ball_subset_box`, where `max_lt_iff` and `abs_lt` restate a membership in a supremum ball as four inequalities. Then `supNorm_isCompact_box`, which rewrites by the first and applies `TopologicalSpace.isCompact_prod`.
 -/
 
-theorem supNorm_toTopology_eq_prod :
-    supNorm.toMetric.toTopology = line.toTopology.prod line.toTopology :=
-  Topology.eq_of_isOpen_iff
+theorem supNorm_toTopologicalSpace_eq_prod :
+    supNorm.toMetricSpace.toTopologicalSpace = line.toTopologicalSpace.prod line.toTopologicalSpace
+      :=
+  TopologicalSpace.eq_of_isOpen_iff
     (fun _ => ⟨isOpen_prod_of_isOpenSet_supNorm, isOpenSet_supNorm_of_isOpen_prod⟩)
 
 theorem supNorm_ball_subset_box (p : ℝ × ℝ) (ε : ℝ) :
-    supNorm.toMetric.ball p ε ⊆
+    supNorm.toMetricSpace.ball p ε ⊆
       {x | p.1 - ε ≤ x ∧ x ≤ p.1 + ε} ×ˢ {y | p.2 - ε ≤ y ∧ y ≤ p.2 + ε} := by
   intro z hz
   have hz' : max |p.1 - z.1| |p.2 - z.2| < ε := hz
@@ -571,12 +583,12 @@ theorem supNorm_ball_subset_box (p : ℝ × ℝ) (ε : ℝ) :
   exact ⟨⟨by linarith [hz'.1.2], by linarith [hz'.1.1]⟩,
     ⟨by linarith [hz'.2.2], by linarith [hz'.2.1]⟩⟩
 
-theorem supNorm_isCompactSet_box (p : ℝ × ℝ) {ε : ℝ} (hε : 0 ≤ ε) :
-    supNorm.toMetric.toTopology.IsCompactSet
+theorem supNorm_isCompact_box (p : ℝ × ℝ) {ε : ℝ} (hε : 0 ≤ ε) :
+    supNorm.toMetricSpace.toTopologicalSpace.IsCompact
       ({x | p.1 - ε ≤ x ∧ x ≤ p.1 + ε} ×ˢ {y | p.2 - ε ≤ y ∧ y ≤ p.2 + ε}) := by
-  rw [supNorm_toTopology_eq_prod]
-  exact Topology.isCompactSet_prod line.toTopology line.toTopology
-    (line_isCompactSet_segment (by linarith)) (line_isCompactSet_segment (by linarith))
+  rw [supNorm_toTopologicalSpace_eq_prod]
+  exact TopologicalSpace.isCompact_prod line.toTopologicalSpace line.toTopologicalSpace
+    (line_isCompact_segment (by linarith)) (line_isCompact_segment (by linarith))
 
 /-! @end -/
 
@@ -590,23 +602,23 @@ The plane goes the way the line went, with a box in place of an interval. A comp
 
 The plane measured by the taxicab length gives the same answer, being the same space. The plane measured by the Euclidean length is not settled here, since its norm needs a square root and this subject has none.
 @description
-Prove `supNorm_isCompactSet_iff`. The two directions are those of `line_isCompactSet_iff`, with `supNorm_isCompactSet_box` in place of the interval and `supNorm_ball_subset_box` for the containment; the radius is non-negative because a point of the set is nearer to the centre than it.
+Prove `supNorm_isCompact_iff`. The two directions are those of `line_isCompact_iff`, with `supNorm_isCompact_box` in place of the interval and `supNorm_ball_subset_box` for the containment; the radius is non-negative because a point of the set is nearer to the centre than it.
 -/
-theorem supNorm_isCompactSet_iff {S : Set (ℝ × ℝ)} :
-    supNorm.toMetric.toTopology.IsCompactSet S ↔
-      supNorm.toMetric.toTopology.IsClosed S ∧ supNorm.toMetric.IsBounded S := by
-  refine ⟨fun hS => ⟨Metric.isClosed_of_isCompactSet supNorm.toMetric hS, ?_⟩, ?_⟩
+theorem supNorm_isCompact_iff {S : Set (ℝ × ℝ)} :
+    supNorm.toMetricSpace.toTopologicalSpace.IsCompact S ↔
+      supNorm.toMetricSpace.toTopologicalSpace.IsClosed S ∧ supNorm.toMetricSpace.IsBounded S := by
+  refine ⟨fun hS => ⟨MetricSpace.isClosed_of_isCompact supNorm.toMetricSpace hS, ?_⟩, ?_⟩
   · rcases Set.eq_empty_or_nonempty S with rfl | hne
     · exact ⟨(0, 0), 0, Set.empty_subset _⟩
-    · exact Metric.isBounded_of_isCompactSet supNorm.toMetric hS hne
+    · exact MetricSpace.isBounded_of_isCompact supNorm.toMetricSpace hS hne
   · rintro ⟨hC, hB⟩
     rcases Set.eq_empty_or_nonempty S with rfl | ⟨q, hq⟩
-    · exact Topology.isCompactSet_empty supNorm.toMetric.toTopology
+    · exact TopologicalSpace.isCompact_empty supNorm.toMetricSpace.toTopologicalSpace
     obtain ⟨p, ε, hsub⟩ := hB
     have hq' : max |p.1 - q.1| |p.2 - q.2| < ε := hsub hq
     have hε : (0 : ℝ) ≤ ε :=
       le_of_lt (lt_of_le_of_lt (le_trans (abs_nonneg _) (le_max_left _ _)) hq')
-    exact Topology.isCompactSet_of_isClosed_subset supNorm.toMetric.toTopology
-      (supNorm_isCompactSet_box p hε) hC (fun z hz => supNorm_ball_subset_box p ε (hsub hz))
+    exact TopologicalSpace.isCompact_closed_subset supNorm.toMetricSpace.toTopologicalSpace
+      (supNorm_isCompact_box p hε) hC (fun z hz => supNorm_ball_subset_box p ε (hsub hz))
 
 end GeneralTopology

@@ -45,8 +45,8 @@ namespace: GeneralTopology
 seq: 139
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 498
+  line: 511
   closure_rounds: 1
   check_kind: theorem

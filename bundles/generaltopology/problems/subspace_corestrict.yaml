@@ -8,37 +8,39 @@ statement: |-
 concepts:
 - subspace_maps
 stub: |-
-  theorem Topology.continuous_toSubspace {X : Type u} {Y : Type v} {T : Topology X}
-      {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A) :
+  theorem TopologicalSpace.continuous_toSubspace {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A) :
       T.Continuous (T'.subspace A) (fun x => (⟨f x, h x⟩ : A)) := sorry
 reference: |-
-  theorem Topology.continuous_toSubspace {X : Type u} {Y : Type v} {T : Topology X}
-      {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A) :
+  theorem TopologicalSpace.continuous_toSubspace {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A) :
       T.Continuous (T'.subspace A) (fun x => (⟨f x, h x⟩ : A)) := by
     intro V hV
     obtain ⟨U, hU, rfl⟩ := hV
     exact hf U hU
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} {T : Topology X}
-      {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A), T.Continuous (T'.subspace A) (fun x => (⟨f x, h x⟩ : A)) := _root_.GeneralTopology.Topology.continuous_toSubspace
+  example : ∀ {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A), T.Continuous (T'.subspace A) (fun x => (⟨f x, h x⟩ : A)) := _root_.GeneralTopology.TopologicalSpace.continuous_toSubspace
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A where
+  def TopologicalSpace.subspace {X : Type u} (T : TopologicalSpace X) (A : Set X)
+      : TopologicalSpace A where
     IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U
-    univ := ⟨Set.univ, T.univ, rfl⟩
-    inter := by
+    isOpen_univ := ⟨Set.univ, T.isOpen_univ, rfl⟩
+    isOpen_inter := by
       rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
-      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
-    sUnion := by
+      exact ⟨U ∩ U', T.isOpen_inter hU hU', rfl⟩
+    isOpen_sUnion := by
       intro F h
-      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F},
+        T.isOpen_sUnion (fun U hU => hU.1), ?_⟩
       apply Set.Subset.antisymm
       · rintro x ⟨V, hVF, hxV⟩
         obtain ⟨U, hU, rfl⟩ := h V hVF
@@ -46,7 +48,8 @@ preamble: |
       · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
         exact ⟨_, hUF, hxU⟩
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
@@ -54,13 +57,13 @@ preamble: |
   open GeneralTopology
 description: 'Show that `fun x => (⟨f x, h x⟩ : A)` is continuous into `T''.subspace A` when `f` is continuous and every `f x` lies in `A`. Take the open set apart with `obtain ⟨U, hU, rfl⟩`; what is left is the hypothesis at `U`, with no rewriting needed.'
 stub_names:
-- Topology.continuous_toSubspace
+- TopologicalSpace.continuous_toSubspace
 namespace: GeneralTopology
 seq: 106
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Products.lean
-  line: 46
+  line: 47
   closure_rounds: 1
   check_kind: theorem

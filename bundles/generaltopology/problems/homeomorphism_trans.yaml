@@ -8,13 +8,15 @@ statement: |-
 concepts:
 - homeomorphism
 stub: |-
-  def Homeomorphism.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-      {T' : Topology Y} {T'' : Topology Z} (h : Homeomorphism T T') (h' : Homeomorphism T' T'') :
-      Homeomorphism T T'' := sorry
+  def Homeomorph.trans {X : Type u} {Y : Type v} {Z : Type w} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} (h : Homeomorph T T')
+        (h' : Homeomorph T' T'') :
+      Homeomorph T T'' := sorry
 reference: |-
-  def Homeomorphism.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-      {T' : Topology Y} {T'' : Topology Z} (h : Homeomorphism T T') (h' : Homeomorphism T' T'') :
-      Homeomorphism T T'' where
+  def Homeomorph.trans {X : Type u} {Y : Type v} {Z : Type w} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} (h : Homeomorph T T')
+        (h' : Homeomorph T' T'') :
+      Homeomorph T T'' where
     toFun := h'.toFun ∘ h.toFun
     invFun := h.invFun ∘ h'.invFun
     left_inv := fun x => by
@@ -23,34 +25,37 @@ reference: |-
     right_inv := fun z => by
       show h'.toFun (h.toFun (h.invFun (h'.invFun z))) = z
       rw [h.right_inv, h'.right_inv]
-    continuous_toFun := Topology.continuous_comp T h.continuous_toFun h'.continuous_toFun
-    continuous_invFun := Topology.continuous_comp T'' h'.continuous_invFun h.continuous_invFun
+    continuous_toFun := TopologicalSpace.continuous_comp T h.continuous_toFun h'.continuous_toFun
+    continuous_invFun := TopologicalSpace.continuous_comp T'' h'.continuous_invFun h.continuous_invFun
 spec: |-
-  example (X Y Z : Type) (T : Topology X) (T' : Topology Y) (T'' : Topology Z)
-      (h : Homeomorphism T T') (h' : Homeomorphism T' T'') (x : X) (z : Z) :
+  example (X Y Z : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (T'' : TopologicalSpace Z)
+      (h : Homeomorph T T') (h' : Homeomorph T' T'') (x : X) (z : Z) :
       (h.trans h').toFun x = h'.toFun (h.toFun x)
         ∧ (h.trans h').invFun z = h.invFun (h'.invFun z) := ⟨rfl, rfl⟩
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+  theorem TopologicalSpace.continuous_comp {X : Type u} {Y : Type v} {Z : Type w}
+      (T : TopologicalSpace X)
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} {f : X → Y} {g : Y → Z}
       (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := by
     intro U hU
     rw [Set.preimage_comp]
     exact hf _ (hg U hU)
 
-  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+  structure Homeomorph {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) where
     toFun : X → Y
     invFun : Y → X
     left_inv : ∀ x, invFun (toFun x) = x
@@ -60,15 +65,15 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Define `Homeomorphism.trans h h'`, the composite homeomorphism from `T` to `T''`. For the two inverse conditions, `show` restates the goal with the composition unfolded and two rewrites cancel the pairs; for the two continuities, `Topology.continuous_comp` takes the topology of the source and then the two continuities in the order they are applied.
+description: Define `Homeomorph.trans h h'`, the composite homeomorphism from `T` to `T''`. For the two inverse conditions, `show` restates the goal with the composition unfolded and two rewrites cancel the pairs; for the two continuities, `TopologicalSpace.continuous_comp` takes the topology of the source and then the two continuities in the order they are applied.
 stub_names:
-- Homeomorphism.trans
+- Homeomorph.trans
 namespace: GeneralTopology
 seq: 90
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
-  line: 120
+  line: 123
   closure_rounds: 1
   check_kind: definition

@@ -8,22 +8,28 @@ statement: |-
 concepts:
 - sum_space
 stub: |-
-  theorem Topology.continuous_sum_elim {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-      {T' : Topology Y} (S : Topology Z) {f : X → Z} {g : Y → Z} (hf : T.Continuous S f)
+  theorem TopologicalSpace.continuous_sum_elim {X : Type u} {Y : Type v} {Z : Type w}
+      {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} (S : TopologicalSpace Z) {f : X → Z} {g : Y → Z}
+      (hf : T.Continuous S f)
       (hg : T'.Continuous S g) : (T.sum T').Continuous S (Sum.elim f g) := sorry
 
-  theorem Topology.continuous_sum_iff {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-      (T' : Topology Y) (S : Topology Z) (h : X ⊕ Y → Z) :
+  theorem TopologicalSpace.continuous_sum_iff {X : Type u} {Y : Type v} {Z : Type w}
+      (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (S : TopologicalSpace Z) (h : X ⊕ Y → Z) :
       (T.sum T').Continuous S h ↔
         T.Continuous S (h ∘ Sum.inl) ∧ T'.Continuous S (h ∘ Sum.inr) := sorry
 reference: |-
-  theorem Topology.continuous_sum_elim {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-      {T' : Topology Y} (S : Topology Z) {f : X → Z} {g : Y → Z} (hf : T.Continuous S f)
+  theorem TopologicalSpace.continuous_sum_elim {X : Type u} {Y : Type v} {Z : Type w}
+      {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} (S : TopologicalSpace Z) {f : X → Z} {g : Y → Z}
+      (hf : T.Continuous S f)
       (hg : T'.Continuous S g) : (T.sum T').Continuous S (Sum.elim f g) :=
     fun W hW => ⟨hf W hW, hg W hW⟩
 
-  theorem Topology.continuous_sum_iff {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-      (T' : Topology Y) (S : Topology Z) (h : X ⊕ Y → Z) :
+  theorem TopologicalSpace.continuous_sum_iff {X : Type u} {Y : Type v} {Z : Type w}
+      (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (S : TopologicalSpace Z) (h : X ⊕ Y → Z) :
       (T.sum T').Continuous S h ↔
         T.Continuous S (h ∘ Sum.inl) ∧ T'.Continuous S (h ∘ Sum.inr) := by
     constructor
@@ -32,22 +38,26 @@ reference: |-
     · rintro ⟨hf, hg⟩ W hW
       exact ⟨hf W hW, hg W hW⟩
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-      {T' : Topology Y} (S : Topology Z) {f : X → Z} {g : Y → Z} (hf : T.Continuous S f)
-      (hg : T'.Continuous S g), (T.sum T').Continuous S (Sum.elim f g) := _root_.GeneralTopology.Topology.continuous_sum_elim
-  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-      (T' : Topology Y) (S : Topology Z) (h : X ⊕ Y → Z), (T.sum T').Continuous S h ↔
-        T.Continuous S (h ∘ Sum.inl) ∧ T'.Continuous S (h ∘ Sum.inr) := _root_.GeneralTopology.Topology.continuous_sum_iff
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w}
+      {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} (S : TopologicalSpace Z) {f : X → Z} {g : Y → Z}
+      (hf : T.Continuous S f)
+      (hg : T'.Continuous S g), (T.sum T').Continuous S (Sum.elim f g) := _root_.GeneralTopology.TopologicalSpace.continuous_sum_elim
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w}
+      (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (S : TopologicalSpace Z) (h : X ⊕ Y → Z), (T.sum T').Continuous S h ↔
+        T.Continuous S (h ∘ Sum.inl) ∧ T'.Continuous S (h ∘ Sum.inr) := _root_.GeneralTopology.TopologicalSpace.continuous_sum_iff
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
@@ -59,35 +69,36 @@ preamble: |
     · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
       exact ⟨V, hVF, hxW⟩
 
-  def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X ⊕ Y) where
+  def TopologicalSpace.sum {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X ⊕ Y) where
     IsOpen := fun W => T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W)
-    univ := by
+    isOpen_univ := by
       rw [Set.preimage_univ, Set.preimage_univ]
-      exact ⟨T.univ, T'.univ⟩
-    inter := by
+      exact ⟨T.isOpen_univ, T'.isOpen_univ⟩
+    isOpen_inter := by
       intro V W hV hW
       rw [Set.preimage_inter, Set.preimage_inter]
-      exact ⟨T.inter hV.1 hW.1, T'.inter hV.2 hW.2⟩
-    sUnion := by
+      exact ⟨T.isOpen_inter hV.1 hW.1, T'.isOpen_inter hV.2 hW.2⟩
+    isOpen_sUnion := by
       intro F h
       rw [preimage_sUnion_image, preimage_sUnion_image]
       constructor
-      · exact T.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
-      · exact T'.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
+      · exact T.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
+      · exact T'.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
 
   end GeneralTopology
   open GeneralTopology
 description: 'Prove that `Sum.elim f g` is continuous when `f` and `g` are, and then that a map `h : X ⊕ Y → Z` is continuous exactly when `h ∘ Sum.inl` and `h ∘ Sum.inr` are. Both are pairs of applications of the hypotheses, and neither needs any rewriting.'
 stub_names:
-- Topology.continuous_sum_elim
-- Topology.continuous_sum_iff
+- TopologicalSpace.continuous_sum_elim
+- TopologicalSpace.continuous_sum_iff
 namespace: GeneralTopology
 seq: 137
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 429
+  line: 439
   closure_rounds: 1
   check_kind: theorem

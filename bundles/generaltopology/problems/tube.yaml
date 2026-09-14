@@ -10,68 +10,74 @@ statement: |-
 concepts:
 - tube_lemma
 stub: |-
-  theorem Topology.tube_lemma {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      {B : Set Y} (hB : T'.IsCompactSet B) {x : X} {W : Set (X × Y)}
+  theorem TopologicalSpace.tube_lemma {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      {B : Set Y} (hB : T'.IsCompact B) {x : X} {W : Set (X × Y)}
       (hW : (T.prod T').IsOpen W) (hxW : {x} ×ˢ B ⊆ W) :
       ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ B ⊆ W := sorry
 reference: |-
-  theorem Topology.tube_lemma {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      {B : Set Y} (hB : T'.IsCompactSet B) {x : X} {W : Set (X × Y)}
+  theorem TopologicalSpace.tube_lemma {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      {B : Set Y} (hB : T'.IsCompact B) {x : X} {W : Set (X × Y)}
       (hW : (T.prod T').IsOpen W) (hxW : {x} ×ˢ B ⊆ W) :
       ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ B ⊆ W := by
     obtain ⟨G, hGF, hGfin, hGcov⟩ := hB {V | T'.IsOpen V ∧ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W}
       (fun V hV => hV.1) (fun y hy => by
         obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW (x, y) (hxW ⟨rfl, hy⟩)
         exact ⟨V, ⟨hV, U, hU, hpUV.1, hsub⟩, hpUV.2⟩)
-    obtain ⟨U, hUo, hxU, hsub⟩ := Topology.exists_box_sUnion T hGfin (fun V hV => (hGF hV).2)
+    obtain ⟨U, hUo, hxU, hsub⟩ := TopologicalSpace.exists_box_sUnion T hGfin (fun V hV => (hGF hV).2)
     exact ⟨U, hUo, hxU, fun p hp => hsub ⟨hp.1, hGcov hp.2⟩⟩
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      {B : Set Y} (hB : T'.IsCompactSet B) {x : X} {W : Set (X × Y)}
-      (hW : (T.prod T').IsOpen W) (hxW : {x} ×ˢ B ⊆ W), ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ B ⊆ W := _root_.GeneralTopology.Topology.tube_lemma
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      {B : Set Y} (hB : T'.IsCompact B) {x : X} {W : Set (X × Y)}
+      (hW : (T.prod T').IsOpen W) (hxW : {x} ×ˢ B ⊆ W), ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ B ⊆ W := _root_.GeneralTopology.TopologicalSpace.tube_lemma
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X × Y) where
+  def TopologicalSpace.prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X × Y) where
     IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
-    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
-    inter := by
+    isOpen_univ := fun _ _ =>
+      ⟨Set.univ, Set.univ, T.isOpen_univ, T'.isOpen_univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    isOpen_inter := by
       rintro W W' hW hW' p hp
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
       obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
-      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+      refine ⟨U ∩ U', V ∩ V', T.isOpen_inter hU hU', T'.isOpen_inter hV hV',
         ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
       rintro q ⟨hq1, hq2⟩
       exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
-    sUnion := by
+    isOpen_sUnion := by
       rintro F h p ⟨W, hWF, hpW⟩
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
       exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
 
-  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
       ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
 
-  theorem Topology.exists_box_sUnion {X : Type u} {Y : Type v} (T : Topology X) {x : X}
+  theorem TopologicalSpace.exists_box_sUnion {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      {x : X}
       {W : Set (X × Y)} {G : Set (Set Y)} (hfin : G.Finite)
       (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W) :
       ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ ⋃₀ G ⊆ W := by
     induction G, hfin using Set.Finite.induction_on with
     | empty =>
-      refine ⟨Set.univ, T.univ, trivial, ?_⟩
+      refine ⟨Set.univ, T.isOpen_univ, trivial, ?_⟩
       rw [Set.sUnion_empty, Set.prod_empty]
       exact Set.empty_subset W
     | insert _ _ ih =>
       obtain ⟨U, hUo, hxU, hUV⟩ := h _ (Set.mem_insert _ _)
       obtain ⟨U', hU'o, hxU', hU'G⟩ := ih (fun V hV => h V (Set.mem_insert_of_mem _ hV))
-      refine ⟨U ∩ U', T.inter hUo hU'o, ⟨hxU, hxU'⟩, ?_⟩
+      refine ⟨U ∩ U', T.isOpen_inter hUo hU'o, ⟨hxU, hxU'⟩, ?_⟩
       rw [Set.sUnion_insert]
       rintro p ⟨hp1, hp2 | hp2⟩
       · exact hUV ⟨hp1.1, hp2⟩
@@ -79,15 +85,15 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Topology.tube_lemma`. The cover to hand to `B` is `{V | T'.IsOpen V ∧ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W}`, each member carrying the first side it was found with — exactly as the cover in `separate_compact` carried its partner.
+description: Prove `TopologicalSpace.tube_lemma`. The cover to hand to `B` is `{V | T'.IsOpen V ∧ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W}`, each member carrying the first side it was found with — exactly as the cover in `separate_compact` carried its partner.
 stub_names:
-- Topology.tube_lemma
+- TopologicalSpace.tube_lemma
 namespace: GeneralTopology
 seq: 227
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
-  line: 322
+  line: 328
   closure_rounds: 1
   check_kind: theorem

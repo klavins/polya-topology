@@ -8,38 +8,39 @@ statement: |-
 concepts:
 - compact_to_hausdorff
 stub: |-
-  theorem Topology.isClosedMap_of_isCompact {X : Type u} {Y : Type v} (T : Topology X)
-      (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
+  theorem TopologicalSpace.isClosedMap_of_compact {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (hX : T.IsCompactSpace) (hY : T'.IsT2) {f : X → Y}
       (hf : T.Continuous T' f) : T.IsClosedMap T' f := sorry
 reference: |-
-  theorem Topology.isClosedMap_of_isCompact {X : Type u} {Y : Type v} (T : Topology X)
-      (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
+  theorem TopologicalSpace.isClosedMap_of_compact {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (hX : T.IsCompactSpace) (hY : T'.IsT2) {f : X → Y}
       (hf : T.Continuous T' f) : T.IsClosedMap T' f := fun _ hC =>
-    Topology.isClosed_of_isCompactSet T' hY
-      (Topology.isCompactSet_image T hf (Topology.isCompactSet_of_isClosed T hX hC))
+    TopologicalSpace.isClosed_of_isCompact T' hY
+      (TopologicalSpace.isCompact_image T hf (TopologicalSpace.isCompact_of_isClosed T hX hC))
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X)
-      (T' : Topology Y) (hX : T.IsCompact) (hY : T'.IsHausdorff) {f : X → Y}
-      (hf : T.Continuous T' f), T.IsClosedMap T' f := _root_.GeneralTopology.Topology.isClosedMap_of_isCompact
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (hX : T.IsCompactSpace) (hY : T'.IsT2) {f : X → Y}
+      (hf : T.Continuous T' f), T.IsClosedMap T' f := _root_.GeneralTopology.TopologicalSpace.isClosedMap_of_compact
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
-  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+  def TopologicalSpace.IsNbhd {X : Type u} (T : TopologicalSpace X) (x : X) (N : Set X) : Prop :=
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
 
-  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+  theorem TopologicalSpace.nbhd_of_isOpen {X : Type u} (T : TopologicalSpace X) {U : Set X}
       (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
     ⟨U, hU, hx, subset_rfl⟩
 
-  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+  theorem TopologicalSpace.union_of_opens_inside {X : Type u} (T : TopologicalSpace X) (U : Set X)
       (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
     apply Set.Subset.antisymm
     · intro x hx
@@ -48,34 +49,38 @@ preamble: |
     · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
       exact hVU hxV
 
-  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+  theorem TopologicalSpace.isOpen_iff_nbhd {X : Type u} (T : TopologicalSpace X) (U : Set X) :
       T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
     constructor
     · intro hU x hx
       exact T.nbhd_of_isOpen hU hx
     · intro h
       rw [T.union_of_opens_inside U h]
-      exact T.sUnion (fun V hV => hV.1)
+      exact T.isOpen_sUnion (fun V hV => hV.1)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  def Topology.IsClosedMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.IsClosedMap {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ C, T.IsClosed C → T'.IsClosed (f '' C)
 
-  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT2 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
 
-  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
       ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
 
-  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+  def TopologicalSpace.IsCompactSpace {X : Type u} (T : TopologicalSpace X) : Prop
+      := T.IsCompact Set.univ
 
-  theorem Topology.isCompactSet_of_isClosed {X : Type u} (T : Topology X) (hT : T.IsCompact)
-      {C : Set X} (hC : T.IsClosed C) : T.IsCompactSet C := by
+  theorem TopologicalSpace.isCompact_of_isClosed {X : Type u} (T : TopologicalSpace X)
+      (hT : T.IsCompactSpace)
+      {C : Set X} (hC : T.IsClosed C) : T.IsCompact C := by
     intro F hFo hcov
     have hopen : ∀ U ∈ insert Cᶜ F, T.IsOpen U := by
       rintro U (rfl | hU)
@@ -91,9 +96,10 @@ preamble: |
     obtain ⟨U, hUG, hxU⟩ := hGcov (Set.mem_univ x)
     exact ⟨U, ⟨hUG, (hGF hUG).resolve_left (fun e => (e ▸ hxU) hx)⟩, hxU⟩
 
-  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
-      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
-      T'.IsCompactSet (f '' S) := by
+  theorem TopologicalSpace.isCompact_image {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      {T' : TopologicalSpace Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompact S) :
+      T'.IsCompact (f '' S) := by
     intro F hFo hcov
     have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
       intro x hxS
@@ -109,16 +115,17 @@ preamble: |
       rw [(hGF hVG).choose_spec.2] at hxV
       exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
 
-  theorem Topology.exists_nbhd_disjoint_sUnion {X : Type u} (T : Topology X) {A : Set X}
+  theorem TopologicalSpace.exists_nbhd_disjoint {X : Type u} (T : TopologicalSpace X) {A : Set X}
       {G : Set (Set X)} (hfin : G.Finite)
       (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ V = ∅) :
       ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ ⋃₀ G = ∅ := by
     induction G, hfin using Set.Finite.induction_on with
-    | empty => exact ⟨Set.univ, T.univ, Set.subset_univ A, by rw [Set.sUnion_empty, Set.inter_empty]⟩
+    | empty =>
+      exact ⟨Set.univ, T.isOpen_univ, Set.subset_univ A, by rw [Set.sUnion_empty, Set.inter_empty]⟩
     | insert _ _ ih =>
       obtain ⟨U, hUo, hAU, hUV⟩ := h _ (Set.mem_insert _ _)
       obtain ⟨W, hWo, hAW, hWG⟩ := ih (fun V hV => h V (Set.mem_insert_of_mem _ hV))
-      refine ⟨U ∩ W, T.inter hUo hWo, Set.subset_inter hAU hAW, ?_⟩
+      refine ⟨U ∩ W, T.isOpen_inter hUo hWo, Set.subset_inter hAU hAW, ?_⟩
       rw [Set.sUnion_insert]
       apply Set.eq_empty_of_forall_notMem
       rintro z ⟨⟨hzU, hzW⟩, hz⟩
@@ -126,8 +133,8 @@ preamble: |
       · exact Set.eq_empty_iff_forall_notMem.mp hUV z ⟨hzU, hz⟩
       · exact Set.eq_empty_iff_forall_notMem.mp hWG z ⟨hzW, hz⟩
 
-  theorem Topology.exists_separating_of_isCompactSet {X : Type u} (T : Topology X)
-      {A K : Set X} (hK : T.IsCompactSet K)
+  theorem TopologicalSpace.separating_of_compact {X : Type u} (T : TopologicalSpace X)
+      {A K : Set X} (hK : T.IsCompact K)
       (h : ∀ y ∈ K, ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ y ∈ V ∧ U ∩ V = ∅) :
       ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ A ⊆ U ∧ K ⊆ V ∧ U ∩ V = ∅ := by
     obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {W | T.IsOpen W ∧ ∃ U, T.IsOpen U ∧ A ⊆ U ∧ U ∩ W = ∅}
@@ -135,38 +142,38 @@ preamble: |
         obtain ⟨U, V, hU, hV, hAU, hyV, hUV⟩ := h y hy
         exact ⟨V, ⟨hV, U, hU, hAU, hUV⟩, hyV⟩)
     obtain ⟨U, hUo, hAU, hUG⟩ :=
-      Topology.exists_nbhd_disjoint_sUnion T hGfin (fun W hW => (hGF hW).2)
-    exact ⟨U, ⋃₀ G, hUo, T.sUnion (fun W hW => (hGF hW).1), hAU, hGcov, hUG⟩
+      TopologicalSpace.exists_nbhd_disjoint T hGfin (fun W hW => (hGF hW).2)
+    exact ⟨U, ⋃₀ G, hUo, T.isOpen_sUnion (fun W hW => (hGF hW).1), hAU, hGcov, hUG⟩
 
-  theorem Topology.exists_separating_point {X : Type u} (T : Topology X)
-      (hT : T.IsHausdorff) {K : Set X} (hK : T.IsCompactSet K) {x : X} (hx : x ∉ K) :
+  theorem TopologicalSpace.exists_separating_point {X : Type u} (T : TopologicalSpace X)
+      (hT : T.IsT2) {K : Set X} (hK : T.IsCompact K) {x : X} (hx : x ∉ K) :
       ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ K ⊆ V ∧ U ∩ V = ∅ := by
     obtain ⟨U, V, hU, hV, hxU, hKV, hUV⟩ :=
-      Topology.exists_separating_of_isCompactSet (A := {x}) T hK (fun y hy => by
+      TopologicalSpace.separating_of_compact (A := {x}) T hK (fun y hy => by
         obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := hT x y (fun e => hx (e ▸ hy))
         exact ⟨U, V, hU, hV, Set.singleton_subset_iff.mpr hxU, hyV, hUV⟩)
     exact ⟨U, V, hU, hV, hxU rfl, hKV, hUV⟩
 
-  theorem Topology.isClosed_of_isCompactSet {X : Type u} (T : Topology X) (hT : T.IsHausdorff)
-      {K : Set X} (hK : T.IsCompactSet K) : T.IsClosed K := by
+  theorem TopologicalSpace.isClosed_of_isCompact {X : Type u} (T : TopologicalSpace X) (hT : T.IsT2)
+      {K : Set X} (hK : T.IsCompact K) : T.IsClosed K := by
     show T.IsOpen Kᶜ
-    rw [Topology.isOpen_iff_nbhd T]
+    rw [TopologicalSpace.isOpen_iff_nbhd T]
     intro x hx
     obtain ⟨U, V, hU, _, hxU, hKV, hUV⟩ :=
-      Topology.exists_separating_point T hT hK hx
+      TopologicalSpace.exists_separating_point T hT hK hx
     exact ⟨U, hU, hxU, fun z hzU hzK => Set.eq_empty_iff_forall_notMem.mp hUV z ⟨hzU, hKV hzK⟩⟩
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Topology.isClosedMap_of_isCompact` by composing `Topology.isCompactSet_of_isClosed`, `Topology.isCompactSet_image` and `Topology.isClosed_of_isCompactSet`, in that order.
+description: Prove `TopologicalSpace.isClosedMap_of_compact` by composing `TopologicalSpace.isCompact_of_isClosed`, `TopologicalSpace.isCompact_image` and `TopologicalSpace.isClosed_of_isCompact`, in that order.
 stub_names:
-- Topology.isClosedMap_of_isCompact
+- TopologicalSpace.isClosedMap_of_compact
 namespace: GeneralTopology
 seq: 221
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
-  line: 137
+  line: 139
   closure_rounds: 1
   check_kind: theorem

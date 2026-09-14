@@ -8,73 +8,83 @@ statement: |-
 concepts:
 - product_maps
 stub: |-
-  theorem Topology.continuous_fst {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.continuous_fst {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       (T.prod T').Continuous T Prod.fst := sorry
 
-  theorem Topology.continuous_snd {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.continuous_snd {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       (T.prod T').Continuous T' Prod.snd := sorry
 reference: |-
-  theorem Topology.continuous_fst {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.continuous_fst {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       (T.prod T').Continuous T Prod.fst := by
     intro U hU
     rw [← Set.prod_univ]
-    exact Topology.isOpen_prod_box T T' hU T'.univ
+    exact TopologicalSpace.isOpen_prod_box T T' hU T'.isOpen_univ
 
-  theorem Topology.continuous_snd {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.continuous_snd {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       (T.prod T').Continuous T' Prod.snd := by
     intro V hV
     rw [← Set.univ_prod]
-    exact Topology.isOpen_prod_box T T' T.univ hV
+    exact TopologicalSpace.isOpen_prod_box T T' T.isOpen_univ hV
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), (T.prod T').Continuous T Prod.fst := _root_.GeneralTopology.Topology.continuous_fst
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), (T.prod T').Continuous T' Prod.snd := _root_.GeneralTopology.Topology.continuous_snd
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y), (T.prod T').Continuous T Prod.fst := _root_.GeneralTopology.TopologicalSpace.continuous_fst
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y), (T.prod T').Continuous T' Prod.snd := _root_.GeneralTopology.TopologicalSpace.continuous_snd
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X × Y) where
+  def TopologicalSpace.prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X × Y) where
     IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
-    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
-    inter := by
+    isOpen_univ := fun _ _ =>
+      ⟨Set.univ, Set.univ, T.isOpen_univ, T'.isOpen_univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    isOpen_inter := by
       rintro W W' hW hW' p hp
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
       obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
-      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+      refine ⟨U ∩ U', V ∩ V', T.isOpen_inter hU hU', T'.isOpen_inter hV hV',
         ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
       rintro q ⟨hq1, hq2⟩
       exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
-    sUnion := by
+    isOpen_sUnion := by
       rintro F h p ⟨W, hWF, hpW⟩
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
       exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
 
-  theorem Topology.isOpen_prod_box {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  theorem TopologicalSpace.isOpen_prod_box {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       {U : Set X} {V : Set Y} (hU : T.IsOpen U) (hV : T'.IsOpen V) :
       (T.prod T').IsOpen (U ×ˢ V) :=
     fun _ hp => ⟨U, V, hU, hV, hp, subset_rfl⟩
 
   end GeneralTopology
   open GeneralTopology
-description: Show that `Prod.fst` and `Prod.snd` are continuous from `T.prod T'`. Rewrite the preimage as a box with `← Set.prod_univ` or `← Set.univ_prod`, and apply the previous problem, with `T'.univ` or `T.univ` for the side that is everything.
+description: Show that `Prod.fst` and `Prod.snd` are continuous from `T.prod T'`. Rewrite the preimage as a box with `← Set.prod_univ` or `← Set.univ_prod`, and apply the previous problem, with `T'.isOpen_univ` or `T.isOpen_univ` for the side that is everything.
 stub_names:
-- Topology.continuous_fst
-- Topology.continuous_snd
+- TopologicalSpace.continuous_fst
+- TopologicalSpace.continuous_snd
 namespace: GeneralTopology
 seq: 115
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Products.lean
-  line: 294
+  line: 304
   closure_rounds: 1
   check_kind: theorem

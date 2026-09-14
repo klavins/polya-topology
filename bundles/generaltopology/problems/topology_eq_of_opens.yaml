@@ -8,10 +8,10 @@ statement: |-
 concepts:
 - induced_topology
 stub: |-
-  theorem Topology.eq_of_isOpen_iff {X : Type u} {T T' : Topology X}
+  theorem TopologicalSpace.eq_of_isOpen_iff {X : Type u} {T T' : TopologicalSpace X}
       (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U) : T = T' := sorry
 reference: |-
-  theorem Topology.eq_of_isOpen_iff {X : Type u} {T T' : Topology X}
+  theorem TopologicalSpace.eq_of_isOpen_iff {X : Type u} {T T' : TopologicalSpace X}
       (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U) : T = T' := by
     obtain ⟨o, hu, hi, hs⟩ := T
     obtain ⟨o', hu', hi', hs'⟩ := T'
@@ -19,28 +19,28 @@ reference: |-
     subst e
     rfl
 spec: |-
-  example : ∀ {X : Type u} {T T' : Topology X}
-      (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U), T = T' := _root_.GeneralTopology.Topology.eq_of_isOpen_iff
+  example : ∀ {X : Type u} {T T' : TopologicalSpace X}
+      (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U), T = T' := _root_.GeneralTopology.TopologicalSpace.eq_of_isOpen_iff
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
   end GeneralTopology
   open GeneralTopology
 description: Prove that `T = T'` whenever `T.IsOpen U ↔ T'.IsOpen U` for every `U`. Take both topologies apart with `obtain ⟨o, hu, hi, hs⟩ := T`, prove the two families equal with `funext` and `propext`, substitute with `subst`, and close with `rfl`.
 stub_names:
-- Topology.eq_of_isOpen_iff
+- TopologicalSpace.eq_of_isOpen_iff
 namespace: GeneralTopology
 seq: 110
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Products.lean
-  line: 160
+  line: 165
   closure_rounds: 1
   check_kind: theorem

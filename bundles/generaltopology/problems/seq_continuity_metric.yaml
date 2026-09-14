@@ -8,12 +8,14 @@ statement: |-
 concepts:
 - sequential_continuity
 stub: |-
-  theorem Metric.continuous_of_seq {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y)
+  theorem MetricSpace.continuous_of_seq {X : Type u} {Y : Type v} (M : MetricSpace X)
+      (N : MetricSpace Y)
       {f : X → Y}
       (h : ∀ (x : ℕ → X) (a : X), M.ConvergesTo x a → N.ConvergesTo (fun n => f (x n)) (f a)) :
       M.Continuous N f := sorry
 reference: |-
-  theorem Metric.continuous_of_seq {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y)
+  theorem MetricSpace.continuous_of_seq {X : Type u} {Y : Type v} (M : MetricSpace X)
+      (N : MetricSpace Y)
       {f : X → Y}
       (h : ∀ (x : ℕ → X) (a : X), M.ConvergesTo x a → N.ConvergesTo (fun n => f (x n)) (f a)) :
       M.Continuous N f := by
@@ -29,26 +31,29 @@ reference: |-
     obtain ⟨k, hk⟩ := h _ a hconv ε hε
     exact absurd (hk k (le_refl k)) (not_lt.mpr (hpt k).choose_spec.2)
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y)
+  example : ∀ {X : Type u} {Y : Type v} (M : MetricSpace X)
+      (N : MetricSpace Y)
       {f : X → Y}
-      (h : ∀ (x : ℕ → X) (a : X), M.ConvergesTo x a → N.ConvergesTo (fun n => f (x n)) (f a)), M.Continuous N f := _root_.GeneralTopology.Metric.continuous_of_seq
+      (h : ∀ (x : ℕ → X) (a : X), M.ConvergesTo x a → N.ConvergesTo (fun n => f (x n)) (f a)), M.Continuous N f := _root_.GeneralTopology.MetricSpace.continuous_of_seq
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+  def MetricSpace.ContinuousAt {X : Type u} {Y : Type v} (M : MetricSpace X) (N : MetricSpace Y)
+      (f : X → Y)
       (x : X) : Prop :=
     ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε
 
-  def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop :=
+  def MetricSpace.Continuous {X : Type u} {Y : Type v} (M : MetricSpace X) (N : MetricSpace Y)
+      (f : X → Y) : Prop :=
     ∀ x, M.ContinuousAt N f x
 
-  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+  def MetricSpace.ConvergesTo {X : Type u} (M : MetricSpace X) (x : ℕ → X) (a : X) : Prop :=
     ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
 
   theorem one_div_succ_pos (n : ℕ) : 0 < 1 / ((n : ℝ) + 1) := by
@@ -68,15 +73,15 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Metric.continuous_of_seq`. `intro a ε hε` leaves a goal about `δ`; `by_contra` and `push Not` turn its denial into the family of bad points, out of which `Exists.choose` builds the sequence, and `not_lt` closes the contradiction at the end.
+description: Prove `MetricSpace.continuous_of_seq`. `intro a ε hε` leaves a goal about `δ`; `by_contra` and `push Not` turn its denial into the family of bad points, out of which `Exists.choose` builds the sequence, and `not_lt` closes the contradiction at the end.
 stub_names:
-- Metric.continuous_of_seq
+- MetricSpace.continuous_of_seq
 namespace: GeneralTopology
 seq: 191
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Sequences.lean
-  line: 365
+  line: 368
   closure_rounds: 1
   check_kind: theorem

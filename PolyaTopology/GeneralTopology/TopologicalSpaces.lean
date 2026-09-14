@@ -30,14 +30,14 @@ The radius depends on the point, and that is the whole content of the definition
 
 `∃ ε > 0, p ε` abbreviates `∃ ε, ε > 0 ∧ p ε`.
 @description
-Define `Metric.IsOpenSet`, which says that `U` is open in the metric space `M`: for every `x` in `U` there is a positive `ε` with `M.ball x ε ⊆ U`.
+Define `MetricSpace.IsOpenSet`, which says that `U` is open in the metric space `M`: for every `x` in `U` there is a positive `ε` with `M.ball x ε ⊆ U`.
 -/
 
-def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+def MetricSpace.IsOpenSet {X : Type u} (M : MetricSpace X) (U : Set X) : Prop :=
   ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
 
 /-- @spec -/
-example (X : Type) (M : Metric X) (U : Set X) :
+example (X : Type) (M : MetricSpace X) (U : Set X) :
     M.IsOpenSet U ↔ ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U := Iff.rfl
 
 /-! @end -/
@@ -54,14 +54,14 @@ Let `y` be a point of `M.ball x ε`, so `M.dist x y < ε`. The room left over is
 @description
 Show that `M.ball x ε` is open. Introduce a point of it and rewrite its membership as the inequality it is, offer `ε - M.dist x y` as the radius, and let the triangle inequality and `linarith` do the rest.
 -/
-theorem Metric.isOpenSet_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+theorem MetricSpace.isOpenSet_ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) :
     M.IsOpenSet (M.ball x ε) := by
   intro y hy
   rw [M.mem_ball] at hy
   refine ⟨ε - M.dist x y, by linarith, ?_⟩
   intro z hz
   rw [M.mem_ball] at hz ⊢
-  have h := M.triangle x y z
+  have h := M.dist_triangle x y z
   linarith
 
 /--
@@ -74,7 +74,8 @@ Every point of the whole space has room around it, since every ball is inside th
 @description
 Show that `Set.univ` is open in any metric space. The witness is `⟨1, one_pos, _⟩`, and the containment holds because everything belongs to `Set.univ`, which `trivial` proves.
 -/
-theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+theorem MetricSpace.isOpenSet_univ {X : Type u} (M : MetricSpace X) : M.IsOpenSet (Set.univ : Set X)
+    :=
   fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
 
 /--
@@ -89,7 +90,7 @@ This is where *two* matters. For infinitely many open sets the radii could shrin
 @description
 Show that `U ∩ V` is open when `U` and `V` are. Take a point apart with `hx.1` and `hx.2`, take each hypothesis apart with `obtain`, and offer `min a b`, which `lt_min` shows positive; `min_le_left` and `min_le_right` then carry a point of the smaller ball into each of the two.
 -/
-theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+theorem MetricSpace.isOpenSet_inter {X : Type u} (M : MetricSpace X) {U V : Set X}
     (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
   intro x hx
   obtain ⟨a, ha, hau⟩ := hU x hx.1
@@ -111,7 +112,7 @@ A collection of sets is itself a set: `F : Set (Set X)`. Its union is `⋃₀ F`
 @description
 Show that `⋃₀ F` is open when every member of `F` is. Take the membership apart for the set the point came from, get a ball from that set's openness, and offer the same ball; a point of it lies in that member, hence in the union.
 -/
-theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+theorem MetricSpace.isOpenSet_sUnion {X : Type u} (M : MetricSpace X) {F : Set (Set X)}
     (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
   intro x hx
   obtain ⟨U, hUF, hxU⟩ := hx
@@ -138,23 +139,23 @@ The whole set is open. The intersection of two open sets is open. The union of a
 
 Two and any number are not the same condition, and the asymmetry is the point: intersecting needs a smallest radius, and only finitely many radii are sure to have one.
 @description
-Define the structure `Topology X`, with a field `IsOpen : Set X → Prop` and then `univ`, `inter` and `sUnion` carrying the three conditions. Bind the sets implicitly in `inter` and `sUnion`, since a proof using them names the hypotheses rather than the sets.
+Define the structure `TopologicalSpace X`, with a field `IsOpen : Set X → Prop` and then `univ`, `inter` and `sUnion` carrying the three conditions. Bind the sets implicitly in `inter` and `sUnion`, since a proof using them names the hypotheses rather than the sets.
 -/
 
-structure Topology (X : Type u) where
+structure TopologicalSpace (X : Type u) where
   IsOpen : Set X → Prop
-  univ : IsOpen Set.univ
-  inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-  sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+  isOpen_univ : IsOpen Set.univ
+  isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+  isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (U V : Set X) (F : Set (Set X)) :
+example (X : Type) (T : TopologicalSpace X) (U V : Set X) (F : Set (Set X)) :
     T.IsOpen Set.univ
       ∧ (T.IsOpen U → T.IsOpen V → T.IsOpen (U ∩ V))
       ∧ ((∀ W ∈ F, T.IsOpen W) → T.IsOpen (⋃₀ F)) := by
-  refine ⟨T.univ, fun _ _ => ?_, fun _ => ?_⟩
-  · apply T.inter <;> assumption
-  · apply T.sUnion
+  refine ⟨T.isOpen_univ, fun _ _ => ?_, fun _ => ?_⟩
+  · apply T.isOpen_inter <;> assumption
+  · apply T.isOpen_sUnion
     assumption
 
 /-! @end -/
@@ -167,10 +168,10 @@ example (X : Type) (T : Topology X) (U V : Set X) (F : Set (Set X)) :
 @preamble
 The empty set was not asked for, and does not need to be: it is the union of no sets at all. Uniting the members of the empty collection leaves nothing, so `⋃₀ ∅ = ∅`, and the union condition applies to the empty collection as to any other — its hypothesis, that every member is open, is satisfied because it has no members.
 @description
-Show that `∅` is open in any topology. Apply `T.sUnion` to the empty collection, whose hypothesis holds because a membership in `∅` is absurd — `fun _ hU => hU.elim` — and then rewrite with `Set.sUnion_empty`.
+Show that `∅` is open in any topology. Apply `T.isOpen_sUnion` to the empty collection, whose hypothesis holds because a membership in `∅` is absurd — `fun _ hU => hU.elim` — and then rewrite with `Set.sUnion_empty`.
 -/
-theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
-  have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+theorem TopologicalSpace.empty {X : Type u} (T : TopologicalSpace X) : T.IsOpen (∅ : Set X) := by
+  have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.isOpen_sUnion (fun _ hU => hU.elim)
   rwa [Set.sUnion_empty] at h
 
 /-!
@@ -191,17 +192,18 @@ Nothing is left to prove. The three conditions are the three theorems of the fir
 
 That a metric gives a topology is what makes the definition worth having; that two metrics can give the same one is what makes it more than a restatement. The taxicab and supremum norms of the previous section are an instance — equivalent metrics, and the same open sets.
 @description
-Define `Metric.toTopology`, the topology whose open sets are the sets `M` calls open. Each field is one of `M.isOpenSet_univ`, `M.isOpenSet_inter` and `M.isOpenSet_sUnion`.
+Define `MetricSpace.toTopologicalSpace`, the topology whose open sets are the sets `M` calls open. Each field is one of `M.isOpenSet_univ`, `M.isOpenSet_inter` and `M.isOpenSet_sUnion`.
 -/
 
-def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+def MetricSpace.toTopologicalSpace {X : Type u} (M : MetricSpace X) : TopologicalSpace X where
   IsOpen := M.IsOpenSet
-  univ := M.isOpenSet_univ
-  inter := M.isOpenSet_inter
-  sUnion := M.isOpenSet_sUnion
+  isOpen_univ := M.isOpenSet_univ
+  isOpen_inter := M.isOpenSet_inter
+  isOpen_sUnion := M.isOpenSet_sUnion
 
 /-- @spec -/
-example (X : Type) (M : Metric X) (U : Set X) : M.toTopology.IsOpen U ↔ M.IsOpenSet U := Iff.rfl
+example (X : Type) (M : MetricSpace X) (U : Set X) : M.toTopologicalSpace.IsOpen U ↔ M.IsOpenSet U
+    := Iff.rfl
 
 /-! @end -/
 
@@ -223,18 +225,20 @@ A subset `C` of a topological space is *closed* when its complement `Cᶜ` is op
 
 Since the whole space is open, the empty set is closed; since the empty set is open, the whole space is closed. Both are therefore open and closed at once, which is why "closed" must not be read as "not open".
 @description
-Define `Topology.IsClosed`, and then show that `Set.univ` is closed. For the second, `show T.IsOpen _` names the goal for what it is, `Set.compl_univ` rewrites the complement, and the empty set is open.
+Define `TopologicalSpace.IsClosed`, and then show that `Set.univ` is closed. For the second, `show T.IsOpen _` names the goal for what it is, `Set.compl_univ` rewrites the complement, and the empty set is open.
 -/
 
-def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+    := T.IsOpen Cᶜ
 
-theorem Topology.isClosed_univ {X : Type u} (T : Topology X) : T.IsClosed (Set.univ : Set X) := by
+theorem TopologicalSpace.isClosed_univ {X : Type u} (T : TopologicalSpace X) : T.IsClosed
+    (Set.univ : Set X) := by
   show T.IsOpen _
   rw [Set.compl_univ]
   exact T.empty
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (C : Set X) : T.IsClosed C ↔ T.IsOpen Cᶜ := Iff.rfl
+example (X : Type) (T : TopologicalSpace X) (C : Set X) : T.IsClosed C ↔ T.IsOpen Cᶜ := Iff.rfl
 
 /-! @end -/
 
@@ -248,11 +252,11 @@ Each condition on the open sets says something about the closed ones, with the r
 @description
 Show that `C ∪ D` is closed when `C` and `D` are. `show T.IsOpen _`, rewrite with `Set.compl_union`, and the intersection condition finishes it.
 -/
-theorem Topology.isClosed_union {X : Type u} (T : Topology X) {C D : Set X}
+theorem TopologicalSpace.isClosed_union {X : Type u} (T : TopologicalSpace X) {C D : Set X}
     (hC : T.IsClosed C) (hD : T.IsClosed D) : T.IsClosed (C ∪ D) := by
   show T.IsOpen _
   rw [Set.compl_union]
-  exact T.inter hC hD
+  exact T.isOpen_inter hC hD
 
 /-!
 @concept neighbourhoods
@@ -268,20 +272,20 @@ A neighbourhood of a point is any set with an open set around that point inside 
 @concept neighbourhoods
 
 @preamble
-A set `N` is a *neighbourhood* of a point `x` when some open set `U` has `x ∈ U ⊆ N`. A neighbourhood need not itself be open — it must only contain an open set around the point — and an open set is a neighbourhood of each of its own points, itself being the `U` required.
+A set `N` is a *neighbourhood* of a point `x` when some open set `U` has `x ∈ U ⊆ N`. A neighbourhood need not itself be open — it must only contain an open set around the point — and an open set is a neighbourhood of each of its own points, itself being the `U` required. Mathlib gathers the neighbourhoods of `x` into a filter `𝓝 x` and writes this `N ∈ 𝓝 x`; filters are outside this fence, so we carry the predicate instead.
 @description
-Define `Topology.IsNbhd`, and then show that an open set is a neighbourhood of any of its points. The witness for the second is the set itself, with `subset_rfl` for the containment.
+Define `TopologicalSpace.IsNbhd`, and then show that an open set is a neighbourhood of any of its points. The witness for the second is the set itself, with `subset_rfl` for the containment.
 -/
 
-def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+def TopologicalSpace.IsNbhd {X : Type u} (T : TopologicalSpace X) (x : X) (N : Set X) : Prop :=
   ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
 
-theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+theorem TopologicalSpace.nbhd_of_isOpen {X : Type u} (T : TopologicalSpace X) {U : Set X}
     (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
   ⟨U, hU, hx, subset_rfl⟩
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (x : X) (N : Set X) :
+example (X : Type) (T : TopologicalSpace X) (x : X) (N : Set X) :
     T.IsNbhd x N ↔ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N := Iff.rfl
 
 /-! @end -/
@@ -298,7 +302,7 @@ This is the step that turns a condition holding at each point into a single set 
 @description
 Show that `U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U}` under that hypothesis. `Set.Subset.antisymm` splits the equality into the two containments; one takes the open set the hypothesis supplies, and the other reads the membership apart with `rintro` and applies the containment it carries.
 -/
-theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+theorem TopologicalSpace.union_of_opens_inside {X : Type u} (T : TopologicalSpace X) (U : Set X)
     (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
   apply Set.Subset.antisymm
   · intro x hx
@@ -319,13 +323,13 @@ So openness, a property of a set, is exactly a property holding at every one of 
 @description
 Prove the equivalence. The forward direction is the previous concept's `T.nbhd_of_isOpen`; for the other, rewrite `U` by the previous problem and apply the union condition, whose hypothesis is the first half of each member's defining pair.
 -/
-theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+theorem TopologicalSpace.isOpen_iff_nbhd {X : Type u} (T : TopologicalSpace X) (U : Set X) :
     T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
   constructor
   · intro hU x hx
     exact T.nbhd_of_isOpen hU hx
   · intro h
     rw [T.union_of_opens_inside U h]
-    exact T.sUnion (fun V hV => hV.1)
+    exact T.isOpen_sUnion (fun V hV => hV.1)
 
 end GeneralTopology

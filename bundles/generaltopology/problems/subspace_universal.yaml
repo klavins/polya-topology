@@ -8,41 +8,46 @@ statement: |-
 concepts:
 - subspace_maps
 stub: |-
-  theorem Topology.continuous_into_subspace {X : Type u} {Z : Type v} (T : Topology X) (A : Set X)
-      (S : Topology Z) (g : Z → A) :
+  theorem TopologicalSpace.continuous_into_subspace {X : Type u} {Z : Type v} (T : TopologicalSpace X)
+      (A : Set X)
+      (S : TopologicalSpace Z) (g : Z → A) :
       S.Continuous (T.subspace A) g ↔ S.Continuous T (Subtype.val ∘ g) := sorry
 reference: |-
-  theorem Topology.continuous_into_subspace {X : Type u} {Z : Type v} (T : Topology X) (A : Set X)
-      (S : Topology Z) (g : Z → A) :
+  theorem TopologicalSpace.continuous_into_subspace {X : Type u} {Z : Type v} (T : TopologicalSpace X)
+      (A : Set X)
+      (S : TopologicalSpace Z) (g : Z → A) :
       S.Continuous (T.subspace A) g ↔ S.Continuous T (Subtype.val ∘ g) := by
     constructor
     · intro hg
-      exact Topology.continuous_comp S hg (Topology.continuous_subspace_val T A)
+      exact TopologicalSpace.continuous_comp S hg (TopologicalSpace.continuous_subspace_val T A)
     · intro hg U hU
       obtain ⟨V, hV, rfl⟩ := hU
       rw [← Set.preimage_comp]
       exact hg V hV
 spec: |-
-  example : ∀ {X : Type u} {Z : Type v} (T : Topology X) (A : Set X)
-      (S : Topology Z) (g : Z → A), S.Continuous (T.subspace A) g ↔ S.Continuous T (Subtype.val ∘ g) := _root_.GeneralTopology.Topology.continuous_into_subspace
+  example : ∀ {X : Type u} {Z : Type v} (T : TopologicalSpace X)
+      (A : Set X)
+      (S : TopologicalSpace Z) (g : Z → A), S.Continuous (T.subspace A) g ↔ S.Continuous T (Subtype.val ∘ g) := _root_.GeneralTopology.TopologicalSpace.continuous_into_subspace
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A where
+  def TopologicalSpace.subspace {X : Type u} (T : TopologicalSpace X) (A : Set X)
+      : TopologicalSpace A where
     IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U
-    univ := ⟨Set.univ, T.univ, rfl⟩
-    inter := by
+    isOpen_univ := ⟨Set.univ, T.isOpen_univ, rfl⟩
+    isOpen_inter := by
       rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
-      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
-    sUnion := by
+      exact ⟨U ∩ U', T.isOpen_inter hU hU', rfl⟩
+    isOpen_sUnion := by
       intro F h
-      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F},
+        T.isOpen_sUnion (fun U hU => hU.1), ?_⟩
       apply Set.Subset.antisymm
       · rintro x ⟨V, hVF, hxV⟩
         obtain ⟨U, hU, rfl⟩ := h V hVF
@@ -50,31 +55,33 @@ preamble: |
       · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
         exact ⟨_, hUF, hxU⟩
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+  theorem TopologicalSpace.continuous_comp {X : Type u} {Y : Type v} {Z : Type w}
+      (T : TopologicalSpace X)
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} {f : X → Y} {g : Y → Z}
       (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := by
     intro U hU
     rw [Set.preimage_comp]
     exact hf _ (hg U hU)
 
-  theorem Topology.continuous_subspace_val {X : Type u} (T : Topology X) (A : Set X) :
+  theorem TopologicalSpace.continuous_subspace_val {X : Type u} (T : TopologicalSpace X) (A : Set X) :
       (T.subspace A).Continuous T Subtype.val :=
     fun U hU => ⟨U, hU, rfl⟩
 
   end GeneralTopology
   open GeneralTopology
-description: Prove that `S.Continuous (T.subspace A) g` exactly when `S.Continuous T (Subtype.val ∘ g)`. Forwards, compose with `Topology.continuous_subspace_val`. Backwards, take the open set apart with `obtain ⟨U, hU, rfl⟩` and fold the two preimages into one with `Set.preimage_comp`.
+description: Prove that `S.Continuous (T.subspace A) g` exactly when `S.Continuous T (Subtype.val ∘ g)`. Forwards, compose with `TopologicalSpace.continuous_subspace_val`. Backwards, take the open set apart with `obtain ⟨U, hU, rfl⟩` and fold the two preimages into one with `Set.preimage_comp`.
 stub_names:
-- Topology.continuous_into_subspace
+- TopologicalSpace.continuous_into_subspace
 namespace: GeneralTopology
 seq: 105
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Products.lean
   line: 23
   closure_rounds: 1

@@ -7,34 +7,37 @@ statement: |-
   Written this way the definition is shorter than the induced one, which had to say "is the preimage of an open set" and carry an existential to say it. Here there is no existential, because the test is applied to the set itself.
 concepts:
 - final_topology
-stub: 'def Topology.coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) : Topology Y := sorry'
+stub: |-
+  def TopologicalSpace.coinduced {X : Type u} {Y : Type v} (T : TopologicalSpace X) (f : X → Y)
+      : TopologicalSpace Y := sorry
 reference: |-
-  def Topology.coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) : Topology Y where
+  def TopologicalSpace.coinduced {X : Type u} {Y : Type v} (T : TopologicalSpace X) (f : X → Y)
+      : TopologicalSpace Y where
     IsOpen := fun V => T.IsOpen (f ⁻¹' V)
-    univ := by
+    isOpen_univ := by
       rw [Set.preimage_univ]
-      exact T.univ
-    inter := by
+      exact T.isOpen_univ
+    isOpen_inter := by
       intro V W hV hW
       rw [Set.preimage_inter]
-      exact T.inter hV hW
-    sUnion := by
+      exact T.isOpen_inter hV hW
+    isOpen_sUnion := by
       intro F h
       rw [preimage_sUnion_image]
-      refine T.sUnion ?_
+      refine T.isOpen_sUnion ?_
       rintro W ⟨V, hVF, rfl⟩
       exact h V hVF
 spec: |-
-  example (X Y : Type) (T : Topology X) (f : X → Y) (V : Set Y) :
+  example (X Y : Type) (T : TopologicalSpace X) (f : X → Y) (V : Set Y) :
       (T.coinduced f).IsOpen V ↔ T.IsOpen (f ⁻¹' V) := Iff.rfl
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
   theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
       f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
@@ -46,14 +49,14 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Define `Topology.coinduced`, the topology on `Y` whose `IsOpen V` says `T.IsOpen (f ⁻¹' V)`. `Set.preimage_univ` and `Set.preimage_inter` rewrite the first two fields; the third rewrites by the previous problem and then applies the union condition of `T` to the collection of preimages.
+description: Define `TopologicalSpace.coinduced`, the topology on `Y` whose `IsOpen V` says `T.IsOpen (f ⁻¹' V)`. `Set.preimage_univ` and `Set.preimage_inter` rewrite the first two fields; the third rewrites by the previous problem and then applies the union condition of `T` to the collection of preimages.
 stub_names:
-- Topology.coinduced
+- TopologicalSpace.coinduced
 namespace: GeneralTopology
 seq: 123
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
   line: 42
   closure_rounds: 1

@@ -12,54 +12,54 @@ statement: |-
 concepts:
 - separation_axioms
 stub: |-
-  def Topology.IsT0 {X : Type u} (T : Topology X) : Prop := sorry
+  def TopologicalSpace.IsT0 {X : Type u} (T : TopologicalSpace X) : Prop := sorry
 
-  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop := sorry
+  def TopologicalSpace.IsT1 {X : Type u} (T : TopologicalSpace X) : Prop := sorry
 
-  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop := sorry
+  def TopologicalSpace.IsT2 {X : Type u} (T : TopologicalSpace X) : Prop := sorry
 reference: |-
-  def Topology.IsT0 {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT0 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y →
       (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)
 
-  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT1 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
 
-  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT2 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
 spec: |-
-  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsT0 T ↔ (∀ x y : X, x ≠ y →
-      (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)) := by unfold _root_.GeneralTopology.Topology.IsT0; first | exact Iff.rfl | grind
-  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsT1 T ↔ (∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) := by unfold _root_.GeneralTopology.Topology.IsT1; first | exact Iff.rfl | grind
-  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsHausdorff T ↔ (∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅) := by unfold _root_.GeneralTopology.Topology.IsHausdorff; first | exact Iff.rfl | grind
-  example (X : Type) (T : Topology X) :
+  example {X : Type u} (T : TopologicalSpace X) : _root_.GeneralTopology.TopologicalSpace.IsT0 T ↔ (∀ x y : X, x ≠ y →
+      (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)) := by unfold _root_.GeneralTopology.TopologicalSpace.IsT0; first | exact Iff.rfl | grind
+  example {X : Type u} (T : TopologicalSpace X) : _root_.GeneralTopology.TopologicalSpace.IsT1 T ↔ (∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) := by unfold _root_.GeneralTopology.TopologicalSpace.IsT1; first | exact Iff.rfl | grind
+  example {X : Type u} (T : TopologicalSpace X) : _root_.GeneralTopology.TopologicalSpace.IsT2 T ↔ (∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅) := by unfold _root_.GeneralTopology.TopologicalSpace.IsT2; first | exact Iff.rfl | grind
+  example (X : Type) (T : TopologicalSpace X) :
       (T.IsT0 ↔ ∀ x y : X, x ≠ y →
           (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V))
         ∧ (T.IsT1 ↔ ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U)
-        ∧ (T.IsHausdorff ↔ ∀ x y : X, x ≠ y →
+        ∧ (T.IsT2 ↔ ∀ x y : X, x ≠ y →
           ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅) :=
     ⟨Iff.rfl, Iff.rfl, Iff.rfl⟩
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
   end GeneralTopology
   open GeneralTopology
-description: 'Define `Topology.IsT0`, `Topology.IsT1` and `Topology.IsHausdorff`, each quantified over `x y : X` with `x ≠ y`. Write T₁ as `∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U`; T₀ as that disjunct or the same with the two points exchanged; and Hausdorff as `∃ U V` with the five conditions `T.IsOpen U`, `T.IsOpen V`, `x ∈ U`, `y ∈ V`, `U ∩ V = ∅`, in that order.'
+description: 'Define `TopologicalSpace.IsT0`, `TopologicalSpace.IsT1` and `TopologicalSpace.IsT2`, each quantified over `x y : X` with `x ≠ y`. Write T₁ as `∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U`; T₀ as that disjunct or the same with the two points exchanged; and Hausdorff as `∃ U V` with the five conditions `T.IsOpen U`, `T.IsOpen V`, `x ∈ U`, `y ∈ V`, `U ∩ V = ∅`, in that order.'
 stub_names:
-- Topology.IsT0
-- Topology.IsT1
-- Topology.IsHausdorff
+- TopologicalSpace.IsT0
+- TopologicalSpace.IsT1
+- TopologicalSpace.IsT2
 namespace: GeneralTopology
 seq: 142
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Separation.lean
   line: 22
   closure_rounds: 1

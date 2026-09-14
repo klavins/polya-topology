@@ -8,46 +8,53 @@ statement: |-
 concepts:
 - sum_space
 stub: |-
-  theorem Topology.isOpenMap_inl {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.isOpenMap_inl {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       T.IsOpenMap (T.sum T') Sum.inl := sorry
 
-  theorem Topology.isOpenMap_inr {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.isOpenMap_inr {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       T'.IsOpenMap (T.sum T') Sum.inr := sorry
 reference: |-
-  theorem Topology.isOpenMap_inl {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.isOpenMap_inl {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       T.IsOpenMap (T.sum T') Sum.inl := by
     intro U hU
     constructor
     · rw [Set.preimage_image_eq U Sum.inl_injective]
       exact hU
     · rw [Set.preimage_inr_image_inl]
-      exact Topology.empty T'
+      exact TopologicalSpace.empty T'
 
-  theorem Topology.isOpenMap_inr {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.isOpenMap_inr {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       T'.IsOpenMap (T.sum T') Sum.inr := by
     intro U hU
     constructor
     · rw [Set.preimage_inl_image_inr]
-      exact Topology.empty T
+      exact TopologicalSpace.empty T
     · rw [Set.preimage_image_eq U Sum.inr_injective]
       exact hU
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), T.IsOpenMap (T.sum T') Sum.inl := _root_.GeneralTopology.Topology.isOpenMap_inl
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), T'.IsOpenMap (T.sum T') Sum.inr := _root_.GeneralTopology.Topology.isOpenMap_inr
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y), T.IsOpenMap (T.sum T') Sum.inl := _root_.GeneralTopology.TopologicalSpace.isOpenMap_inl
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y), T'.IsOpenMap (T.sum T') Sum.inr := _root_.GeneralTopology.TopologicalSpace.isOpenMap_inr
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
-    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+  theorem TopologicalSpace.empty {X : Type u} (T : TopologicalSpace X) : T.IsOpen (∅ : Set X) := by
+    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.isOpen_sUnion (fun _ hU => hU.elim)
     rwa [Set.sUnion_empty] at h
 
-  def Topology.IsOpenMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.IsOpenMap {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T.IsOpen U → T'.IsOpen (f '' U)
 
@@ -59,35 +66,36 @@ preamble: |
     · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
       exact ⟨V, hVF, hxW⟩
 
-  def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X ⊕ Y) where
+  def TopologicalSpace.sum {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X ⊕ Y) where
     IsOpen := fun W => T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W)
-    univ := by
+    isOpen_univ := by
       rw [Set.preimage_univ, Set.preimage_univ]
-      exact ⟨T.univ, T'.univ⟩
-    inter := by
+      exact ⟨T.isOpen_univ, T'.isOpen_univ⟩
+    isOpen_inter := by
       intro V W hV hW
       rw [Set.preimage_inter, Set.preimage_inter]
-      exact ⟨T.inter hV.1 hW.1, T'.inter hV.2 hW.2⟩
-    sUnion := by
+      exact ⟨T.isOpen_inter hV.1 hW.1, T'.isOpen_inter hV.2 hW.2⟩
+    isOpen_sUnion := by
       intro F h
       rw [preimage_sUnion_image, preimage_sUnion_image]
       constructor
-      · exact T.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
-      · exact T'.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
+      · exact T.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
+      · exact T'.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
 
   end GeneralTopology
   open GeneralTopology
 description: Show that `Sum.inl` and `Sum.inr` are open maps into `T.sum T'`. `Set.preimage_image_eq`, with `Sum.inl_injective` or `Sum.inr_injective`, gives the preimage on the near side; `Set.preimage_inr_image_inl` and `Set.preimage_inl_image_inr` give the empty one on the far side.
 stub_names:
-- Topology.isOpenMap_inl
-- Topology.isOpenMap_inr
+- TopologicalSpace.isOpenMap_inl
+- TopologicalSpace.isOpenMap_inr
 namespace: GeneralTopology
 seq: 136
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 396
+  line: 404
   closure_rounds: 1
   check_kind: theorem

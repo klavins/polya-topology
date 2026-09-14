@@ -44,8 +44,8 @@ namespace: GeneralTopology
 seq: 128
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 179
+  line: 182
   closure_rounds: 1
   check_kind: mixed

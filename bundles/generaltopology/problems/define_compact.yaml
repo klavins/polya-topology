@@ -4,50 +4,51 @@ title: Open Covers, Subcovers, and Compactness
 statement: |-
   An *open cover* of a set `S` is a collection `F` of open sets whose union contains `S`, so that every point of `S` lies in at least one member. A collection of sets is a `Set (Set X)` and its union is `⋃₀ F`, as they were when the union condition of a topology was written down.
 
-  A *subcover* is a subcollection that still covers `S`. Compactness asks whether a finite one can always be found.
+  A *subcover* is a subcollection that still covers `S`. Compactness asks whether a finite one can always be found. Mathlib defines compactness by filters rather than covers, and recovers this form as `isCompact_iff_finite_subcover`.
 
   We ask the question of a set, using the open sets of the space around it, and read it off at the whole space to ask it of the space. `S.Finite` says that `S` has finitely many points, and `∃ G ⊆ F, p G` abbreviates `∃ G, G ⊆ F ∧ p G`.
 concepts:
 - open_cover
 stub: |-
-  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop := sorry
+  def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop := sorry
 
-  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := sorry
+  def TopologicalSpace.IsCompactSpace {X : Type u} (T : TopologicalSpace X) : Prop := sorry
 reference: |-
-  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
       ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
 
-  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+  def TopologicalSpace.IsCompactSpace {X : Type u} (T : TopologicalSpace X) : Prop
+      := T.IsCompact Set.univ
 spec: |-
-  example {X : Type u} (T : Topology X) (S : Set X) : _root_.GeneralTopology.Topology.IsCompactSet T S ↔ (∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
-      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G) := by unfold _root_.GeneralTopology.Topology.IsCompactSet; first | exact Iff.rfl | grind
-  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsCompact T ↔ (T.IsCompactSet Set.univ) := by unfold _root_.GeneralTopology.Topology.IsCompact; first | exact Iff.rfl | grind
-  example (X : Type) (T : Topology X) (S : Set X) :
-      (T.IsCompactSet S ↔ ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+  example {X : Type u} (T : TopologicalSpace X) (S : Set X) : _root_.GeneralTopology.TopologicalSpace.IsCompact T S ↔ (∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+      ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G) := by unfold _root_.GeneralTopology.TopologicalSpace.IsCompact; first | exact Iff.rfl | grind
+  example {X : Type u} (T : TopologicalSpace X) : _root_.GeneralTopology.TopologicalSpace.IsCompactSpace T ↔ (T.IsCompact Set.univ) := by unfold _root_.GeneralTopology.TopologicalSpace.IsCompactSpace; first | exact Iff.rfl | grind
+  example (X : Type) (T : TopologicalSpace X) (S : Set X) :
+      (T.IsCompact S ↔ ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
           ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G)
-        ∧ (T.IsCompact ↔ T.IsCompactSet Set.univ) :=
+        ∧ (T.IsCompactSpace ↔ T.IsCompact Set.univ) :=
     ⟨Iff.rfl, Iff.rfl⟩
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
   end GeneralTopology
   open GeneralTopology
-description: 'Define `Topology.IsCompactSet T S`: for every `F : Set (Set X)` whose members are all open, if `S ⊆ ⋃₀ F` then some `G ⊆ F` has `G.Finite` and `S ⊆ ⋃₀ G`, those two conjuncts in that order. Then define `Topology.IsCompact` as `T.IsCompactSet Set.univ`. Both containments are written `⊆`, not as equations.'
+description: 'Define `TopologicalSpace.IsCompact T S`: for every `F : Set (Set X)` whose members are all open, if `S ⊆ ⋃₀ F` then some `G ⊆ F` has `G.Finite` and `S ⊆ ⋃₀ G`, those two conjuncts in that order. Then define `TopologicalSpace.IsCompactSpace` as `T.IsCompact Set.univ`. Both containments are written `⊆`, not as equations.'
 stub_names:
-- Topology.IsCompactSet
-- Topology.IsCompact
+- TopologicalSpace.IsCompact
+- TopologicalSpace.IsCompactSpace
 namespace: GeneralTopology
 seq: 198
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Compactness.lean
   line: 23
   closure_rounds: 1

@@ -10,39 +10,47 @@ statement: |-
 concepts:
 - homeomorphism
 stub: |-
-  theorem Homeomorphism.injective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-      (h : Homeomorphism T T') : Function.Injective h.toFun := sorry
+  theorem Homeomorph.injective {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y}
+      (h : Homeomorph T T') : Function.Injective h.toFun := sorry
 
-  theorem Homeomorphism.surjective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-      (h : Homeomorphism T T') : Function.Surjective h.toFun := sorry
+  theorem Homeomorph.surjective {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y}
+      (h : Homeomorph T T') : Function.Surjective h.toFun := sorry
 reference: |-
-  theorem Homeomorphism.injective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-      (h : Homeomorphism T T') : Function.Injective h.toFun := by
+  theorem Homeomorph.injective {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y}
+      (h : Homeomorph T T') : Function.Injective h.toFun := by
     intro x x' hx
     rw [← h.left_inv x, ← h.left_inv x', hx]
 
-  theorem Homeomorphism.surjective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-      (h : Homeomorphism T T') : Function.Surjective h.toFun :=
+  theorem Homeomorph.surjective {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y}
+      (h : Homeomorph T T') : Function.Surjective h.toFun :=
     fun y => ⟨h.invFun y, h.right_inv y⟩
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-      (h : Homeomorphism T T'), Function.Injective h.toFun := _root_.GeneralTopology.Homeomorphism.injective
-  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-      (h : Homeomorphism T T'), Function.Surjective h.toFun := _root_.GeneralTopology.Homeomorphism.surjective
+  example : ∀ {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y}
+      (h : Homeomorph T T'), Function.Injective h.toFun := _root_.GeneralTopology.Homeomorph.injective
+  example : ∀ {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y}
+      (h : Homeomorph T T'), Function.Surjective h.toFun := _root_.GeneralTopology.Homeomorph.surjective
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+  structure Homeomorph {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) where
     toFun : X → Y
     invFun : Y → X
     left_inv : ∀ x, invFun (toFun x) = x
@@ -54,14 +62,14 @@ preamble: |
   open GeneralTopology
 description: Show that the forward map of a homeomorphism is injective and surjective. For injectivity, rewrite both sides of the goal backwards with `h.left_inv` and the hypothesis closes it; for surjectivity, the point wanted is the image of `y` under the inverse.
 stub_names:
-- Homeomorphism.injective
-- Homeomorphism.surjective
+- Homeomorph.injective
+- Homeomorph.surjective
 namespace: GeneralTopology
 seq: 88
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
-  line: 55
+  line: 56
   closure_rounds: 1
   check_kind: theorem

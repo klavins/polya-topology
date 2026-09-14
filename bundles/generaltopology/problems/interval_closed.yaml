@@ -10,53 +10,54 @@ concepts:
 stub: |-
   def unitInterval : Set ℝ := {x | 0 ≤ x ∧ x ≤ 1}
 
-  theorem unitInterval_closed : line.toTopology.IsClosed unitInterval := sorry
+  theorem unitInterval_closed : line.toTopologicalSpace.IsClosed unitInterval := sorry
 reference: |-
   def unitInterval : Set ℝ := {x | 0 ≤ x ∧ x ≤ 1}
 
-  theorem unitInterval_closed : line.toTopology.IsClosed unitInterval := by
+  theorem unitInterval_closed : line.toTopologicalSpace.IsClosed unitInterval := by
     show line.IsOpenSet unitIntervalᶜ
     intro x hx
     rcases not_and_or.mp hx with h | h
     · refine ⟨-x, by linarith [not_le.mp h], ?_⟩
       intro y hy
-      rw [Metric.mem_ball line, show line.dist x y = |x - y| from rfl, abs_sub_lt_iff] at hy
+      rw [MetricSpace.mem_ball line, show line.dist x y = |x - y| from rfl, abs_sub_lt_iff] at hy
       exact fun hy' => absurd hy'.1 (by linarith [hy.1])
     · refine ⟨x - 1, by linarith [not_le.mp h], ?_⟩
       intro y hy
-      rw [Metric.mem_ball line, show line.dist x y = |x - y| from rfl, abs_sub_lt_iff] at hy
+      rw [MetricSpace.mem_ball line, show line.dist x y = |x - y| from rfl, abs_sub_lt_iff] at hy
       exact fun hy' => absurd hy'.2 (by linarith [hy.1])
 spec: |-
   example : _root_.GeneralTopology.unitInterval = ({x | 0 ≤ x ∧ x ≤ 1} : Set ℝ) := rfl
-  example : line.toTopology.IsClosed _root_.GeneralTopology.unitInterval := _root_.GeneralTopology.unitInterval_closed
+  example : line.toTopologicalSpace.IsClosed _root_.GeneralTopology.unitInterval := _root_.GeneralTopology.unitInterval_closed
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  def line : Metric ℝ where
+  def line : MetricSpace ℝ where
     dist x y := |x - y|
-    symm {x y} := abs_sub_comm x y
-    triangle x y z := abs_sub_le x y z
-    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+    dist_comm {x y} := abs_sub_comm x y
+    dist_triangle x y z := abs_sub_le x y z
+    dist_eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
 
-  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+  def MetricSpace.ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+  theorem MetricSpace.mem_ball {X : Type u} (M : MetricSpace X) {x y : X} {ε : ℝ} :
       y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
-  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+  def MetricSpace.IsOpenSet {X : Type u} (M : MetricSpace X) (U : Set X) : Prop :=
     ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
 
-  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+  theorem MetricSpace.isOpenSet_univ {X : Type u} (M : MetricSpace X) : M.IsOpenSet (Set.univ : Set X)
+      :=
     fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
 
-  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+  theorem MetricSpace.isOpenSet_inter {X : Type u} (M : MetricSpace X) {U V : Set X}
       (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
     intro x hx
     obtain ⟨a, ha, hau⟩ := hU x hx.1
@@ -66,30 +67,31 @@ preamble: |
     rw [M.mem_ball] at hy
     exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
 
-  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+  theorem MetricSpace.isOpenSet_sUnion {X : Type u} (M : MetricSpace X) {F : Set (Set X)}
       (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
     intro x hx
     obtain ⟨U, hUF, hxU⟩ := hx
     obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
     exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
 
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+  def MetricSpace.toTopologicalSpace {X : Type u} (M : MetricSpace X) : TopologicalSpace X where
     IsOpen := M.IsOpenSet
-    univ := M.isOpenSet_univ
-    inter := M.isOpenSet_inter
-    sUnion := M.isOpenSet_sUnion
+    isOpen_univ := M.isOpenSet_univ
+    isOpen_inter := M.isOpenSet_inter
+    isOpen_sUnion := M.isOpenSet_sUnion
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
   end GeneralTopology
   open GeneralTopology
-description: Show that `unitInterval` is closed in `line.toTopology`. Restate the goal with `show` as openness of the complement, split the failed conjunction with `not_and_or`, and offer the radius named above in each case. `abs_sub_lt_iff` turns a membership in a ball into the two inequalities `linarith` wants.
+description: Show that `unitInterval` is closed in `line.toTopologicalSpace`. Restate the goal with `show` as openness of the complement, split the failed conjunction with `not_and_or`, and offer the radius named above in each case. `abs_sub_lt_iff` turns a membership in a ball into the two inequalities `linarith` wants.
 stub_names:
 - unitInterval
 - unitInterval_closed
@@ -97,8 +99,8 @@ namespace: GeneralTopology
 seq: 140
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 520
+  line: 533
   closure_rounds: 1
   check_kind: theorem

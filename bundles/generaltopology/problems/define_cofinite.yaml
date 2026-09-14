@@ -4,22 +4,22 @@ title: The Cofinite Topology
 statement: With the two facts proved, the topology assembles. Only the whole space is left, and its complement is empty, which is finite.
 concepts:
 - cofinite_topology
-stub: 'def cofinite (X : Type u) : Topology X := sorry'
+stub: 'def cofinite (X : Type u) : TopologicalSpace X := sorry'
 reference: |-
-  def cofinite (X : Type u) : Topology X where
+  def cofinite (X : Type u) : TopologicalSpace X where
     IsOpen := fun U => U = ∅ ∨ Uᶜ.Finite
-    univ := Or.inr (by rw [Set.compl_univ]; exact Set.finite_empty)
-    inter := cofinite_inter
-    sUnion := cofinite_sUnion
+    isOpen_univ := Or.inr (by rw [Set.compl_univ]; exact Set.finite_empty)
+    isOpen_inter := cofinite_inter
+    isOpen_sUnion := cofinite_sUnion
 spec: 'example (X : Type) (U : Set X) : (_root_.GeneralTopology.cofinite X).IsOpen U ↔ (U = ∅ ∨ Uᶜ.Finite) := Iff.rfl'
 preamble: |
   universe u
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
   theorem cofinite_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ Uᶜ.Finite)
       (hV : V = ∅ ∨ Vᶜ.Finite) : U ∩ V = ∅ ∨ (U ∩ V)ᶜ.Finite := by
@@ -49,7 +49,7 @@ namespace: GeneralTopology
 seq: 51
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/BasicExamples.lean
   line: 219
   closure_rounds: 1

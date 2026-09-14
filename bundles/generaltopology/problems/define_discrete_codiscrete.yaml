@@ -4,50 +4,50 @@ title: Two Properties of a Space
 statement: |-
   The two extreme topologies of the third section were built; now the same two descriptions are read as properties that an arbitrary space may or may not have.
 
-  A space is *discrete* when every subset is open, and *codiscrete* when the only open subsets are the empty one and the whole space. A space may be both, if it has at most one point, and most spaces are neither.
+  A space is *discrete* when every subset is open, and *indiscrete* when the only open subsets are the empty one and the whole space. A space may be both, if it has at most one point, and most spaces are neither.
 
-  The discrete topology is discrete and the codiscrete topology is codiscrete, which is what the names were chosen to make true.
+  The discrete topology is discrete and the indiscrete topology is indiscrete, which is what the names were chosen to make true.
 concepts:
 - topological_invariants
 stub: |-
-  def Topology.IsDiscrete {X : Type u} (T : Topology X) : Prop := sorry
+  def TopologicalSpace.IsDiscrete {X : Type u} (T : TopologicalSpace X) : Prop := sorry
 
-  def Topology.IsCodiscrete {X : Type u} (T : Topology X) : Prop := sorry
+  def TopologicalSpace.IsIndiscrete {X : Type u} (T : TopologicalSpace X) : Prop := sorry
 
   theorem discrete_isDiscrete (X : Type u) : (discrete X).IsDiscrete := sorry
 
-  theorem codiscrete_isCodiscrete (X : Type u) : (codiscrete X).IsCodiscrete := sorry
+  theorem indiscrete_isIndiscrete (X : Type u) : (indiscrete X).IsIndiscrete := sorry
 reference: |-
-  def Topology.IsDiscrete {X : Type u} (T : Topology X) : Prop := ∀ U, T.IsOpen U
+  def TopologicalSpace.IsDiscrete {X : Type u} (T : TopologicalSpace X) : Prop := ∀ U, T.IsOpen U
 
-  def Topology.IsCodiscrete {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsIndiscrete {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ
 
   theorem discrete_isDiscrete (X : Type u) : (discrete X).IsDiscrete := fun _ => trivial
 
-  theorem codiscrete_isCodiscrete (X : Type u) : (codiscrete X).IsCodiscrete := fun _ hU => hU
+  theorem indiscrete_isIndiscrete (X : Type u) : (indiscrete X).IsIndiscrete := fun _ hU => hU
 spec: |-
-  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsDiscrete T ↔ (∀ U, T.IsOpen U) := by unfold _root_.GeneralTopology.Topology.IsDiscrete; first | exact Iff.rfl | grind
-  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsCodiscrete T ↔ (∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ) := by unfold _root_.GeneralTopology.Topology.IsCodiscrete; first | exact Iff.rfl | grind
+  example {X : Type u} (T : TopologicalSpace X) : _root_.GeneralTopology.TopologicalSpace.IsDiscrete T ↔ (∀ U, T.IsOpen U) := by unfold _root_.GeneralTopology.TopologicalSpace.IsDiscrete; first | exact Iff.rfl | grind
+  example {X : Type u} (T : TopologicalSpace X) : _root_.GeneralTopology.TopologicalSpace.IsIndiscrete T ↔ (∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ) := by unfold _root_.GeneralTopology.TopologicalSpace.IsIndiscrete; first | exact Iff.rfl | grind
   example : ∀ (X : Type u), (discrete X).IsDiscrete := _root_.GeneralTopology.discrete_isDiscrete
-  example : ∀ (X : Type u), (codiscrete X).IsCodiscrete := _root_.GeneralTopology.codiscrete_isCodiscrete
-  example (X : Type) (T : Topology X) :
+  example : ∀ (X : Type u), (indiscrete X).IsIndiscrete := _root_.GeneralTopology.indiscrete_isIndiscrete
+  example (X : Type) (T : TopologicalSpace X) :
       (T.IsDiscrete ↔ ∀ U, T.IsOpen U)
-        ∧ (T.IsCodiscrete ↔ ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ) := ⟨Iff.rfl, Iff.rfl⟩
+        ∧ (T.IsIndiscrete ↔ ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ) := ⟨Iff.rfl, Iff.rfl⟩
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def discrete (X : Type u) : Topology X where
+  def discrete (X : Type u) : TopologicalSpace X where
     IsOpen := fun _ => True
-    univ := trivial
-    inter := fun _ _ => trivial
-    sUnion := fun _ => trivial
+    isOpen_univ := trivial
+    isOpen_inter := fun _ _ => trivial
+    isOpen_sUnion := fun _ => trivial
 
   theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
       (hV : V = ∅ ∨ V = Set.univ) : U ∩ V = ∅ ∨ U ∩ V = Set.univ := by
@@ -67,26 +67,26 @@ preamble: |
       · rfl
       · exact absurd hUF hu
 
-  def codiscrete (X : Type u) : Topology X where
+  def indiscrete (X : Type u) : TopologicalSpace X where
     IsOpen := fun U => U = ∅ ∨ U = Set.univ
-    univ := Or.inr rfl
-    inter := trivial_inter
-    sUnion := trivial_sUnion
+    isOpen_univ := Or.inr rfl
+    isOpen_inter := trivial_inter
+    isOpen_sUnion := trivial_sUnion
 
   end GeneralTopology
   open GeneralTopology
-description: 'Define `Topology.IsDiscrete` and `Topology.IsCodiscrete`, and then show that `discrete X` has the first property and `codiscrete X` the second. Both proofs are the definition unfolding: nothing has to be done to what `discrete` and `codiscrete` already say.'
+description: 'Define `TopologicalSpace.IsDiscrete` and `TopologicalSpace.IsIndiscrete`, and then show that `discrete X` has the first property and `indiscrete X` the second. Both proofs are the definition unfolding: nothing has to be done to what `discrete` and `indiscrete` already say.'
 stub_names:
-- Topology.IsDiscrete
-- Topology.IsCodiscrete
+- TopologicalSpace.IsDiscrete
+- TopologicalSpace.IsIndiscrete
 - discrete_isDiscrete
-- codiscrete_isCodiscrete
+- indiscrete_isIndiscrete
 namespace: GeneralTopology
 seq: 101
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
-  line: 479
+  line: 493
   closure_rounds: 1
   check_kind: mixed

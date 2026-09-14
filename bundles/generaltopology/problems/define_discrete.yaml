@@ -7,22 +7,22 @@ statement: |-
   A field of a structure may be filled by a proof that ignores its hypotheses. `trivial` proves `True`.
 concepts:
 - extreme_topologies
-stub: 'def discrete (X : Type u) : Topology X := sorry'
+stub: 'def discrete (X : Type u) : TopologicalSpace X := sorry'
 reference: |-
-  def discrete (X : Type u) : Topology X where
+  def discrete (X : Type u) : TopologicalSpace X where
     IsOpen := fun _ => True
-    univ := trivial
-    inter := fun _ _ => trivial
-    sUnion := fun _ => trivial
+    isOpen_univ := trivial
+    isOpen_inter := fun _ _ => trivial
+    isOpen_sUnion := fun _ => trivial
 spec: 'example (X : Type) (U : Set X) : (_root_.GeneralTopology.discrete X).IsOpen U ↔ True := Iff.rfl'
 preamble: |
   universe u
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
   end GeneralTopology
   open GeneralTopology
@@ -33,7 +33,7 @@ namespace: GeneralTopology
 seq: 44
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/BasicExamples.lean
   line: 21
   closure_rounds: 1

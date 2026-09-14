@@ -8,18 +8,18 @@ statement: |-
 concepts:
 - open_cover
 stub: |-
-  theorem Topology.isCompactSet_empty {X : Type u} (T : Topology X) :
-      T.IsCompactSet (∅ : Set X) := sorry
+  theorem TopologicalSpace.isCompact_empty {X : Type u} (T : TopologicalSpace X) :
+      T.IsCompact (∅ : Set X) := sorry
 
-  theorem Topology.isCompactSet_singleton {X : Type u} (T : Topology X) (x : X) :
-      T.IsCompactSet {x} := sorry
+  theorem TopologicalSpace.isCompact_singleton {X : Type u} (T : TopologicalSpace X) (x : X) :
+      T.IsCompact {x} := sorry
 reference: |-
-  theorem Topology.isCompactSet_empty {X : Type u} (T : Topology X) :
-      T.IsCompactSet (∅ : Set X) :=
+  theorem TopologicalSpace.isCompact_empty {X : Type u} (T : TopologicalSpace X) :
+      T.IsCompact (∅ : Set X) :=
     fun _ _ _ => ⟨∅, Set.empty_subset _, Set.finite_empty, Set.empty_subset _⟩
 
-  theorem Topology.isCompactSet_singleton {X : Type u} (T : Topology X) (x : X) :
-      T.IsCompactSet {x} := by
+  theorem TopologicalSpace.isCompact_singleton {X : Type u} (T : TopologicalSpace X) (x : X) :
+      T.IsCompact {x} := by
     intro F _ hcov
     obtain ⟨U, hUF, hxU⟩ := hcov rfl
     refine ⟨{U}, Set.singleton_subset_iff.mpr hUF, Set.finite_singleton U, ?_⟩
@@ -27,33 +27,33 @@ reference: |-
     have e : y = x := hy
     exact ⟨U, rfl, e ▸ hxU⟩
 spec: |-
-  example : ∀ {X : Type u} (T : Topology X), T.IsCompactSet (∅ : Set X) := _root_.GeneralTopology.Topology.isCompactSet_empty
-  example : ∀ {X : Type u} (T : Topology X) (x : X), T.IsCompactSet {x} := _root_.GeneralTopology.Topology.isCompactSet_singleton
+  example : ∀ {X : Type u} (T : TopologicalSpace X), T.IsCompact (∅ : Set X) := _root_.GeneralTopology.TopologicalSpace.isCompact_empty
+  example : ∀ {X : Type u} (T : TopologicalSpace X) (x : X), T.IsCompact {x} := _root_.GeneralTopology.TopologicalSpace.isCompact_singleton
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
       ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Topology.isCompactSet_empty` and `Topology.isCompactSet_singleton`. `Set.empty_subset` proves both obligations of the first. For the second, a membership `y ∈ {x}` is the equation `y = x` and must be named as one before it can be rewritten; `Set.singleton_subset_iff` turns a containment of a singleton into a membership.
+description: Prove `TopologicalSpace.isCompact_empty` and `TopologicalSpace.isCompact_singleton`. `Set.empty_subset` proves both obligations of the first. For the second, a membership `y ∈ {x}` is the equation `y = x` and must be named as one before it can be rewritten; `Set.singleton_subset_iff` turns a containment of a singleton into a membership.
 stub_names:
-- Topology.isCompactSet_empty
-- Topology.isCompactSet_singleton
+- TopologicalSpace.isCompact_empty
+- TopologicalSpace.isCompact_singleton
 namespace: GeneralTopology
 seq: 199
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Compactness.lean
-  line: 53
+  line: 54
   closure_rounds: 1
   check_kind: theorem

@@ -8,36 +8,38 @@ statement: |-
 concepts:
 - sum_space
 stub: |-
-  def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X ⊕ Y) := sorry
+  def TopologicalSpace.sum {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X ⊕ Y) := sorry
 reference: |-
-  def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X ⊕ Y) where
+  def TopologicalSpace.sum {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X ⊕ Y) where
     IsOpen := fun W => T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W)
-    univ := by
+    isOpen_univ := by
       rw [Set.preimage_univ, Set.preimage_univ]
-      exact ⟨T.univ, T'.univ⟩
-    inter := by
+      exact ⟨T.isOpen_univ, T'.isOpen_univ⟩
+    isOpen_inter := by
       intro V W hV hW
       rw [Set.preimage_inter, Set.preimage_inter]
-      exact ⟨T.inter hV.1 hW.1, T'.inter hV.2 hW.2⟩
-    sUnion := by
+      exact ⟨T.isOpen_inter hV.1 hW.1, T'.isOpen_inter hV.2 hW.2⟩
+    isOpen_sUnion := by
       intro F h
       rw [preimage_sUnion_image, preimage_sUnion_image]
       constructor
-      · exact T.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
-      · exact T'.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
+      · exact T.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
+      · exact T'.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
 spec: |-
-  example (X Y : Type) (T : Topology X) (T' : Topology Y) (W : Set (X ⊕ Y)) :
+  example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (W : Set (X ⊕ Y)) :
       (T.sum T').IsOpen W ↔ T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W) := Iff.rfl
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
   theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
       f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
@@ -49,15 +51,15 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Define `Topology.sum`, whose `IsOpen W` is the conjunction of `T.IsOpen (Sum.inl ⁻¹' W)` and `T'.IsOpen (Sum.inr ⁻¹' W)`, in that order. Each field rewrites both preimages — the third by the first problem of the section — and then offers the pair of conditions from `T` and `T'`.
+description: Define `TopologicalSpace.sum`, whose `IsOpen W` is the conjunction of `T.IsOpen (Sum.inl ⁻¹' W)` and `T'.IsOpen (Sum.inr ⁻¹' W)`, in that order. Each field rewrites both preimages — the third by the first problem of the section — and then offers the pair of conditions from `T` and `T'`.
 stub_names:
-- Topology.sum
+- TopologicalSpace.sum
 namespace: GeneralTopology
 seq: 134
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 339
+  line: 344
   closure_rounds: 1
   check_kind: definition

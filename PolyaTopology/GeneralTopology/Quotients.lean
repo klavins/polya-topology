@@ -48,27 +48,28 @@ Let `f` carry a space `X` to a set `Y`. Call a subset of `Y` open when its preim
 
 Written this way the definition is shorter than the induced one, which had to say "is the preimage of an open set" and carry an existential to say it. Here there is no existential, because the test is applied to the set itself.
 @description
-Define `Topology.coinduced`, the topology on `Y` whose `IsOpen V` says `T.IsOpen (f ⁻¹' V)`. `Set.preimage_univ` and `Set.preimage_inter` rewrite the first two fields; the third rewrites by the previous problem and then applies the union condition of `T` to the collection of preimages.
+Define `TopologicalSpace.coinduced`, the topology on `Y` whose `IsOpen V` says `T.IsOpen (f ⁻¹' V)`. `Set.preimage_univ` and `Set.preimage_inter` rewrite the first two fields; the third rewrites by the previous problem and then applies the union condition of `T` to the collection of preimages.
 -/
 
-def Topology.coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) : Topology Y where
+def TopologicalSpace.coinduced {X : Type u} {Y : Type v} (T : TopologicalSpace X) (f : X → Y)
+    : TopologicalSpace Y where
   IsOpen := fun V => T.IsOpen (f ⁻¹' V)
-  univ := by
+  isOpen_univ := by
     rw [Set.preimage_univ]
-    exact T.univ
-  inter := by
+    exact T.isOpen_univ
+  isOpen_inter := by
     intro V W hV hW
     rw [Set.preimage_inter]
-    exact T.inter hV hW
-  sUnion := by
+    exact T.isOpen_inter hV hW
+  isOpen_sUnion := by
     intro F h
     rw [preimage_sUnion_image]
-    refine T.sUnion ?_
+    refine T.isOpen_sUnion ?_
     rintro W ⟨V, hVF, rfl⟩
     exact h V hVF
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (f : X → Y) (V : Set Y) :
+example (X Y : Type) (T : TopologicalSpace X) (f : X → Y) (V : Set Y) :
     (T.coinduced f).IsOpen V ↔ T.IsOpen (f ⁻¹' V) := Iff.rfl
 
 /-! @end -/
@@ -86,11 +87,13 @@ It is the largest topology that does, which is the mirror of what the induced to
 Show that `f` is continuous from `T` to `T.coinduced f`, and that `T.coinduced f` calls open every set a topology `S` calls open, whenever `f` is continuous into `S`. Each is the hypothesis applied at the set, with nothing in between.
 -/
 
-theorem Topology.continuous_coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) :
+theorem TopologicalSpace.continuous_coinduced {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (f : X → Y) :
     T.Continuous (T.coinduced f) f :=
   fun _ hV => hV
 
-theorem Topology.coinduced_finest {X : Type u} {Y : Type v} {T : Topology X} {S : Topology Y}
+theorem TopologicalSpace.coinduced_finest {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {S : TopologicalSpace Y}
     {f : X → Y} (hf : T.Continuous S f) {V : Set Y} (hV : S.IsOpen V) :
     (T.coinduced f).IsOpen V :=
   hf V hV
@@ -109,12 +112,12 @@ One direction is composition with `f`. For the other, the preimage under `g` of 
 @description
 Prove that `(T.coinduced f).Continuous S g` exactly when `T.Continuous S (g ∘ f)`. Forwards, compose with the previous problem. Backwards, restate the goal with `show`, fold the two preimages into one with `← Set.preimage_comp`, and apply the hypothesis.
 -/
-theorem Topology.continuous_out_of_coinduced {X : Type u} {Y : Type v} {Z : Type w}
-    (T : Topology X) (f : X → Y) (S : Topology Z) (g : Y → Z) :
+theorem TopologicalSpace.continuous_out_of_coinduced {X : Type u} {Y : Type v} {Z : Type w}
+    (T : TopologicalSpace X) (f : X → Y) (S : TopologicalSpace Z) (g : Y → Z) :
     (T.coinduced f).Continuous S g ↔ T.Continuous S (g ∘ f) := by
   constructor
   · intro hg
-    exact Topology.continuous_comp T (Topology.continuous_coinduced T f) hg
+    exact TopologicalSpace.continuous_comp T (TopologicalSpace.continuous_coinduced T f) hg
   · intro hg W hW
     show T.IsOpen (f ⁻¹' (g ⁻¹' W))
     rw [← Set.preimage_comp]
@@ -134,7 +137,7 @@ An equivalence relation on a set gives the set of its classes. In Lean the relat
 @concept lean_quotients
 
 @preamble
-A `Setoid X` bundles a relation `r : X → X → Prop` with a proof `iseqv` that it is an equivalence — reflexive, symmetric, transitive — exactly as `Metric` bundled a distance with its axioms. We write `s.r x y` for the relation of a setoid `s`.
+A `Setoid X` bundles a relation `r : X → X → Prop` with a proof `iseqv` that it is an equivalence — reflexive, symmetric, transitive — exactly as `MetricSpace` bundled a distance with its axioms. We write `s.r x y` for the relation of a setoid `s`.
 
 Every map produces one. Call `x` and `y` equivalent when `f x = f y`. This is an equivalence relation because equality is one, and the three fields of `Equivalence` are the three corresponding facts about equality. Any map out of `X` identifies exactly the pairs this relation names, so this is the general shape of a relation worth quotienting by.
 @description
@@ -222,18 +225,19 @@ Let `s` be a setoid on a space `X`. The quotient carries the final topology alon
 
 Nothing new has to be built, since the construction is already in hand and this is one instance of it. What the definition buys is a name, and with the name the continuity of the projection — which is the continuity of a map into the topology that map coinduces, and so was proved before the quotient was mentioned.
 @description
-Define `Topology.quotient` as `T.coinduced (Quotient.mk s)`, and show that `Quotient.mk s` is continuous into it. The second is the corresponding theorem about the coinduced topology, at the map `Quotient.mk s`.
+Define `TopologicalSpace.quotient` as `T.coinduced (Quotient.mk s)`, and show that `Quotient.mk s` is continuous into it. The second is the corresponding theorem about the coinduced topology, at the map `Quotient.mk s`.
 -/
 
-def Topology.quotient {X : Type u} (T : Topology X) (s : Setoid X) : Topology (Quotient s) :=
+def TopologicalSpace.quotient {X : Type u} (T : TopologicalSpace X) (s : Setoid X)
+    : TopologicalSpace (Quotient s) :=
   T.coinduced (Quotient.mk s)
 
-theorem Topology.continuous_mk {X : Type u} (T : Topology X) (s : Setoid X) :
+theorem TopologicalSpace.continuous_mk {X : Type u} (T : TopologicalSpace X) (s : Setoid X) :
     T.Continuous (T.quotient s) (Quotient.mk s) :=
-  Topology.continuous_coinduced T (Quotient.mk s)
+  TopologicalSpace.continuous_coinduced T (Quotient.mk s)
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (s : Setoid X) (V : Set (Quotient s)) :
+example (X : Type) (T : TopologicalSpace X) (s : Setoid X) (V : Set (Quotient s)) :
     (T.quotient s).IsOpen V ↔ T.IsOpen (Quotient.mk s ⁻¹' V) := Iff.rfl
 
 /-! @end -/
@@ -250,10 +254,10 @@ There is nothing left to prove. The descended map composed with the projection i
 @description
 Show that `Quotient.lift f h` is continuous from `T.quotient s` whenever `f` is. Apply the `.mpr` of the coinduced universal property, at the map `Quotient.mk s` and the map `Quotient.lift f h`; the composite is `f` by definition, so the hypothesis closes it.
 -/
-theorem Topology.continuous_quotient_lift {X : Type u} {Z : Type w} {T : Topology X}
-    {s : Setoid X} {S : Topology Z} {f : X → Z} (h : ∀ a b, s.r a b → f a = f b)
+theorem TopologicalSpace.continuous_quotient_lift {X : Type u} {Z : Type w} {T : TopologicalSpace X}
+    {s : Setoid X} {S : TopologicalSpace Z} {f : X → Z} (h : ∀ a b, s.r a b → f a = f b)
     (hf : T.Continuous S f) : (T.quotient s).Continuous S (Quotient.lift f h) := by
-  apply (Topology.continuous_out_of_coinduced T (Quotient.mk s) S (Quotient.lift f h)).mpr
+  apply (TopologicalSpace.continuous_out_of_coinduced T (Quotient.mk s) S (Quotient.lift f h)).mpr
   exact hf
 
 /-!
@@ -298,7 +302,8 @@ On a saturated set the question therefore answers itself. There the preimage of 
 @description
 Show that `f '' S` is open in `T.coinduced f` when `S` is open and saturated for `f`. Restate the goal with `show`, rewrite backwards along the saturation, and the hypothesis is what remains.
 -/
-theorem Topology.isOpen_image_of_saturated {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y)
+theorem TopologicalSpace.isOpen_image_of_saturated {X : Type u} {Y : Type v}
+    (T : TopologicalSpace X) (f : X → Y)
     {S : Set X} (hS : T.IsOpen S) (hsat : IsSaturated f S) : (T.coinduced f).IsOpen (f '' S) := by
   show T.IsOpen (f ⁻¹' (f '' S))
   rw [← hsat]
@@ -314,12 +319,12 @@ The finest topology of all survives every identification. If every subset of `X`
 
 Two topologies are equal as soon as they call the same sets open, and here the two conditions are not merely equivalent but the same proposition. The quotient is the case of the map that takes a point to its class.
 @description
-Prove that `(discrete X).coinduced f = discrete Y` for every `f`, and deduce the same of the quotient by any setoid. `Topology.eq_of_isOpen_iff` reduces the first to an equivalence at each set, and both sides of that are `True`.
+Prove that `(discrete X).coinduced f = discrete Y` for every `f`, and deduce the same of the quotient by any setoid. `TopologicalSpace.eq_of_isOpen_iff` reduces the first to an equivalence at each set, and both sides of that are `True`.
 -/
 
 theorem coinduced_discrete {X : Type u} {Y : Type v} (f : X → Y) :
     (discrete X).coinduced f = discrete Y :=
-  Topology.eq_of_isOpen_iff (fun _ => Iff.rfl)
+  TopologicalSpace.eq_of_isOpen_iff (fun _ => Iff.rfl)
 
 theorem quotient_discrete {X : Type u} (s : Setoid X) :
     (discrete X).quotient s = discrete (Quotient s) :=
@@ -345,28 +350,29 @@ The type `X ⊕ Y` holds a copy of `X` and a copy of `Y` with nothing in common:
 
 Call `W` open when both of those are open. As with the coinduced topology, the three conditions hold because a preimage commutes with the three operations — twice over here, once on each side.
 @description
-Define `Topology.sum`, whose `IsOpen W` is the conjunction of `T.IsOpen (Sum.inl ⁻¹' W)` and `T'.IsOpen (Sum.inr ⁻¹' W)`, in that order. Each field rewrites both preimages — the third by the first problem of the section — and then offers the pair of conditions from `T` and `T'`.
+Define `TopologicalSpace.sum`, whose `IsOpen W` is the conjunction of `T.IsOpen (Sum.inl ⁻¹' W)` and `T'.IsOpen (Sum.inr ⁻¹' W)`, in that order. Each field rewrites both preimages — the third by the first problem of the section — and then offers the pair of conditions from `T` and `T'`.
 -/
 
-def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-    Topology (X ⊕ Y) where
+def TopologicalSpace.sum {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
+    TopologicalSpace (X ⊕ Y) where
   IsOpen := fun W => T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W)
-  univ := by
+  isOpen_univ := by
     rw [Set.preimage_univ, Set.preimage_univ]
-    exact ⟨T.univ, T'.univ⟩
-  inter := by
+    exact ⟨T.isOpen_univ, T'.isOpen_univ⟩
+  isOpen_inter := by
     intro V W hV hW
     rw [Set.preimage_inter, Set.preimage_inter]
-    exact ⟨T.inter hV.1 hW.1, T'.inter hV.2 hW.2⟩
-  sUnion := by
+    exact ⟨T.isOpen_inter hV.1 hW.1, T'.isOpen_inter hV.2 hW.2⟩
+  isOpen_sUnion := by
     intro F h
     rw [preimage_sUnion_image, preimage_sUnion_image]
     constructor
-    · exact T.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
-    · exact T'.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
+    · exact T.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
+    · exact T'.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) (W : Set (X ⊕ Y)) :
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (W : Set (X ⊕ Y)) :
     (T.sum T').IsOpen W ↔ T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W) := Iff.rfl
 
 /-! @end -/
@@ -382,11 +388,13 @@ example (X Y : Type) (T : Topology X) (T' : Topology Y) (W : Set (X ⊕ Y)) :
 Show that `Sum.inl` and `Sum.inr` are continuous into `T.sum T'`. Each is one half of the hypothesis, taken with `.1` or `.2`.
 -/
 
-theorem Topology.continuous_inl {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+theorem TopologicalSpace.continuous_inl {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
     T.Continuous (T.sum T') Sum.inl :=
   fun _ hW => hW.1
 
-theorem Topology.continuous_inr {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+theorem TopologicalSpace.continuous_inr {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
     T'.Continuous (T.sum T') Sum.inr :=
   fun _ hW => hW.2
 
@@ -405,21 +413,23 @@ Take an open `U` of `X`. Its image under `Sum.inl` meets the first copy in `U` i
 Show that `Sum.inl` and `Sum.inr` are open maps into `T.sum T'`. `Set.preimage_image_eq`, with `Sum.inl_injective` or `Sum.inr_injective`, gives the preimage on the near side; `Set.preimage_inr_image_inl` and `Set.preimage_inl_image_inr` give the empty one on the far side.
 -/
 
-theorem Topology.isOpenMap_inl {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+theorem TopologicalSpace.isOpenMap_inl {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
     T.IsOpenMap (T.sum T') Sum.inl := by
   intro U hU
   constructor
   · rw [Set.preimage_image_eq U Sum.inl_injective]
     exact hU
   · rw [Set.preimage_inr_image_inl]
-    exact Topology.empty T'
+    exact TopologicalSpace.empty T'
 
-theorem Topology.isOpenMap_inr {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+theorem TopologicalSpace.isOpenMap_inr {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
     T'.IsOpenMap (T.sum T') Sum.inr := by
   intro U hU
   constructor
   · rw [Set.preimage_inl_image_inr]
-    exact Topology.empty T
+    exact TopologicalSpace.empty T
   · rw [Set.preimage_image_eq U Sum.inr_injective]
     exact hU
 
@@ -438,13 +448,16 @@ The topology was chosen so that the same holds of continuity, and again the proo
 Prove that `Sum.elim f g` is continuous when `f` and `g` are, and then that a map `h : X ⊕ Y → Z` is continuous exactly when `h ∘ Sum.inl` and `h ∘ Sum.inr` are. Both are pairs of applications of the hypotheses, and neither needs any rewriting.
 -/
 
-theorem Topology.continuous_sum_elim {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-    {T' : Topology Y} (S : Topology Z) {f : X → Z} {g : Y → Z} (hf : T.Continuous S f)
+theorem TopologicalSpace.continuous_sum_elim {X : Type u} {Y : Type v} {Z : Type w}
+    {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y} (S : TopologicalSpace Z) {f : X → Z} {g : Y → Z}
+    (hf : T.Continuous S f)
     (hg : T'.Continuous S g) : (T.sum T').Continuous S (Sum.elim f g) :=
   fun W hW => ⟨hf W hW, hg W hW⟩
 
-theorem Topology.continuous_sum_iff {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-    (T' : Topology Y) (S : Topology Z) (h : X ⊕ Y → Z) :
+theorem TopologicalSpace.continuous_sum_iff {X : Type u} {Y : Type v} {Z : Type w}
+    (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) (S : TopologicalSpace Z) (h : X ⊕ Y → Z) :
     (T.sum T').Continuous S h ↔
       T.Continuous S (h ∘ Sum.inl) ∧ T'.Continuous S (h ∘ Sum.inr) := by
   constructor
@@ -526,23 +539,23 @@ Before an interval is collapsed we check that it is closed, which is a statement
 
 A point outside it is either below `0` or above `1`. In the first case the distance to `0` is room to spare: every point within `-x` of `x` is still below `0`. In the second, every point within `x - 1` of `x` is still above `1`. So the complement has a ball around each of its points, which is what it is for the complement to be open.
 @description
-Show that `unitInterval` is closed in `line.toTopology`. Restate the goal with `show` as openness of the complement, split the failed conjunction with `not_and_or`, and offer the radius named above in each case. `abs_sub_lt_iff` turns a membership in a ball into the two inequalities `linarith` wants.
+Show that `unitInterval` is closed in `line.toTopologicalSpace`. Restate the goal with `show` as openness of the complement, split the failed conjunction with `not_and_or`, and offer the radius named above in each case. `abs_sub_lt_iff` turns a membership in a ball into the two inequalities `linarith` wants.
 -/
 
 /-- @given -/
 def unitInterval : Set ℝ := {x | 0 ≤ x ∧ x ≤ 1}
 
-theorem unitInterval_closed : line.toTopology.IsClosed unitInterval := by
+theorem unitInterval_closed : line.toTopologicalSpace.IsClosed unitInterval := by
   show line.IsOpenSet unitIntervalᶜ
   intro x hx
   rcases not_and_or.mp hx with h | h
   · refine ⟨-x, by linarith [not_le.mp h], ?_⟩
     intro y hy
-    rw [Metric.mem_ball line, show line.dist x y = |x - y| from rfl, abs_sub_lt_iff] at hy
+    rw [MetricSpace.mem_ball line, show line.dist x y = |x - y| from rfl, abs_sub_lt_iff] at hy
     exact fun hy' => absurd hy'.1 (by linarith [hy.1])
   · refine ⟨x - 1, by linarith [not_le.mp h], ?_⟩
     intro y hy
-    rw [Metric.mem_ball line, show line.dist x y = |x - y| from rfl, abs_sub_lt_iff] at hy
+    rw [MetricSpace.mem_ball line, show line.dist x y = |x - y| from rfl, abs_sub_lt_iff] at hy
     exact fun hy' => absurd hy'.2 (by linarith [hy.1])
 
 /-! @end -/
@@ -560,7 +573,8 @@ Applied to the line and the unit interval: the point that the interval became is
 Prove that the class of a point of a closed `A` is a closed set of `T.quotient (collapse A)`, and read off the case of the line and the unit interval. For the first, restate the goal with `show`, move the complement across the preimage with `Set.preimage_compl`, and rewrite with `collapse_preimage_class`.
 -/
 
-theorem collapse_point_isClosed {X : Type u} (T : Topology X) {A : Set X} (hA : T.IsClosed A)
+theorem collapse_point_isClosed {X : Type u} (T : TopologicalSpace X) {A : Set X}
+    (hA : T.IsClosed A)
     {a : X} (ha : a ∈ A) :
     (T.quotient (collapse A)).IsClosed {Quotient.mk (collapse A) a} := by
   show T.IsOpen (Quotient.mk (collapse A) ⁻¹' {Quotient.mk (collapse A) a}ᶜ)
@@ -568,9 +582,9 @@ theorem collapse_point_isClosed {X : Type u} (T : Topology X) {A : Set X} (hA : 
   exact hA
 
 theorem line_collapse_interval :
-    (line.toTopology.quotient (collapse unitInterval)).IsClosed
+    (line.toTopologicalSpace.quotient (collapse unitInterval)).IsClosed
       {Quotient.mk (collapse unitInterval) 0} :=
-  collapse_point_isClosed line.toTopology unitInterval_closed ⟨le_refl 0, by norm_num⟩
+  collapse_point_isClosed line.toTopologicalSpace unitInterval_closed ⟨le_refl 0, by norm_num⟩
 
 /-! @end -/
 

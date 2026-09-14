@@ -2,17 +2,17 @@ slug: codiscrete_convergence
 kind: theorem
 title: Where Every Sequence Converges to Everything
 statement: |-
-  The codiscrete topology has two open sets, and an open set containing a point is not the empty one, so it is the whole space. A neighbourhood of any point is therefore everything, and every term of every sequence is in it already.
+  The indiscrete topology has two open sets, and an open set containing a point is not the empty one, so it is the whole space. A neighbourhood of any point is therefore everything, and every term of every sequence is in it already.
 
-  So in a codiscrete space every sequence converges to every point at once, and a sequence has as many limits as the space has points. Uniqueness was a theorem about metric spaces, not a part of what convergence means.
+  So in a indiscrete space every sequence converges to every point at once, and a sequence has as many limits as the space has points. Uniqueness was a theorem about metric spaces, not a part of what convergence means.
 concepts:
 - convergence_topological
 stub: |-
-  theorem codiscrete_convergesTo {X : Type u} (x : ℕ → X) (a : X) :
-      (codiscrete X).ConvergesTo x a := sorry
+  theorem indiscrete_convergesTo {X : Type u} (x : ℕ → X) (a : X) :
+      (indiscrete X).ConvergesTo x a := sorry
 reference: |-
-  theorem codiscrete_convergesTo {X : Type u} (x : ℕ → X) (a : X) :
-      (codiscrete X).ConvergesTo x a := by
+  theorem indiscrete_convergesTo {X : Type u} (x : ℕ → X) (a : X) :
+      (indiscrete X).ConvergesTo x a := by
     rintro N ⟨U, hU, haU, hUN⟩
     refine ⟨0, fun n _ => hUN ?_⟩
     rcases hU with h | h
@@ -20,17 +20,17 @@ reference: |-
       exact absurd haU (Set.notMem_empty a)
     · rw [h]
       trivial
-spec: 'example : ∀ {X : Type u} (x : ℕ → X) (a : X), (codiscrete X).ConvergesTo x a := _root_.GeneralTopology.codiscrete_convergesTo'
+spec: 'example : ∀ {X : Type u} (x : ℕ → X) (a : X), (indiscrete X).ConvergesTo x a := _root_.GeneralTopology.indiscrete_convergesTo'
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+  def TopologicalSpace.IsNbhd {X : Type u} (T : TopologicalSpace X) (x : X) (N : Set X) : Prop :=
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
 
   theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
@@ -51,25 +51,25 @@ preamble: |
       · rfl
       · exact absurd hUF hu
 
-  def codiscrete (X : Type u) : Topology X where
+  def indiscrete (X : Type u) : TopologicalSpace X where
     IsOpen := fun U => U = ∅ ∨ U = Set.univ
-    univ := Or.inr rfl
-    inter := trivial_inter
-    sUnion := trivial_sUnion
+    isOpen_univ := Or.inr rfl
+    isOpen_inter := trivial_inter
+    isOpen_sUnion := trivial_sUnion
 
-  def Topology.ConvergesTo {X : Type u} (T : Topology X) (x : ℕ → X) (a : X) : Prop :=
+  def TopologicalSpace.ConvergesTo {X : Type u} (T : TopologicalSpace X) (x : ℕ → X) (a : X) : Prop :=
     ∀ N, T.IsNbhd a N → ∃ k : ℕ, ∀ n ≥ k, x n ∈ N
 
   end GeneralTopology
   open GeneralTopology
-description: 'Prove `codiscrete_convergesTo`: every sequence in `codiscrete X` converges to every point of `X`. `rintro` opens the neighbourhood, and `rcases` on the openness of the set inside it gives the two cases, of which the empty one is refuted by `Set.notMem_empty`.'
+description: 'Prove `indiscrete_convergesTo`: every sequence in `indiscrete X` converges to every point of `X`. `rintro` opens the neighbourhood, and `rcases` on the openness of the set inside it gives the two cases, of which the empty one is refuted by `Set.notMem_empty`.'
 stub_names:
-- codiscrete_convergesTo
+- indiscrete_convergesTo
 namespace: GeneralTopology
 seq: 186
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Sequences.lean
   line: 196
   closure_rounds: 1

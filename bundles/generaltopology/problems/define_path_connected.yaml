@@ -12,54 +12,55 @@ stub: |-
 
   def unitInterval.one : unitInterval := ⟨1, by norm_num, le_refl 1⟩
 
-  def Topology.IsPathConnected {X : Type u} (T : Topology X) : Prop := sorry
+  def TopologicalSpace.IsPathConnectedSpace {X : Type u} (T : TopologicalSpace X) : Prop := sorry
 reference: |-
   def unitInterval.zero : unitInterval := ⟨0, le_refl 0, by norm_num⟩
 
   def unitInterval.one : unitInterval := ⟨1, by norm_num, le_refl 1⟩
 
-  def Topology.IsPathConnected {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsPathConnectedSpace {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, ∃ γ : unitInterval → X,
-      (line.toTopology.subspace unitInterval).Continuous T γ ∧
+      (line.toTopologicalSpace.subspace unitInterval).Continuous T γ ∧
         γ unitInterval.zero = x ∧ γ unitInterval.one = y
 spec: |-
   example : _root_.GeneralTopology.unitInterval.zero = (⟨0, le_refl 0, by norm_num⟩ : unitInterval) := rfl
   example : _root_.GeneralTopology.unitInterval.one = (⟨1, by norm_num, le_refl 1⟩ : unitInterval) := rfl
-  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsPathConnected T ↔ (∀ x y : X, ∃ γ : unitInterval → X,
-      (line.toTopology.subspace unitInterval).Continuous T γ ∧
-        γ _root_.GeneralTopology.unitInterval.zero = x ∧ γ _root_.GeneralTopology.unitInterval.one = y) := by unfold _root_.GeneralTopology.Topology.IsPathConnected; first | exact Iff.rfl | grind
-  example (X : Type) (T : Topology X) :
-      T.IsPathConnected ↔ ∀ x y : X, ∃ γ : unitInterval → X,
-        (line.toTopology.subspace unitInterval).Continuous T γ ∧
+  example {X : Type u} (T : TopologicalSpace X) : _root_.GeneralTopology.TopologicalSpace.IsPathConnectedSpace T ↔ (∀ x y : X, ∃ γ : unitInterval → X,
+      (line.toTopologicalSpace.subspace unitInterval).Continuous T γ ∧
+        γ _root_.GeneralTopology.unitInterval.zero = x ∧ γ _root_.GeneralTopology.unitInterval.one = y) := by unfold _root_.GeneralTopology.TopologicalSpace.IsPathConnectedSpace; first | exact Iff.rfl | grind
+  example (X : Type) (T : TopologicalSpace X) :
+      T.IsPathConnectedSpace ↔ ∀ x y : X, ∃ γ : unitInterval → X,
+        (line.toTopologicalSpace.subspace unitInterval).Continuous T γ ∧
           γ _root_.GeneralTopology.unitInterval.zero = x ∧ γ _root_.GeneralTopology.unitInterval.one = y := Iff.rfl
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  def line : Metric ℝ where
+  def line : MetricSpace ℝ where
     dist x y := |x - y|
-    symm {x y} := abs_sub_comm x y
-    triangle x y z := abs_sub_le x y z
-    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+    dist_comm {x y} := abs_sub_comm x y
+    dist_triangle x y z := abs_sub_le x y z
+    dist_eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
 
-  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+  def MetricSpace.ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+  theorem MetricSpace.mem_ball {X : Type u} (M : MetricSpace X) {x y : X} {ε : ℝ} :
       y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
-  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+  def MetricSpace.IsOpenSet {X : Type u} (M : MetricSpace X) (U : Set X) : Prop :=
     ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
 
-  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+  theorem MetricSpace.isOpenSet_univ {X : Type u} (M : MetricSpace X) : M.IsOpenSet (Set.univ : Set X)
+      :=
     fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
 
-  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+  theorem MetricSpace.isOpenSet_inter {X : Type u} (M : MetricSpace X) {U V : Set X}
       (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
     intro x hx
     obtain ⟨a, ha, hau⟩ := hU x hx.1
@@ -69,34 +70,36 @@ preamble: |
     rw [M.mem_ball] at hy
     exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
 
-  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+  theorem MetricSpace.isOpenSet_sUnion {X : Type u} (M : MetricSpace X) {F : Set (Set X)}
       (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
     intro x hx
     obtain ⟨U, hUF, hxU⟩ := hx
     obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
     exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
 
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+  def MetricSpace.toTopologicalSpace {X : Type u} (M : MetricSpace X) : TopologicalSpace X where
     IsOpen := M.IsOpenSet
-    univ := M.isOpenSet_univ
-    inter := M.isOpenSet_inter
-    sUnion := M.isOpenSet_sUnion
+    isOpen_univ := M.isOpenSet_univ
+    isOpen_inter := M.isOpenSet_inter
+    isOpen_sUnion := M.isOpenSet_sUnion
 
-  def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A where
+  def TopologicalSpace.subspace {X : Type u} (T : TopologicalSpace X) (A : Set X)
+      : TopologicalSpace A where
     IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U
-    univ := ⟨Set.univ, T.univ, rfl⟩
-    inter := by
+    isOpen_univ := ⟨Set.univ, T.isOpen_univ, rfl⟩
+    isOpen_inter := by
       rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
-      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
-    sUnion := by
+      exact ⟨U ∩ U', T.isOpen_inter hU hU', rfl⟩
+    isOpen_sUnion := by
       intro F h
-      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F},
+        T.isOpen_sUnion (fun U hU => hU.1), ?_⟩
       apply Set.Subset.antisymm
       · rintro x ⟨V, hVF, hxV⟩
         obtain ⟨U, hU, rfl⟩ := h V hVF
@@ -104,7 +107,8 @@ preamble: |
       · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
         exact ⟨_, hUF, hxU⟩
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
@@ -112,17 +116,17 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: 'Define `Topology.IsPathConnected`: for all `x y : X` there is a `γ : unitInterval → X` which is continuous from `line.toTopology.subspace unitInterval` to `T`, with `γ unitInterval.zero = x` and `γ unitInterval.one = y`, the three conditions in that order.'
+description: 'Define `TopologicalSpace.IsPathConnectedSpace`: for all `x y : X` there is a `γ : unitInterval → X` which is continuous from `line.toTopologicalSpace.subspace unitInterval` to `T`, with `γ unitInterval.zero = x` and `γ unitInterval.one = y`, the three conditions in that order.'
 stub_names:
 - unitInterval.zero
 - unitInterval.one
-- Topology.IsPathConnected
+- TopologicalSpace.IsPathConnectedSpace
 namespace: GeneralTopology
 seq: 177
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Connectedness.lean
-  line: 584
+  line: 588
   closure_rounds: 1
   check_kind: mixed

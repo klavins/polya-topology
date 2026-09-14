@@ -13,7 +13,7 @@ stub: |-
 reference: |-
   theorem Norm.nonneg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
       0 ≤ N.norm v := by
-    have h := N.triangle v (-v)
+    have h := N.norm_add_le v (-v)
     rw [add_neg_cancel, N.zero, N.neg] at h
     linarith
 spec: 'example : ∀ {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V), 0 ≤ N.norm v := _root_.GeneralTopology.Norm.nonneg'
@@ -22,29 +22,29 @@ preamble: |
   namespace GeneralTopology
   structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
     norm : V → ℝ
-    eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
-    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
-    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+    norm_eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
+    norm_smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    norm_add_le : ∀ v w, norm (v + w) ≤ norm v + norm w
 
   theorem Norm.zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : N.norm 0 = 0 :=
-    N.eq_zero.mpr rfl
+    N.norm_eq_zero.mpr rfl
 
   theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
       N.norm (-v) = N.norm v := by
-    have h := N.smul (-1) v
+    have h := N.norm_smul (-1) v
     rw [neg_one_smul] at h
     rw [h, abs_neg, abs_one, one_mul]
 
   end GeneralTopology
   open GeneralTopology
-description: Show that `0 ≤ N.norm v`. Begin with `N.triangle v (-v)`, rewrite it with `add_neg_cancel`, `N.zero` and `N.neg`, and finish with `linarith`.
+description: Show that `0 ≤ N.norm v`. Begin with `N.norm_add_le v (-v)`, rewrite it with `add_neg_cancel`, `N.zero` and `N.neg`, and finish with `linarith`.
 stub_names:
 - Norm.nonneg
 namespace: GeneralTopology
 seq: 15
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 407
   closure_rounds: 1

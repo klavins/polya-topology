@@ -10,58 +10,63 @@ statement: |-
 concepts:
 - closure
 stub: |-
-  theorem Topology.closure_mono {X : Type u} (T : Topology X) {S S' : Set X} (h : S ⊆ S') :
+  theorem TopologicalSpace.closure_mono {X : Type u} (T : TopologicalSpace X) {S S' : Set X}
+      (h : S ⊆ S') :
       T.closure S ⊆ T.closure S' := sorry
 
-  theorem Topology.closure_closure {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.closure_closure {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.closure (T.closure S) = T.closure S := sorry
 reference: |-
-  theorem Topology.closure_mono {X : Type u} (T : Topology X) {S S' : Set X} (h : S ⊆ S') :
+  theorem TopologicalSpace.closure_mono {X : Type u} (T : TopologicalSpace X) {S S' : Set X}
+      (h : S ⊆ S') :
       T.closure S ⊆ T.closure S' :=
     T.closure_min (T.isClosed_closure S') (h.trans (T.subset_closure S'))
 
-  theorem Topology.closure_closure {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.closure_closure {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.closure (T.closure S) = T.closure S :=
     (T.isClosed_iff_closure_eq (T.closure S)).mp (T.isClosed_closure S)
 spec: |-
-  example : ∀ {X : Type u} (T : Topology X) {S S' : Set X} (h : S ⊆ S'), T.closure S ⊆ T.closure S' := _root_.GeneralTopology.Topology.closure_mono
-  example : ∀ {X : Type u} (T : Topology X) (S : Set X), T.closure (T.closure S) = T.closure S := _root_.GeneralTopology.Topology.closure_closure
+  example : ∀ {X : Type u} (T : TopologicalSpace X) {S S' : Set X}
+      (h : S ⊆ S'), T.closure S ⊆ T.closure S' := _root_.GeneralTopology.TopologicalSpace.closure_mono
+  example : ∀ {X : Type u} (T : TopologicalSpace X) (S : Set X), T.closure (T.closure S) = T.closure S := _root_.GeneralTopology.TopologicalSpace.closure_closure
 preamble: |
   universe u
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
-  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+  theorem TopologicalSpace.isClosed_sInter {X : Type u} (T : TopologicalSpace X) {F : Set (Set X)}
       (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
     show T.IsOpen _
     rw [Set.compl_sInter]
-    apply T.sUnion
+    apply T.isOpen_sUnion
     rintro U ⟨C, hCF, rfl⟩
     exact h C hCF
 
-  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+  def TopologicalSpace.closure {X : Type u} (T : TopologicalSpace X) (S : Set X) : Set X :=
     ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
 
-  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+  theorem TopologicalSpace.subset_closure {X : Type u} (T : TopologicalSpace X) (S : Set X)
+      : S ⊆ T.closure S := by
     intro x hx C hC
     exact hC.2 hx
 
-  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.isClosed_closure {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.IsClosed (T.closure S) :=
     T.isClosed_sInter (fun _ hC => hC.1)
 
-  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+  theorem TopologicalSpace.closure_min {X : Type u} (T : TopologicalSpace X) {S C : Set X}
       (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
     intro x hx
     exact hx C ⟨hC, hSC⟩
 
-  theorem Topology.isClosed_iff_closure_eq {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.isClosed_iff_closure_eq {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.IsClosed S ↔ T.closure S = S := by
     constructor
     · intro hS
@@ -74,14 +79,14 @@ preamble: |
   open GeneralTopology
 description: 'Prove the two. Both are one application of a fact already proved: the first of `T.closure_min`, with `Set.Subset.trans` — written `h.trans` — to see that the larger closure contains `S`; the second of the equivalence above, in its left-to-right direction.'
 stub_names:
-- Topology.closure_mono
-- Topology.closure_closure
+- TopologicalSpace.closure_mono
+- TopologicalSpace.closure_closure
 namespace: GeneralTopology
 seq: 58
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Closure.lean
-  line: 139
+  line: 141
   closure_rounds: 1
   check_kind: theorem

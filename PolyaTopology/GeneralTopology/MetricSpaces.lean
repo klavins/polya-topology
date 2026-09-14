@@ -33,23 +33,23 @@ What must a rule satisfy to deserve the name of a distance? Three things, and ea
 
 *Non-degeneracy*: `d x y = 0` exactly when `x = y`.
 
-A structure gathers data and the conditions on it under one name, so a term of type `Metric X` is a distance function with proofs of all three. Braces mark a variable Lean is to infer, so a field stated `∀ {x y}, …` is used as just `M.symm`.
+A structure gathers data and the conditions on it under one name, so a term of type `MetricSpace X` is a distance function with proofs of all three. Braces mark a variable Lean is to infer, so a field stated `∀ {x y}, …` is used as just `M.dist_comm`.
 @description
-Define the structure `Metric X` for a type `X`, with four fields in this order: `dist`, of type `X → X → ℝ`; then `symm`, `triangle` and `eq_zero`, carrying the three conditions above. Bind the points implicitly in `symm` and `eq_zero`, explicitly in `triangle`, whose middle point is never fixed by the goal.
+Define the structure `MetricSpace X` for a type `X`, with four fields in this order: `dist`, of type `X → X → ℝ`; then `symm`, `triangle` and `eq_zero`, carrying the three conditions above. Bind the points implicitly in `symm` and `eq_zero`, explicitly in `triangle`, whose middle point is never fixed by the goal.
 -/
 
-structure Metric (X : Type u) where
+structure MetricSpace (X : Type u) where
   dist : X → X → ℝ
-  symm : ∀ {x y}, dist x y = dist y x
-  triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-  eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+  dist_comm : ∀ {x y}, dist x y = dist y x
+  dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+  dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
 /-- @spec -/
-example (X : Type) (M : Metric X) (x y z : X) :
+example (X : Type) (M : MetricSpace X) (x y z : X) :
     M.dist x y = M.dist y x
       ∧ M.dist x z ≤ M.dist x y + M.dist y z
       ∧ (M.dist x y = 0 ↔ x = y) :=
-  ⟨by apply M.symm, by apply M.triangle, by simp [M.eq_zero]⟩
+  ⟨by apply M.dist_comm, by apply M.dist_triangle, by simp [M.dist_eq_zero]⟩
 
 /-! @end -/
 
@@ -65,8 +65,8 @@ Nothing is quantified away when a statement about all pairs is used on the pair 
 @description
 Show that `M.dist x x = 0`. If `h` is an equivalence then `h.mpr` is its right-to-left direction, and the equality it wants is `rfl`.
 -/
-theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
-  M.eq_zero.mpr rfl
+theorem MetricSpace.dist_self {X : Type u} (M : MetricSpace X) {x : X} : M.dist x x = 0 :=
+  M.dist_eq_zero.mpr rfl
 
 /--
 @problem dist_nonneg
@@ -80,12 +80,12 @@ Take two points `x` and `y`, and consider the journey from `x` back to `x` by wa
 
 The argument is worth a second look, because it is the standard use of the triangle inequality: take the detour that returns to where it started, and read the inequality backwards.
 @description
-Show that `0 ≤ M.dist x y`. Begin with `M.triangle x y x` and rewrite the distance from `x` to itself with the previous problem. Then name the symmetry you need — `have e : M.dist y x = M.dist x y := M.symm`, the points being implicit — rewrite with it, and let `linarith` do the arithmetic.
+Show that `0 ≤ M.dist x y`. Begin with `M.dist_triangle x y x` and rewrite the distance from `x` to itself with the previous problem. Then name the symmetry you need — `have e : M.dist y x = M.dist x y := M.dist_comm`, the points being implicit — rewrite with it, and let `linarith` do the arithmetic.
 -/
-theorem Metric.nonneg {X : Type u} (M : Metric X) (x y : X) : 0 ≤ M.dist x y := by
-  have h := M.triangle x y x
+theorem MetricSpace.nonneg {X : Type u} (M : MetricSpace X) (x y : X) : 0 ≤ M.dist x y := by
+  have h := M.dist_triangle x y x
   rw [M.dist_self] at h
-  have e : M.dist y x = M.dist x y := M.symm
+  have e : M.dist y x = M.dist x y := M.dist_comm
   rw [e] at h
   linarith
 
@@ -118,11 +118,11 @@ The first field is a definition; the other three are proofs, written as terms or
 Define `line`, the real numbers with `dist x y = |x - y|`. Three fields are the facts named above at the right arguments; for the fourth, rewriting with `abs_eq_zero` and then `sub_eq_zero` leaves a goal that `rw` closes by itself.
 -/
 
-def line : Metric ℝ where
+def line : MetricSpace ℝ where
   dist x y := |x - y|
-  symm {x y} := abs_sub_comm x y
-  triangle x y z := abs_sub_le x y z
-  eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+  dist_comm {x y} := abs_sub_comm x y
+  dist_triangle x y z := abs_sub_le x y z
+  dist_eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
 
 /-- @spec -/
 example (x y : ℝ) : line.dist x y = |x - y| := rfl
@@ -149,13 +149,13 @@ The radius is any real number, not only a positive one. A ball of radius zero or
 
 Sets in this subject are Mathlib's. A set of elements of a type `X` is a term of type `Set X`, and `{y | p y}` denotes the set of those `y` for which `p y` holds. Membership `y ∈ {z | p z}` is by definition the proposition `p y`, so a statement about membership in a ball is a statement about a distance, written differently.
 @description
-Define `Metric.ball`, and then prove `Metric.mem_ball`, which says that `y` lies in `M.ball x ε` exactly when `M.dist x y < ε`. The two sides of that equivalence are the same proposition by definition, so `Iff.rfl` proves it.
+Define `MetricSpace.ball`, and then prove `MetricSpace.mem_ball`, which says that `y` lies in `M.ball x ε` exactly when `M.dist x y < ε`. The two sides of that equivalence are the same proposition by definition, so `Iff.rfl` proves it.
 -/
 
-def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+def MetricSpace.ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
   {y | M.dist x y < ε}
 
-theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+theorem MetricSpace.mem_ball {X : Type u} (M : MetricSpace X) {x y : X} {ε : ℝ} :
     y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
 /-! @end -/
@@ -172,7 +172,7 @@ This small fact is used constantly. A ball is a way of saying "near `x`", and it
 @description
 Show that `x ∈ M.ball x ε` whenever `0 < ε`. Rewriting with `M.mem_ball` turns the membership into an inequality between distances, and rewriting that with `M.dist_self` leaves the hypothesis.
 -/
-theorem Metric.mem_ball_self {X : Type u} (M : Metric X) (x : X) (ε : ℝ) (h : 0 < ε) :
+theorem MetricSpace.mem_ball_self {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) (h : 0 < ε) :
     x ∈ M.ball x ε := by
   rw [M.mem_ball, M.dist_self]
   exact h
@@ -189,16 +189,16 @@ In the plane with its ordinary distance the three are the disc without its edge,
 
 Since the strict inequality implies the weak one, the open ball is contained in the closed ball of the same radius.
 @description
-Define `Metric.closedBall` and `Metric.sphere`, and then show that `M.ball x ε ⊆ M.closedBall x ε`. A containment is proved by introducing a point and a proof that it lies in the first set; `have h : M.dist x y < ε := hy` restates that proof as the inequality it already is, `show` does the same for the goal, and `linarith` closes the gap between `<` and `≤`.
+Define `MetricSpace.closedBall` and `MetricSpace.sphere`, and then show that `M.ball x ε ⊆ M.closedBall x ε`. A containment is proved by introducing a point and a proof that it lies in the first set; `have h : M.dist x y < ε := hy` restates that proof as the inequality it already is, `show` does the same for the goal, and `linarith` closes the gap between `<` and `≤`.
 -/
 
-def Metric.closedBall {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+def MetricSpace.closedBall {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
   {y | M.dist x y ≤ ε}
 
-def Metric.sphere {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+def MetricSpace.sphere {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
   {y | M.dist x y = ε}
 
-theorem Metric.ball_subset_closedBall {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+theorem MetricSpace.ball_subset_closedBall {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) :
     M.ball x ε ⊆ M.closedBall x ε := by
   intro y hy
   have h : M.dist x y < ε := hy
@@ -206,7 +206,7 @@ theorem Metric.ball_subset_closedBall {X : Type u} (M : Metric X) (x : X) (ε : 
   linarith
 
 /-- @spec -/
-example (X : Type) (M : Metric X) (x y : X) (ε : ℝ) :
+example (X : Type) (M : MetricSpace X) (x y : X) (ε : ℝ) :
     (y ∈ M.closedBall x ε ↔ M.dist x y ≤ ε) ∧ (y ∈ M.sphere x ε ↔ M.dist x y = ε) :=
   ⟨Iff.rfl, Iff.rfl⟩
 
@@ -222,7 +222,7 @@ Two balls about the same centre are nested, the one of smaller radius inside the
 @description
 Show that `M.ball x ε ⊆ M.ball x δ` when `ε ≤ δ`. A containment is a function taking a point and a proof of membership to a proof of membership, so the whole proof can be written as `fun _ hy => ...`; `lt_of_lt_of_le` chains a strict inequality with a weak one.
 -/
-theorem Metric.ball_mono {X : Type u} (M : Metric X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
+theorem MetricSpace.ball_mono {X : Type u} (M : MetricSpace X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
     M.ball x ε ⊆ M.ball x δ :=
   fun _ hy => lt_of_lt_of_le hy h
 
@@ -256,13 +256,13 @@ Let `x` and `y` be two points, at distance `M.dist x y` from one another. A poin
 
 One consequence is that the centre of a ball hardly matters. Any ball, about any point, is contained in some ball about any other point; only the radius has to grow.
 @description
-Show that `M.ball y ε ⊆ M.ball x (M.dist x y + ε)`. Introduce a point `z` and its membership, rewrite both that hypothesis and the goal with `M.mem_ball`, and give `linarith` the instance `M.triangle x y z` of the triangle inequality.
+Show that `M.ball y ε ⊆ M.ball x (M.dist x y + ε)`. Introduce a point `z` and its membership, rewrite both that hypothesis and the goal with `M.mem_ball`, and give `linarith` the instance `M.dist_triangle x y z` of the triangle inequality.
 -/
-theorem Metric.ball_subset_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ) :
+theorem MetricSpace.ball_subset_ball {X : Type u} (M : MetricSpace X) (x y : X) (ε : ℝ) :
     M.ball y ε ⊆ M.ball x (M.dist x y + ε) := by
   intro z hz
   rw [M.mem_ball] at hz ⊢
-  have h := M.triangle x y z
+  have h := M.dist_triangle x y z
   linarith
 
 /-!
@@ -283,18 +283,18 @@ A subset `S` of a metric space is *bounded* if some ball contains it: if there a
 
 The statement "there are an `x` and an `ε` such that …" is written in Lean with nested existential quantifiers, and a proof of it is the two witnesses together with a proof of the remaining claim, written `⟨x, ε, h⟩`.
 @description
-Define `Metric.IsBounded`, and then show that a ball is a bounded set. For the second, the ball is contained in itself, which is `subset_rfl`.
+Define `MetricSpace.IsBounded`, and then show that a ball is a bounded set. For the second, the ball is contained in itself, which is `subset_rfl`.
 -/
 
-def Metric.IsBounded {X : Type u} (M : Metric X) (S : Set X) : Prop :=
+def MetricSpace.IsBounded {X : Type u} (M : MetricSpace X) (S : Set X) : Prop :=
   ∃ (x : X) (ε : ℝ), S ⊆ M.ball x ε
 
-theorem Metric.isBounded_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+theorem MetricSpace.isBounded_ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) :
     M.IsBounded (M.ball x ε) :=
   ⟨x, ε, subset_rfl⟩
 
 /-- @spec -/
-example (X : Type) (M : Metric X) (S : Set X) :
+example (X : Type) (M : MetricSpace X) (S : Set X) :
     M.IsBounded S ↔ ∃ (x : X) (ε : ℝ), S ⊆ M.ball x ε := Iff.rfl
 
 /-! @end -/
@@ -309,7 +309,7 @@ Anything inside something bounded is bounded, and by the same ball: if `T ⊆ S`
 @description
 Show that `M.IsBounded T` follows from `M.IsBounded S` and `T ⊆ S`. `obtain ⟨x, ε, hx⟩ := h` takes the hypothesis apart into the centre, the radius and the containment, and the same centre and radius will do.
 -/
-theorem Metric.isBounded_subset {X : Type u} (M : Metric X) (S T : Set X)
+theorem MetricSpace.isBounded_subset {X : Type u} (M : MetricSpace X) (S T : Set X)
     (h : M.IsBounded S) (hTS : T ⊆ S) : M.IsBounded T := by
   obtain ⟨x, ε, hx⟩ := h
   exact ⟨x, ε, fun y hy => hx (hTS hy)⟩
@@ -324,9 +324,9 @@ Two bounded sets need not be held by the same ball, but a single ball can be mad
 
 The restriction to two sets is essential, and the proof shows why: among finitely many radii there is a largest, and among infinitely many there need not be. The union of all the balls about a fixed point is usually the whole space, bounded or not.
 @description
-Show that `M.IsBounded (S ∪ T)`. Take both hypotheses apart, offer `x` as the centre and `max ε (M.dist x y + δ)` as the radius, and use `rintro z (hz | hz)` to split on which of the two sets a point of the union came from. `Metric.ball_mono` with `le_max_left` handles the first case, and the same with `le_max_right` handles the second once `Metric.ball_subset_ball` has moved the centre.
+Show that `M.IsBounded (S ∪ T)`. Take both hypotheses apart, offer `x` as the centre and `max ε (M.dist x y + δ)` as the radius, and use `rintro z (hz | hz)` to split on which of the two sets a point of the union came from. `MetricSpace.ball_mono` with `le_max_left` handles the first case, and the same with `le_max_right` handles the second once `MetricSpace.ball_subset_ball` has moved the centre.
 -/
-theorem Metric.isBounded_union {X : Type u} (M : Metric X) (S T : Set X)
+theorem MetricSpace.isBounded_union {X : Type u} (M : MetricSpace X) (S T : Set X)
     (hS : M.IsBounded S) (hT : M.IsBounded T) : M.IsBounded (S ∪ T) := by
   obtain ⟨x, ε, hx⟩ := hS
   obtain ⟨y, δ, hy⟩ := hT
@@ -364,16 +364,16 @@ Define the structure `Norm V` for a real vector space `V`, with four fields in t
 
 structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
   norm : V → ℝ
-  eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
-  smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
-  triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+  norm_eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
+  norm_smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+  norm_add_le : ∀ v w, norm (v + w) ≤ norm v + norm w
 
 /-- @spec -/
 example (V : Type) [AddCommGroup V] [Module ℝ V] (N : Norm V) (c : ℝ) (v w : V) :
     (N.norm v = 0 ↔ v = 0)
       ∧ N.norm (c • v) = |c| * N.norm v
       ∧ N.norm (v + w) ≤ N.norm v + N.norm w :=
-  ⟨by simp [N.eq_zero], by apply N.smul, by apply N.triangle⟩
+  ⟨by simp [N.norm_eq_zero], by apply N.norm_smul, by apply N.norm_add_le⟩
 
 /-! @end -/
 
@@ -389,15 +389,15 @@ The zero vector has length zero. This is the right-to-left direction of non-dege
 
 A vector and its negative have the same length. The reason is homogeneity: `-v` is `(-1) • v`, so its length is `|-1|` times the length of `v`, and `|-1|` is `1`. Geometrically, turning a vector around does not change how long it is.
 @description
-Prove both. For the first, apply the right-to-left direction of `N.eq_zero` at `0`. For the second, start from the instance `N.smul (-1) v` of homogeneity, rewrite `(-1) • v` as `-v` with `neg_one_smul`, and then clear the factor with `abs_neg`, `abs_one` and `one_mul`.
+Prove both. For the first, apply the right-to-left direction of `N.norm_eq_zero` at `0`. For the second, start from the instance `N.norm_smul (-1) v` of homogeneity, rewrite `(-1) • v` as `-v` with `neg_one_smul`, and then clear the factor with `abs_neg`, `abs_one` and `one_mul`.
 -/
 
 theorem Norm.zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : N.norm 0 = 0 :=
-  N.eq_zero.mpr rfl
+  N.norm_eq_zero.mpr rfl
 
 theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
     N.norm (-v) = N.norm v := by
-  have h := N.smul (-1) v
+  have h := N.norm_smul (-1) v
   rw [neg_one_smul] at h
   rw [h, abs_neg, abs_one, one_mul]
 
@@ -413,11 +413,11 @@ As with a distance, non-negativity was not asked for and does not have to be. Th
 
 This is the same argument as the one for distances, with the detour that returns to its starting point replaced by a vector added to its own negative.
 @description
-Show that `0 ≤ N.norm v`. Begin with `N.triangle v (-v)`, rewrite it with `add_neg_cancel`, `N.zero` and `N.neg`, and finish with `linarith`.
+Show that `0 ≤ N.norm v`. Begin with `N.norm_add_le v (-v)`, rewrite it with `add_neg_cancel`, `N.zero` and `N.neg`, and finish with `linarith`.
 -/
 theorem Norm.nonneg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
     0 ≤ N.norm v := by
-  have h := N.triangle v (-v)
+  have h := N.norm_add_le v (-v)
   rw [add_neg_cancel, N.zero, N.neg] at h
   linarith
 
@@ -455,21 +455,21 @@ Symmetry is the problem above. Non-degeneracy holds because `‖v - w‖` is zer
 
 Note which of the norm's conditions is not used: homogeneity plays no part here. It is what distinguishes the metrics that come from norms from metrics in general, and a metric space need not have any vector space under it at all.
 @description
-Define `Norm.toMetric`, the metric induced by a norm. For the triangle inequality, apply `N.triangle` to `u - v` and `v - w` and rewrite the result with `sub_add_sub_cancel`; for non-degeneracy, rewrite with `N.eq_zero` and then `sub_eq_zero`.
+Define `Norm.toMetricSpace`, the metric induced by a norm. For the triangle inequality, apply `N.norm_add_le` to `u - v` and `v - w` and rewrite the result with `sub_add_sub_cancel`; for non-degeneracy, rewrite with `N.norm_eq_zero` and then `sub_eq_zero`.
 -/
 
-def Norm.toMetric {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : Metric V where
+def Norm.toMetricSpace {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : MetricSpace V where
   dist v w := N.norm (v - w)
-  symm {v w} := N.sub_comm v w
-  triangle u v w := by
-    have h := N.triangle (u - v) (v - w)
+  dist_comm {v w} := N.sub_comm v w
+  dist_triangle u v w := by
+    have h := N.norm_add_le (u - v) (v - w)
     rw [sub_add_sub_cancel] at h
     exact h
-  eq_zero {v w} := by rw [N.eq_zero, sub_eq_zero]
+  dist_eq_zero {v w} := by rw [N.norm_eq_zero, sub_eq_zero]
 
 /-- @spec -/
 example (V : Type) [AddCommGroup V] [Module ℝ V] (N : Norm V) (v w : V) :
-    N.toMetric.dist v w = N.norm (v - w) := rfl
+    N.toMetricSpace.dist v w = N.norm (v - w) := rfl
 
 /-! @end -/
 
@@ -483,11 +483,11 @@ In a normed space the ball about the origin is the set of vectors shorter than i
 
 This is the ball one draws when asking what a norm looks like, and every other ball is a translate of it. The two norms of the next concept are told apart precisely by the shape of this one set.
 @description
-Show that `v ∈ N.toMetric.ball 0 ε` exactly when `N.norm v < ε`. Rewrite with `Metric.mem_ball`, use `show` to restate the distance as the length it is, and rewrite that with `zero_sub` and `N.neg`.
+Show that `v ∈ N.toMetricSpace.ball 0 ε` exactly when `N.norm v < ε`. Rewrite with `MetricSpace.mem_ball`, use `show` to restate the distance as the length it is, and rewrite that with `zero_sub` and `N.neg`.
 -/
 theorem Norm.mem_ball_zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V)
-    {v : V} {ε : ℝ} : v ∈ N.toMetric.ball 0 ε ↔ N.norm v < ε := by
-  rw [Metric.mem_ball]
+    {v : V} {ε : ℝ} : v ∈ N.toMetricSpace.ball 0 ε ↔ N.norm v < ε := by
+  rw [MetricSpace.mem_ball]
   show N.norm (0 - v) < ε ↔ N.norm v < ε
   rw [zero_sub, N.neg]
 
@@ -508,11 +508,11 @@ Define `absNorm`, the absolute value as a norm on `ℝ`, and show that the metri
 
 def absNorm : Norm ℝ where
   norm x := |x|
-  eq_zero {x} := abs_eq_zero
-  smul c x := by rw [smul_eq_mul, abs_mul]
-  triangle x y := abs_add_le x y
+  norm_eq_zero {x} := abs_eq_zero
+  norm_smul c x := by rw [smul_eq_mul, abs_mul]
+  norm_add_le x y := abs_add_le x y
 
-theorem absNorm_toMetric : absNorm.toMetric = line := rfl
+theorem absNorm_toMetricSpace : absNorm.toMetricSpace = line := rfl
 
 /-- @spec -/
 example (x : ℝ) : absNorm.norm x = |x| := rfl
@@ -598,12 +598,12 @@ Define `taxicab`, the norm on `ℝ × ℝ` sending `v` to `|v.1| + |v.2|`. Non-d
 
 def taxicab : Norm (ℝ × ℝ) where
   norm v := |v.1| + |v.2|
-  eq_zero {v} := by rw [abs_add_abs_eq_zero, prod_eq_zero]
-  smul c v := by
+  norm_eq_zero {v} := by rw [abs_add_abs_eq_zero, prod_eq_zero]
+  norm_smul c v := by
     show |c * v.1| + |c * v.2| = |c| * (|v.1| + |v.2|)
     rw [abs_mul, abs_mul]
     ring
-  triangle v w := by
+  norm_add_le v w := by
     show |v.1 + w.1| + |v.2 + w.2| ≤ |v.1| + |v.2| + (|w.1| + |w.2|)
     have h1 := abs_add_le v.1 w.1
     have h2 := abs_add_le v.2 w.2
@@ -671,11 +671,11 @@ Define `supNorm`, the norm on `ℝ × ℝ` sending `v` to `max |v.1| |v.2|`. Non
 
 def supNorm : Norm (ℝ × ℝ) where
   norm v := max |v.1| |v.2|
-  eq_zero {v} := by rw [max_abs_eq_zero, prod_eq_zero]
-  smul c v := by
+  norm_eq_zero {v} := by rw [max_abs_eq_zero, prod_eq_zero]
+  norm_smul c v := by
     show max |c * v.1| |c * v.2| = |c| * max |v.1| |v.2|
     rw [abs_mul, abs_mul, mul_max_of_nonneg _ _ (abs_nonneg c)]
-  triangle v w := by
+  norm_add_le v w := by
     show max |v.1 + w.1| |v.2 + w.2| ≤ max |v.1| |v.2| + max |w.1| |w.2|
     have h1 := max_le_max (abs_add_le v.1 w.1) (abs_add_le v.2 w.2)
     have h2 := max_add_max |v.1| |v.2| |w.1| |w.2|
@@ -734,9 +734,9 @@ On the picture this is the corner of the square poking out beyond the diamond. A
 Show that the two unit balls about the origin are different sets. Assume they are equal, put `(3/4, 3/4)` into the first with `supNorm.mem_ball_zero`, carry it across the assumed equality with `rw`, and contradict it with the same computation for the taxicab norm. In each computation `show` puts the goal in coordinates and `abs_of_nonneg` removes the absolute values, after which `norm_num` settles the arithmetic.
 -/
 theorem unit_balls_differ :
-    supNorm.toMetric.ball (0 : ℝ × ℝ) 1 ≠ taxicab.toMetric.ball (0 : ℝ × ℝ) 1 := by
+    supNorm.toMetricSpace.ball (0 : ℝ × ℝ) 1 ≠ taxicab.toMetricSpace.ball (0 : ℝ × ℝ) 1 := by
   intro h
-  have hin : ((3/4, 3/4) : ℝ × ℝ) ∈ supNorm.toMetric.ball (0 : ℝ × ℝ) 1 := by
+  have hin : ((3/4, 3/4) : ℝ × ℝ) ∈ supNorm.toMetricSpace.ball (0 : ℝ × ℝ) 1 := by
     rw [supNorm.mem_ball_zero]
     show max |(3/4 : ℝ)| |(3/4 : ℝ)| < 1
     rw [max_self, abs_of_nonneg] <;> norm_num
@@ -762,7 +762,7 @@ Prove the two containments. In each, introduce a point and its membership; `have
 -/
 
 theorem ball_taxicab_subset_supNorm (x : ℝ × ℝ) (ε : ℝ) :
-    taxicab.toMetric.ball x ε ⊆ supNorm.toMetric.ball x ε := by
+    taxicab.toMetricSpace.ball x ε ⊆ supNorm.toMetricSpace.ball x ε := by
   intro y hy
   have h : taxicab.norm (x - y) < ε := hy
   have h2 := supNorm_le_taxicab (x - y)
@@ -770,7 +770,7 @@ theorem ball_taxicab_subset_supNorm (x : ℝ × ℝ) (ε : ℝ) :
   linarith
 
 theorem ball_supNorm_subset_taxicab (x : ℝ × ℝ) (ε : ℝ) :
-    supNorm.toMetric.ball x (ε / 2) ⊆ taxicab.toMetric.ball x ε := by
+    supNorm.toMetricSpace.ball x (ε / 2) ⊆ taxicab.toMetricSpace.ball x ε := by
   intro y hy
   have h : supNorm.norm (x - y) < ε / 2 := hy
   have h2 := taxicab_le_two_supNorm (x - y)

@@ -2,40 +2,41 @@ slug: trivial_connected
 kind: example
 title: The Two Extremes
 statement: |-
-  The codiscrete topology has two open sets and no others, so a set both open and closed is already one of the two the definition allows. Nothing is left to check: the hypothesis is the conclusion.
+  The indiscrete topology has two open sets and no others, so a set both open and closed is already one of the two the definition allows. Nothing is left to check: the hypothesis is the conclusion.
 
   The discrete topology is the other extreme. On the two-point set `Bool` the set `{true}` is open, and so is its complement, so `{true}` is both open and closed while being neither empty nor everything. A discrete space with two distinct points is never connected, and this is the smallest witness.
 concepts:
 - connected_examples
 stub: |-
-  theorem codiscrete_isConnected (X : Type u) : (codiscrete X).IsConnected := sorry
+  theorem indiscrete_isPreconnectedSpace (X : Type u) : (indiscrete X).IsPreconnectedSpace := sorry
 
-  theorem discrete_bool_not_isConnected : ¬ (discrete Bool).IsConnected := sorry
+  theorem discrete_bool_not_isPreconnectedSpace : ¬ (discrete Bool).IsPreconnectedSpace := sorry
 reference: |-
-  theorem codiscrete_isConnected (X : Type u) : (codiscrete X).IsConnected :=
+  theorem indiscrete_isPreconnectedSpace (X : Type u) : (indiscrete X).IsPreconnectedSpace :=
     fun _ hS _ => hS
 
-  theorem discrete_bool_not_isConnected : ¬ (discrete Bool).IsConnected := fun h =>
+  theorem discrete_bool_not_isPreconnectedSpace : ¬ (discrete Bool).IsPreconnectedSpace := fun h =>
     singleton_true_not_trivial (h {true} trivial trivial)
 spec: |-
-  example : ∀ (X : Type u), (codiscrete X).IsConnected := _root_.GeneralTopology.codiscrete_isConnected
-  example : ¬ (discrete Bool).IsConnected := _root_.GeneralTopology.discrete_bool_not_isConnected
+  example : ∀ (X : Type u), (indiscrete X).IsPreconnectedSpace := _root_.GeneralTopology.indiscrete_isPreconnectedSpace
+  example : ¬ (discrete Bool).IsPreconnectedSpace := _root_.GeneralTopology.discrete_bool_not_isPreconnectedSpace
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
-  def discrete (X : Type u) : Topology X where
+  def discrete (X : Type u) : TopologicalSpace X where
     IsOpen := fun _ => True
-    univ := trivial
-    inter := fun _ _ => trivial
-    sUnion := fun _ => trivial
+    isOpen_univ := trivial
+    isOpen_inter := fun _ _ => trivial
+    isOpen_sUnion := fun _ => trivial
 
   theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
       (hV : V = ∅ ∨ V = Set.univ) : U ∩ V = ∅ ∨ U ∩ V = Set.univ := by
@@ -55,11 +56,11 @@ preamble: |
       · rfl
       · exact absurd hUF hu
 
-  def codiscrete (X : Type u) : Topology X where
+  def indiscrete (X : Type u) : TopologicalSpace X where
     IsOpen := fun U => U = ∅ ∨ U = Set.univ
-    univ := Or.inr rfl
-    inter := trivial_inter
-    sUnion := trivial_sUnion
+    isOpen_univ := Or.inr rfl
+    isOpen_inter := trivial_inter
+    isOpen_sUnion := trivial_sUnion
 
   theorem singleton_true_not_trivial :
       ¬ (({true} : Set Bool) = ∅ ∨ ({true} : Set Bool) = Set.univ) := by
@@ -70,20 +71,20 @@ preamble: |
     · have h : (false : Bool) ∈ ({true} : Set Bool) := by rw [he]; trivial
       exact Bool.noConfusion h
 
-  def Topology.IsConnected {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsPreconnectedSpace {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ S, T.IsOpen S → T.IsClosed S → S = ∅ ∨ S = Set.univ
 
   end GeneralTopology
   open GeneralTopology
-description: Show `codiscrete_isConnected` and `discrete_bool_not_isConnected`. The first is one of its own hypotheses. For the second, `singleton_true_not_trivial` from the section on homeomorphisms is the fact that `{true}` is neither `∅` nor `Set.univ`, and `trivial` proves whatever the discrete topology asks.
+description: Show `indiscrete_isPreconnectedSpace` and `discrete_bool_not_isPreconnectedSpace`. The first is one of its own hypotheses. For the second, `singleton_true_not_trivial` from the section on homeomorphisms is the fact that `{true}` is neither `∅` nor `Set.univ`, and `trivial` proves whatever the discrete topology asks.
 stub_names:
-- codiscrete_isConnected
-- discrete_bool_not_isConnected
+- indiscrete_isPreconnectedSpace
+- discrete_bool_not_isPreconnectedSpace
 namespace: GeneralTopology
 seq: 163
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Connectedness.lean
   line: 126
   closure_rounds: 1

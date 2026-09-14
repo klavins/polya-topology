@@ -8,10 +8,10 @@ statement: |-
 concepts:
 - bounded_set
 stub: |-
-  theorem Metric.isBounded_union {X : Type u} (M : Metric X) (S T : Set X)
+  theorem MetricSpace.isBounded_union {X : Type u} (M : MetricSpace X) (S T : Set X)
       (hS : M.IsBounded S) (hT : M.IsBounded T) : M.IsBounded (S ∪ T) := sorry
 reference: |-
-  theorem Metric.isBounded_union {X : Type u} (M : Metric X) (S T : Set X)
+  theorem MetricSpace.isBounded_union {X : Type u} (M : MetricSpace X) (S T : Set X)
       (hS : M.IsBounded S) (hT : M.IsBounded T) : M.IsBounded (S ∪ T) := by
     obtain ⟨x, ε, hx⟩ := hS
     obtain ⟨y, δ, hy⟩ := hT
@@ -20,47 +20,47 @@ reference: |-
     · exact M.ball_mono (le_max_left _ _) (hx hz)
     · exact M.ball_mono (le_max_right _ _) (M.ball_subset_ball x y δ (hy hz))
 spec: |-
-  example : ∀ {X : Type u} (M : Metric X) (S T : Set X)
-      (hS : M.IsBounded S) (hT : M.IsBounded T), M.IsBounded (S ∪ T) := _root_.GeneralTopology.Metric.isBounded_union
+  example : ∀ {X : Type u} (M : MetricSpace X) (S T : Set X)
+      (hS : M.IsBounded S) (hT : M.IsBounded T), M.IsBounded (S ∪ T) := _root_.GeneralTopology.MetricSpace.isBounded_union
 preamble: |
   universe u
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+  def MetricSpace.ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+  theorem MetricSpace.mem_ball {X : Type u} (M : MetricSpace X) {x y : X} {ε : ℝ} :
       y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
-  theorem Metric.ball_mono {X : Type u} (M : Metric X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
+  theorem MetricSpace.ball_mono {X : Type u} (M : MetricSpace X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
       M.ball x ε ⊆ M.ball x δ :=
     fun _ hy => lt_of_lt_of_le hy h
 
-  theorem Metric.ball_subset_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ) :
+  theorem MetricSpace.ball_subset_ball {X : Type u} (M : MetricSpace X) (x y : X) (ε : ℝ) :
       M.ball y ε ⊆ M.ball x (M.dist x y + ε) := by
     intro z hz
     rw [M.mem_ball] at hz ⊢
-    have h := M.triangle x y z
+    have h := M.dist_triangle x y z
     linarith
 
-  def Metric.IsBounded {X : Type u} (M : Metric X) (S : Set X) : Prop :=
+  def MetricSpace.IsBounded {X : Type u} (M : MetricSpace X) (S : Set X) : Prop :=
     ∃ (x : X) (ε : ℝ), S ⊆ M.ball x ε
 
   end GeneralTopology
   open GeneralTopology
-description: Show that `M.IsBounded (S ∪ T)`. Take both hypotheses apart, offer `x` as the centre and `max ε (M.dist x y + δ)` as the radius, and use `rintro z (hz | hz)` to split on which of the two sets a point of the union came from. `Metric.ball_mono` with `le_max_left` handles the first case, and the same with `le_max_right` handles the second once `Metric.ball_subset_ball` has moved the centre.
+description: Show that `M.IsBounded (S ∪ T)`. Take both hypotheses apart, offer `x` as the centre and `max ε (M.dist x y + δ)` as the radius, and use `rintro z (hz | hz)` to split on which of the two sets a point of the union came from. `MetricSpace.ball_mono` with `le_max_left` handles the first case, and the same with `le_max_right` handles the second once `MetricSpace.ball_subset_ball` has moved the centre.
 stub_names:
-- Metric.isBounded_union
+- MetricSpace.isBounded_union
 namespace: GeneralTopology
 seq: 12
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 318
   closure_rounds: 1

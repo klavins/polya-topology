@@ -29,10 +29,11 @@ The whole space is closed because the empty set is open. The dual is as short: t
 @description
 Show that `∅` is closed in any topology. `show T.IsOpen _` names the goal for what it is, `Set.compl_empty` rewrites the complement, and the whole space is open.
 -/
-theorem Topology.isClosed_empty {X : Type u} (T : Topology X) : T.IsClosed (∅ : Set X) := by
+theorem TopologicalSpace.isClosed_empty {X : Type u} (T : TopologicalSpace X) : T.IsClosed
+    (∅ : Set X) := by
   show T.IsOpen _
   rw [Set.compl_empty]
-  exact T.univ
+  exact T.isOpen_univ
 
 /--
 @problem is_closed_intersection
@@ -46,11 +47,11 @@ Complementing an intersection gives the union of the complements. Mathlib writes
 @description
 Show that `⋂₀ F` is closed when every member of `F` is. `show T.IsOpen _`, rewrite with `Set.compl_sInter`, and apply the union condition; its hypothesis takes a member of the image, which `rintro U ⟨C, hCF, rfl⟩` breaks into the set `C` it came from.
 -/
-theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+theorem TopologicalSpace.isClosed_sInter {X : Type u} (T : TopologicalSpace X) {F : Set (Set X)}
     (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
   show T.IsOpen _
   rw [Set.compl_sInter]
-  apply T.sUnion
+  apply T.isOpen_sUnion
   rintro U ⟨C, hCF, rfl⟩
   exact h C hCF
 
@@ -72,14 +73,14 @@ Let `S` be any subset of a topological space. Some closed sets contain `S` — t
 
 That is the *closure* of `S`, written `T.closure S`: the smallest closed set containing `S`. The collection to intersect is a `Set (Set X)`, its intersection is `⋂₀`, and membership in `⋂₀ F` unfolds to `∀ C ∈ F, x ∈ C`.
 @description
-Define `Topology.closure`, which takes a topology `T` on `X` and a set `S` and returns the intersection of every closed set containing `S`. The collection to intersect is `{C | T.IsClosed C ∧ S ⊆ C}`.
+Define `TopologicalSpace.closure`, which takes a topology `T` on `X` and a set `S` and returns the intersection of every closed set containing `S`. The collection to intersect is `{C | T.IsClosed C ∧ S ⊆ C}`.
 -/
 
-def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+def TopologicalSpace.closure {X : Type u} (T : TopologicalSpace X) (S : Set X) : Set X :=
   ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (S : Set X) (x : X) :
+example (X : Type) (T : TopologicalSpace X) (S : Set X) (x : X) :
     x ∈ T.closure S ↔ ∀ C, T.IsClosed C ∧ S ⊆ C → x ∈ C := Iff.rfl
 
 /-! @end -/
@@ -99,15 +100,16 @@ The third is the one that does the work later. Every fact about a closure below 
 Prove the three. For each, a membership in `⋂₀` is a function: `hx C hC` is the proof that `x` lies in `C`, given `hC` that `C` belongs to the collection, and `hC.1` and `hC.2` are its two halves.
 -/
 
-theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+theorem TopologicalSpace.subset_closure {X : Type u} (T : TopologicalSpace X) (S : Set X)
+    : S ⊆ T.closure S := by
   intro x hx C hC
   exact hC.2 hx
 
-theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+theorem TopologicalSpace.isClosed_closure {X : Type u} (T : TopologicalSpace X) (S : Set X) :
     T.IsClosed (T.closure S) :=
   T.isClosed_sInter (fun _ hC => hC.1)
 
-theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+theorem TopologicalSpace.closure_min {X : Type u} (T : TopologicalSpace X) {S C : Set X}
     (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
   intro x hx
   exact hx C ⟨hC, hSC⟩
@@ -126,7 +128,7 @@ One direction: if `S` is closed then `S` is a closed set containing `S`, so the 
 @description
 Prove that `T.IsClosed S` exactly when `T.closure S = S`. `Set.Subset.antisymm` builds the equality from the two containments, and `subset_rfl` says a set contains itself; for the converse, rewrite backwards along the hypothesis.
 -/
-theorem Topology.isClosed_iff_closure_eq {X : Type u} (T : Topology X) (S : Set X) :
+theorem TopologicalSpace.isClosed_iff_closure_eq {X : Type u} (T : TopologicalSpace X) (S : Set X) :
     T.IsClosed S ↔ T.closure S = S := by
   constructor
   · intro hS
@@ -150,11 +152,12 @@ Two properties that any operation deserving the name of a closure has.
 Prove the two. Both are one application of a fact already proved: the first of `T.closure_min`, with `Set.Subset.trans` — written `h.trans` — to see that the larger closure contains `S`; the second of the equivalence above, in its left-to-right direction.
 -/
 
-theorem Topology.closure_mono {X : Type u} (T : Topology X) {S S' : Set X} (h : S ⊆ S') :
+theorem TopologicalSpace.closure_mono {X : Type u} (T : TopologicalSpace X) {S S' : Set X}
+    (h : S ⊆ S') :
     T.closure S ⊆ T.closure S' :=
   T.closure_min (T.isClosed_closure S') (h.trans (T.subset_closure S'))
 
-theorem Topology.closure_closure {X : Type u} (T : Topology X) (S : Set X) :
+theorem TopologicalSpace.closure_closure {X : Type u} (T : TopologicalSpace X) (S : Set X) :
     T.closure (T.closure S) = T.closure S :=
   (T.isClosed_iff_closure_eq (T.closure S)).mp (T.isClosed_closure S)
 
@@ -174,7 +177,7 @@ Two is essential. For infinitely many sets the union of the closures need not be
 @description
 Prove that `T.closure (S ∪ S') = T.closure S ∪ T.closure S'`. Split with `Set.Subset.antisymm`; `Set.union_subset_union` and `Set.union_subset` combine two containments into one, and `Set.subset_union_left` and `Set.subset_union_right` put a set inside a union.
 -/
-theorem Topology.closure_union {X : Type u} (T : Topology X) (S S' : Set X) :
+theorem TopologicalSpace.closure_union {X : Type u} (T : TopologicalSpace X) (S S' : Set X) :
     T.closure (S ∪ S') = T.closure S ∪ T.closure S' := by
   apply Set.Subset.antisymm
   · apply T.closure_min (T.isClosed_union (T.isClosed_closure S) (T.isClosed_closure S'))
@@ -204,7 +207,7 @@ Conversely, suppose `x` escapes some closed `C` containing `S`. Then `Cᶜ` is o
 @description
 Prove that `x ∈ T.closure S` exactly when every neighbourhood `N` of `x` meets `S` — written `(N ∩ S).Nonempty`, a point in both. Each direction assumes the opposite of what it wants and derives `False`, which is what `by_contra` sets up.
 -/
-theorem Topology.mem_closure_iff {X : Type u} (T : Topology X) {S : Set X} {x : X} :
+theorem TopologicalSpace.mem_closure_iff {X : Type u} (T : TopologicalSpace X) {S : Set X} {x : X} :
     x ∈ T.closure S ↔ ∀ N, T.IsNbhd x N → (N ∩ S).Nonempty := by
   constructor
   · rintro hx N ⟨U, hU, hxU, hUN⟩
@@ -231,15 +234,15 @@ In a metric space the neighbourhoods of `x` are exactly the sets holding a ball 
 
 One direction is the previous problem applied to a ball, which is a neighbourhood of its centre because a ball is open and holds its centre. The other takes a neighbourhood, extracts from its open set a ball about `x` inside it, and finds the point of `S` there.
 @description
-Prove that `x ∈ M.toTopology.closure S` exactly when `(M.ball x ε ∩ S).Nonempty` for every `ε > 0`. Begin by rewriting with the previous problem; `M.toTopology.nbhd_of_isOpen`, `M.isOpenSet_ball` and `M.mem_ball_self` supply the neighbourhood, and openness of the neighbourhood's open set supplies the ball.
+Prove that `x ∈ M.toTopologicalSpace.closure S` exactly when `(M.ball x ε ∩ S).Nonempty` for every `ε > 0`. Begin by rewriting with the previous problem; `M.toTopologicalSpace.nbhd_of_isOpen`, `M.isOpenSet_ball` and `M.mem_ball_self` supply the neighbourhood, and openness of the neighbourhood's open set supplies the ball.
 -/
-theorem Metric.mem_closure_iff {X : Type u} (M : Metric X) {S : Set X} {x : X} :
-    x ∈ M.toTopology.closure S ↔ ∀ ε > 0, (M.ball x ε ∩ S).Nonempty := by
-  rw [M.toTopology.mem_closure_iff]
+theorem MetricSpace.mem_closure_iff {X : Type u} (M : MetricSpace X) {S : Set X} {x : X} :
+    x ∈ M.toTopologicalSpace.closure S ↔ ∀ ε > 0, (M.ball x ε ∩ S).Nonempty := by
+  rw [M.toTopologicalSpace.mem_closure_iff]
   constructor
   · intro h ε hε
-    have hN : M.toTopology.IsNbhd x (M.ball x ε) :=
-      M.toTopology.nbhd_of_isOpen (M.isOpenSet_ball x ε) (M.mem_ball_self x ε hε)
+    have hN : M.toTopologicalSpace.IsNbhd x (M.ball x ε) :=
+      M.toTopologicalSpace.nbhd_of_isOpen (M.isOpenSet_ball x ε) (M.mem_ball_self x ε hε)
     exact h (M.ball x ε) hN
   · rintro h N ⟨U, hU, hxU, hUN⟩
     obtain ⟨ε, hε, hball⟩ := hU x hxU
@@ -264,14 +267,14 @@ The closure was built by intersecting from outside. The interior is built by uni
 
 That is the *interior* of `S`, written `T.interior S`. Membership in `⋃₀ F` unfolds to `∃ U, U ∈ F ∧ x ∈ U`.
 @description
-Define `Topology.interior`, which takes a topology `T` on `X` and a set `S` and returns the union of every open set contained in `S`. The collection to unite is `{U | T.IsOpen U ∧ U ⊆ S}`.
+Define `TopologicalSpace.interior`, which takes a topology `T` on `X` and a set `S` and returns the union of every open set contained in `S`. The collection to unite is `{U | T.IsOpen U ∧ U ⊆ S}`.
 -/
 
-def Topology.interior {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+def TopologicalSpace.interior {X : Type u} (T : TopologicalSpace X) (S : Set X) : Set X :=
   ⋃₀ {U | T.IsOpen U ∧ U ⊆ S}
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (S : Set X) (x : X) :
+example (X : Type) (T : TopologicalSpace X) (S : Set X) (x : X) :
     x ∈ T.interior S ↔ ∃ U, (T.IsOpen U ∧ U ⊆ S) ∧ x ∈ U := Iff.rfl
 
 /-! @end -/
@@ -289,16 +292,16 @@ The interior is open, by the union condition applied to a collection whose membe
 Prove the three. A membership in `⋃₀` is a triple: the set it came from, the proof that set belongs to the collection, and the proof the point lies in it. `rintro x ⟨U, ⟨_, hUS⟩, hxU⟩` takes one apart, and an anonymous constructor builds one.
 -/
 
-theorem Topology.isOpen_interior {X : Type u} (T : Topology X) (S : Set X) :
+theorem TopologicalSpace.isOpen_interior {X : Type u} (T : TopologicalSpace X) (S : Set X) :
     T.IsOpen (T.interior S) :=
-  T.sUnion (fun _ hU => hU.1)
+  T.isOpen_sUnion (fun _ hU => hU.1)
 
-theorem Topology.interior_subset {X : Type u} (T : Topology X) (S : Set X) :
+theorem TopologicalSpace.interior_subset {X : Type u} (T : TopologicalSpace X) (S : Set X) :
     T.interior S ⊆ S := by
   rintro x ⟨U, ⟨_, hUS⟩, hxU⟩
   exact hUS hxU
 
-theorem Topology.interior_max {X : Type u} (T : Topology X) {U S : Set X}
+theorem TopologicalSpace.interior_max {X : Type u} (T : TopologicalSpace X) {U S : Set X}
     (hU : T.IsOpen U) (hUS : U ⊆ S) : U ⊆ T.interior S :=
   fun _ hx => ⟨U, ⟨hU, hUS⟩, hx⟩
 
@@ -316,7 +319,7 @@ The converse is the easier half: if `S` equals its interior then `S` is open, th
 @description
 Prove that `T.IsOpen S` exactly when `T.interior S = S`. For the forward direction, `T.isOpen_iff_nbhd` turns openness into the hypothesis that `T.union_of_opens_inside` wants, and the equation it returns is this one reversed.
 -/
-theorem Topology.isOpen_iff_interior_eq {X : Type u} (T : Topology X) (S : Set X) :
+theorem TopologicalSpace.isOpen_iff_interior_eq {X : Type u} (T : TopologicalSpace X) (S : Set X) :
     T.IsOpen S ↔ T.interior S = S := by
   constructor
   · intro hS
@@ -337,7 +340,7 @@ Each containment is one of the two universal properties. The complement of the c
 @description
 Prove that `(T.closure S)ᶜ = T.interior Sᶜ`. `Set.subset_compl_comm` moves a complement from one side of a containment to the other, `Set.compl_subset_compl` reverses one under complementing, and `compl_compl` cancels two.
 -/
-theorem Topology.compl_closure {X : Type u} (T : Topology X) (S : Set X) :
+theorem TopologicalSpace.compl_closure {X : Type u} (T : TopologicalSpace X) (S : Set X) :
     (T.closure S)ᶜ = T.interior Sᶜ := by
   apply Set.Subset.antisymm
   · apply T.interior_max (T.isClosed_closure S)
@@ -356,19 +359,21 @@ theorem Topology.compl_closure {X : Type u} (T : Topology X) (S : Set X) :
 @concept interior_boundary
 
 @preamble
-The interior of `S` is inside `S`, and `S` is inside its closure, so the three sit in a line. What the closure has and the interior has not is the *boundary* of `S`, written `T.boundary S`: the points approached by `S` and by its complement alike, with room around them in neither.
+The interior of `S` is inside `S`, and `S` is inside its closure, so the three sit in a line. What the closure has and the interior has not is the *boundary* of `S`, written `T.frontier S`: the points approached by `S` and by its complement alike, with room around them in neither.
 
 On the line, the boundary of an interval is its two endpoints, whether or not the interval contains them.
+
+The name in Lean is `frontier`, not `boundary`, because Mathlib reserves the second word for the boundary of a manifold; we follow it.
 @description
-Define `Topology.boundary` as the closure of `S` with the interior taken away. Lean writes the difference of two sets with a backslash, `A \ B`, and a membership in it is a pair: in `A`, and not in `B`.
+Define `TopologicalSpace.frontier` as the closure of `S` with the interior taken away. Lean writes the difference of two sets with a backslash, `A \ B`, and a membership in it is a pair: in `A`, and not in `B`.
 -/
 
-def Topology.boundary {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+def TopologicalSpace.frontier {X : Type u} (T : TopologicalSpace X) (S : Set X) : Set X :=
   T.closure S \ T.interior S
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (S : Set X) (x : X) :
-    x ∈ T.boundary S ↔ (x ∈ T.closure S ∧ x ∉ T.interior S) := Iff.rfl
+example (X : Type) (T : TopologicalSpace X) (S : Set X) (x : X) :
+    x ∈ T.frontier S ↔ (x ∈ T.closure S ∧ x ∉ T.interior S) := Iff.rfl
 
 /-! @end -/
 
@@ -384,11 +389,11 @@ The converse is the same sentence read backwards: if `S` is both open and closed
 
 The sets that are both, in any space, are the ones that split it: the empty set and the whole space always, and more exactly when the space falls apart.
 @description
-Prove that `T.boundary S = ∅` exactly when `S` is open and closed. `Set.sdiff_eq_empty` turns an empty difference into a containment, after a `have` restates the boundary as the difference it is; the two equivalences proved above then convert between openness and the two equalities.
+Prove that `T.frontier S = ∅` exactly when `S` is open and closed. `Set.sdiff_eq_empty` turns an empty difference into a containment, after a `have` restates the boundary as the difference it is; the two equivalences proved above then convert between openness and the two equalities.
 -/
-theorem Topology.boundary_eq_empty_iff {X : Type u} (T : Topology X) (S : Set X) :
-    T.boundary S = ∅ ↔ T.IsOpen S ∧ T.IsClosed S := by
-  have hb : T.boundary S = T.closure S \ T.interior S := rfl
+theorem TopologicalSpace.frontier_eq_empty_iff {X : Type u} (T : TopologicalSpace X) (S : Set X) :
+    T.frontier S = ∅ ↔ T.IsOpen S ∧ T.IsClosed S := by
+  have hb : T.frontier S = T.closure S \ T.interior S := rfl
   rw [hb, Set.sdiff_eq_empty]
   constructor
   · intro h
@@ -418,14 +423,15 @@ A subset `S` is *dense* when closing it gives everything: `T.closure S = Set.uni
 
 A dense set may be very much smaller than the space it is dense in, which is what makes the notion useful. The space itself is dense in itself, and so is anything the closure drags out to everything.
 @description
-Define `Topology.Dense`, which says of a topology `T` and a set `S` that the closure of `S` is `Set.univ`. It returns a `Prop`, since it is a property of `S` and not a set.
+Define `TopologicalSpace.Dense`, which says of a topology `T` and a set `S` that the closure of `S` is `Set.univ`. It returns a `Prop`, since it is a property of `S` and not a set.
 -/
 
-def Topology.Dense {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+def TopologicalSpace.Dense {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
   T.closure S = Set.univ
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (S : Set X) : T.Dense S ↔ T.closure S = Set.univ := Iff.rfl
+example (X : Type) (T : TopologicalSpace X) (S : Set X) : T.Dense S ↔ T.closure S = Set.univ
+    := Iff.rfl
 
 /-! @end -/
 
@@ -443,7 +449,7 @@ Backwards: to put an arbitrary `x` in the closure, take any neighbourhood `N` of
 @description
 Prove that `T.Dense S` exactly when `(U ∩ S).Nonempty` for every open `U` that is `U.Nonempty`. `show` restates a `Dense` goal as the equation it abbreviates, `Set.eq_univ_of_forall` proves a set is everything one point at a time, and `T.mem_closure_iff` is the characterisation to use in both directions.
 -/
-theorem Topology.dense_iff {X : Type u} (T : Topology X) (S : Set X) :
+theorem TopologicalSpace.dense_iff {X : Type u} (T : TopologicalSpace X) (S : Set X) :
     T.Dense S ↔ ∀ U, T.IsOpen U → U.Nonempty → (U ∩ S).Nonempty := by
   constructor
   · rintro hd U hU ⟨x, hxU⟩
@@ -472,14 +478,14 @@ Let `x` be real and `ε > 0`. Applying it to `x - ε < x + ε` gives a rational 
 
 The set of rationals inside the reals is `rationals`, the real numbers of the form `(q : ℝ)`.
 @description
-Show that `rationals` is dense in `line.toTopology`. Restate the goal with `show`, prove it a point at a time with `Set.eq_univ_of_forall`, and apply `line.mem_closure_iff` to reduce it to the balls. `abs_sub_lt_iff` splits an absolute value into the two inequalities `linarith` wants.
+Show that `rationals` is dense in `line.toTopologicalSpace`. Restate the goal with `show`, prove it a point at a time with `Set.eq_univ_of_forall`, and apply `line.mem_closure_iff` to reduce it to the balls. `abs_sub_lt_iff` splits an absolute value into the two inequalities `linarith` wants.
 -/
 
 /-- @given -/
 def rationals : Set ℝ := {x | ∃ q : ℚ, (q : ℝ) = x}
 
-theorem rationals_dense : line.toTopology.Dense rationals := by
-  show line.toTopology.closure rationals = Set.univ
+theorem rationals_dense : line.toTopologicalSpace.Dense rationals := by
+  show line.toTopologicalSpace.closure rationals = Set.univ
   apply Set.eq_univ_of_forall
   intro x
   apply line.mem_closure_iff.mpr

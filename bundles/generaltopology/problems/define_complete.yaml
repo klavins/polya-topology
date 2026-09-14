@@ -9,40 +9,40 @@ statement: |-
   Completeness is a property of the metric and not of the topology it induces. Two metrics may call exactly the same sets open while one of them is complete and the other is not.
 concepts:
 - cauchy_complete
-stub: 'def Metric.IsComplete {X : Type u} (M : Metric X) : Prop := sorry'
+stub: 'def MetricSpace.IsCompleteSpace {X : Type u} (M : MetricSpace X) : Prop := sorry'
 reference: |-
-  def Metric.IsComplete {X : Type u} (M : Metric X) : Prop :=
-    ∀ x : ℕ → X, M.IsCauchy x → ∃ a, M.ConvergesTo x a
+  def MetricSpace.IsCompleteSpace {X : Type u} (M : MetricSpace X) : Prop :=
+    ∀ x : ℕ → X, M.CauchySeq x → ∃ a, M.ConvergesTo x a
 spec: |-
-  example {X : Type u} (M : Metric X) : _root_.GeneralTopology.Metric.IsComplete M ↔ (∀ x : ℕ → X, M.IsCauchy x → ∃ a, M.ConvergesTo x a) := by unfold _root_.GeneralTopology.Metric.IsComplete; first | exact Iff.rfl | grind
-  example (X : Type) (M : Metric X) :
-      M.IsComplete ↔ ∀ x : ℕ → X, M.IsCauchy x → ∃ a, M.ConvergesTo x a := Iff.rfl
+  example {X : Type u} (M : MetricSpace X) : _root_.GeneralTopology.MetricSpace.IsCompleteSpace M ↔ (∀ x : ℕ → X, M.CauchySeq x → ∃ a, M.ConvergesTo x a) := by unfold _root_.GeneralTopology.MetricSpace.IsCompleteSpace; first | exact Iff.rfl | grind
+  example (X : Type) (M : MetricSpace X) :
+      M.IsCompleteSpace ↔ ∀ x : ℕ → X, M.CauchySeq x → ∃ a, M.ConvergesTo x a := Iff.rfl
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+  def MetricSpace.ConvergesTo {X : Type u} (M : MetricSpace X) (x : ℕ → X) (a : X) : Prop :=
     ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
 
-  def Metric.IsCauchy {X : Type u} (M : Metric X) (x : ℕ → X) : Prop :=
+  def MetricSpace.CauchySeq {X : Type u} (M : MetricSpace X) (x : ℕ → X) : Prop :=
     ∀ ε > 0, ∃ k : ℕ, ∀ m ≥ k, ∀ n ≥ k, M.dist (x m) (x n) < ε
 
   end GeneralTopology
   open GeneralTopology
-description: 'Define `Metric.IsComplete`, taking a metric `M` on `X`: for every sequence `x : ℕ → X` that is Cauchy there is a point `a` with `M.ConvergesTo x a`.'
+description: 'Define `MetricSpace.IsCompleteSpace`, taking a metric `M` on `X`: for every sequence `x : ℕ → X` that is Cauchy there is a point `a` with `M.ConvergesTo x a`.'
 stub_names:
-- Metric.IsComplete
+- MetricSpace.IsCompleteSpace
 namespace: GeneralTopology
 seq: 194
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Sequences.lean
-  line: 450
+  line: 454
   closure_rounds: 1
   check_kind: definition

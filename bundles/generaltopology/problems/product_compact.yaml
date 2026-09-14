@@ -10,58 +10,64 @@ statement: |-
 concepts:
 - tube_lemma
 stub: |-
-  theorem Topology.isCompactSet_prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      {A : Set X} {B : Set Y} (hA : T.IsCompactSet A) (hB : T'.IsCompactSet B) :
-      (T.prod T').IsCompactSet (A ×ˢ B) := sorry
+  theorem TopologicalSpace.isCompact_prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      {A : Set X} {B : Set Y} (hA : T.IsCompact A) (hB : T'.IsCompact B) :
+      (T.prod T').IsCompact (A ×ˢ B) := sorry
 
-  theorem Topology.isCompact_prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      (hX : T.IsCompact) (hY : T'.IsCompact) : (T.prod T').IsCompact := sorry
+  theorem TopologicalSpace.isCompactSpace_prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      (hX : T.IsCompactSpace) (hY : T'.IsCompactSpace) : (T.prod T').IsCompactSpace := sorry
 reference: |-
-  theorem Topology.isCompactSet_prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      {A : Set X} {B : Set Y} (hA : T.IsCompactSet A) (hB : T'.IsCompactSet B) :
-      (T.prod T').IsCompactSet (A ×ˢ B) := by
+  theorem TopologicalSpace.isCompact_prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      {A : Set X} {B : Set Y} (hA : T.IsCompact A) (hB : T'.IsCompact B) :
+      (T.prod T').IsCompact (A ×ˢ B) := by
     intro F hFo hFcov
     obtain ⟨G, hGF, hGfin, hGcov⟩ :=
       hA {U | T.IsOpen U ∧ ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H} (fun U hU => hU.1) (fun x hx => by
-        obtain ⟨H, hHF, hHfin, hHcov⟩ := Topology.isCompactSet_slice T T' hB x F hFo
+        obtain ⟨H, hHF, hHfin, hHcov⟩ := TopologicalSpace.isCompact_slice T T' hB x F hFo
           (fun p hp => hFcov ⟨by rw [show p.1 = x from hp.1]; exact hx, hp.2⟩)
-        obtain ⟨U, hUo, hxU, hUsub⟩ := Topology.tube_lemma T T' hB
-          ((T.prod T').sUnion (fun V hV => hFo V (hHF hV))) hHcov
+        obtain ⟨U, hUo, hxU, hUsub⟩ := TopologicalSpace.tube_lemma T T' hB
+          ((T.prod T').isOpen_sUnion (fun V hV => hFo V (hHF hV))) hHcov
         exact ⟨U, ⟨hUo, H, hHF, hHfin, hUsub⟩, hxU⟩)
     obtain ⟨H, hHF, hHfin, hHsub⟩ :=
-      Topology.exists_finite_subcover_sUnion hGfin (fun U hU => (hGF hU).2)
+      TopologicalSpace.exists_finite_subcover hGfin (fun U hU => (hGF hU).2)
     exact ⟨H, hHF, hHfin, fun p hp => hHsub ⟨hGcov hp.1, hp.2⟩⟩
 
-  theorem Topology.isCompact_prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      (hX : T.IsCompact) (hY : T'.IsCompact) : (T.prod T').IsCompact := by
-    have h := Topology.isCompactSet_prod T T' hX hY
+  theorem TopologicalSpace.isCompactSpace_prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      (hX : T.IsCompactSpace) (hY : T'.IsCompactSpace) : (T.prod T').IsCompactSpace := by
+    have h := TopologicalSpace.isCompact_prod T T' hX hY
     rwa [Set.univ_prod_univ] at h
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      {A : Set X} {B : Set Y} (hA : T.IsCompactSet A) (hB : T'.IsCompactSet B), (T.prod T').IsCompactSet (A ×ˢ B) := _root_.GeneralTopology.Topology.isCompactSet_prod
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      (hX : T.IsCompact) (hY : T'.IsCompact), (T.prod T').IsCompact := _root_.GeneralTopology.Topology.isCompact_prod
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      {A : Set X} {B : Set Y} (hA : T.IsCompact A) (hB : T'.IsCompact B), (T.prod T').IsCompact (A ×ˢ B) := _root_.GeneralTopology.TopologicalSpace.isCompact_prod
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      (hX : T.IsCompactSpace) (hY : T'.IsCompactSpace), (T.prod T').IsCompactSpace := _root_.GeneralTopology.TopologicalSpace.isCompactSpace_prod
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  theorem Topology.empty {X : Type u} (T : Topology X) : T.IsOpen (∅ : Set X) := by
-    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.sUnion (fun _ hU => hU.elim)
+  theorem TopologicalSpace.empty {X : Type u} (T : TopologicalSpace X) : T.IsOpen (∅ : Set X) := by
+    have h : T.IsOpen (⋃₀ (∅ : Set (Set X))) := T.isOpen_sUnion (fun _ hU => hU.elim)
     rwa [Set.sUnion_empty] at h
 
-  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+  def TopologicalSpace.IsNbhd {X : Type u} (T : TopologicalSpace X) (x : X) (N : Set X) : Prop :=
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
 
-  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+  theorem TopologicalSpace.nbhd_of_isOpen {X : Type u} (T : TopologicalSpace X) {U : Set X}
       (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
     ⟨U, hU, hx, subset_rfl⟩
 
-  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+  theorem TopologicalSpace.union_of_opens_inside {X : Type u} (T : TopologicalSpace X) (U : Set X)
       (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
     apply Set.Subset.antisymm
     · intro x hx
@@ -70,74 +76,84 @@ preamble: |
     · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
       exact hVU hxV
 
-  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+  theorem TopologicalSpace.isOpen_iff_nbhd {X : Type u} (T : TopologicalSpace X) (U : Set X) :
       T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
     constructor
     · intro hU x hx
       exact T.nbhd_of_isOpen hU hx
     · intro h
       rw [T.union_of_opens_inside U h]
-      exact T.sUnion (fun V hV => hV.1)
+      exact T.isOpen_sUnion (fun V hV => hV.1)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := by
+  theorem TopologicalSpace.continuous_id {X : Type u} (T : TopologicalSpace X) : T.Continuous T id
+      := by
     intro U hU
     rw [Set.preimage_id]
     exact hU
 
-  theorem Topology.continuous_const {X : Type u} {Y : Type v} (T : Topology X)
-      (T' : Topology Y) (y : Y) : T.Continuous T' (fun _ => y) := by
+  theorem TopologicalSpace.continuous_const {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (y : Y) : T.Continuous T' (fun _ => y) := by
     intro U _
     by_cases hy : y ∈ U
     · rw [show (fun _ => y) ⁻¹' U = (Set.univ : Set X) from Set.eq_univ_of_forall (fun _ => hy)]
-      exact T.univ
+      exact T.isOpen_univ
     · rw [show (fun _ => y) ⁻¹' U = (∅ : Set X) from Set.eq_empty_of_forall_notMem (fun _ => hy)]
       exact T.empty
 
-  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X × Y) where
+  def TopologicalSpace.prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X × Y) where
     IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
-    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
-    inter := by
+    isOpen_univ := fun _ _ =>
+      ⟨Set.univ, Set.univ, T.isOpen_univ, T'.isOpen_univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    isOpen_inter := by
       rintro W W' hW hW' p hp
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
       obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
-      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+      refine ⟨U ∩ U', V ∩ V', T.isOpen_inter hU hU', T'.isOpen_inter hV hV',
         ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
       rintro q ⟨hq1, hq2⟩
       exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
-    sUnion := by
+    isOpen_sUnion := by
       rintro F h p ⟨W, hWF, hpW⟩
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
       exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
 
-  theorem Topology.continuous_prod_mk {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-      {T' : Topology Y} (S : Topology Z) {f : Z → X} {g : Z → Y} (hf : S.Continuous T f)
+  theorem TopologicalSpace.continuous_prod_mk {X : Type u} {Y : Type v} {Z : Type w}
+      {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} (S : TopologicalSpace Z) {f : Z → X} {g : Z → Y}
+      (hf : S.Continuous T f)
       (hg : S.Continuous T' g) : S.Continuous (T.prod T') (fun z => (f z, g z)) := by
     intro W hW
-    rw [Topology.isOpen_iff_nbhd]
+    rw [TopologicalSpace.isOpen_iff_nbhd]
     intro z hz
     obtain ⟨U, V, hU, hV, hzUV, hsub⟩ := hW (f z, g z) hz
-    refine ⟨f ⁻¹' U ∩ g ⁻¹' V, S.inter (hf U hU) (hg V hV), ⟨hzUV.1, hzUV.2⟩, ?_⟩
+    refine ⟨f ⁻¹' U ∩ g ⁻¹' V, S.isOpen_inter (hf U hU) (hg V hV), ⟨hzUV.1, hzUV.2⟩, ?_⟩
     intro w hw
     exact hsub ⟨hw.1, hw.2⟩
 
-  theorem Topology.continuous_mk_right {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  theorem TopologicalSpace.continuous_mk_right {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (x : X) : T'.Continuous (T.prod T') (fun y => (x, y)) :=
-    Topology.continuous_prod_mk T' (Topology.continuous_const T' T x) (Topology.continuous_id T')
+    TopologicalSpace.continuous_prod_mk T' (TopologicalSpace.continuous_const T' T x)
+      (TopologicalSpace.continuous_id T')
 
-  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
       ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
 
-  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+  def TopologicalSpace.IsCompactSpace {X : Type u} (T : TopologicalSpace X) : Prop
+      := T.IsCompact Set.univ
 
-  theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
-      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
-      T'.IsCompactSet (f '' S) := by
+  theorem TopologicalSpace.isCompact_image {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      {T' : TopologicalSpace Y}
+      {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompact S) :
+      T'.IsCompact (f '' S) := by
     intro F hFo hcov
     have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
       intro x hxS
@@ -153,38 +169,41 @@ preamble: |
       rw [(hGF hVG).choose_spec.2] at hxV
       exact ⟨(hGF hVG).choose, ⟨V, hVG, rfl⟩, hxV⟩
 
-  theorem Topology.exists_box_sUnion {X : Type u} {Y : Type v} (T : Topology X) {x : X}
+  theorem TopologicalSpace.exists_box_sUnion {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      {x : X}
       {W : Set (X × Y)} {G : Set (Set Y)} (hfin : G.Finite)
       (h : ∀ V ∈ G, ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W) :
       ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ ⋃₀ G ⊆ W := by
     induction G, hfin using Set.Finite.induction_on with
     | empty =>
-      refine ⟨Set.univ, T.univ, trivial, ?_⟩
+      refine ⟨Set.univ, T.isOpen_univ, trivial, ?_⟩
       rw [Set.sUnion_empty, Set.prod_empty]
       exact Set.empty_subset W
     | insert _ _ ih =>
       obtain ⟨U, hUo, hxU, hUV⟩ := h _ (Set.mem_insert _ _)
       obtain ⟨U', hU'o, hxU', hU'G⟩ := ih (fun V hV => h V (Set.mem_insert_of_mem _ hV))
-      refine ⟨U ∩ U', T.inter hUo hU'o, ⟨hxU, hxU'⟩, ?_⟩
+      refine ⟨U ∩ U', T.isOpen_inter hUo hU'o, ⟨hxU, hxU'⟩, ?_⟩
       rw [Set.sUnion_insert]
       rintro p ⟨hp1, hp2 | hp2⟩
       · exact hUV ⟨hp1.1, hp2⟩
       · exact hU'G ⟨hp1.2, hp2⟩
 
-  theorem Topology.tube_lemma {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      {B : Set Y} (hB : T'.IsCompactSet B) {x : X} {W : Set (X × Y)}
+  theorem TopologicalSpace.tube_lemma {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      {B : Set Y} (hB : T'.IsCompact B) {x : X} {W : Set (X × Y)}
       (hW : (T.prod T').IsOpen W) (hxW : {x} ×ˢ B ⊆ W) :
       ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ B ⊆ W := by
     obtain ⟨G, hGF, hGfin, hGcov⟩ := hB {V | T'.IsOpen V ∧ ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ×ˢ V ⊆ W}
       (fun V hV => hV.1) (fun y hy => by
         obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW (x, y) (hxW ⟨rfl, hy⟩)
         exact ⟨V, ⟨hV, U, hU, hpUV.1, hsub⟩, hpUV.2⟩)
-    obtain ⟨U, hUo, hxU, hsub⟩ := Topology.exists_box_sUnion T hGfin (fun V hV => (hGF hV).2)
+    obtain ⟨U, hUo, hxU, hsub⟩ := TopologicalSpace.exists_box_sUnion T hGfin (fun V hV => (hGF hV).2)
     exact ⟨U, hUo, hxU, fun p hp => hsub ⟨hp.1, hGcov hp.2⟩⟩
 
-  theorem Topology.isCompactSet_slice {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
-      {B : Set Y} (hB : T'.IsCompactSet B) (x : X) : (T.prod T').IsCompactSet ({x} ×ˢ B) := by
-    have hc := Topology.isCompactSet_image T' (Topology.continuous_mk_right T T' x) hB
+  theorem TopologicalSpace.isCompact_slice {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
+      {B : Set Y} (hB : T'.IsCompact B) (x : X) : (T.prod T').IsCompact ({x} ×ˢ B) := by
+    have hc := TopologicalSpace.isCompact_image T' (TopologicalSpace.continuous_mk_right T T' x) hB
     have he : (fun y => (x, y)) '' B = {x} ×ˢ B := by
       apply Set.ext
       intro p
@@ -196,7 +215,7 @@ preamble: |
         exact ⟨p.2, h2, by rw [← e]⟩
     rwa [he] at hc
 
-  theorem Topology.exists_finite_subcover_sUnion {X : Type u} {Y : Type v} {F : Set (Set (X × Y))}
+  theorem TopologicalSpace.exists_finite_subcover {X : Type u} {Y : Type v} {F : Set (Set (X × Y))}
       {B : Set Y} {G : Set (Set X)} (hfin : G.Finite)
       (h : ∀ U ∈ G, ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H) :
       ∃ H ⊆ F, H.Finite ∧ (⋃₀ G) ×ˢ B ⊆ ⋃₀ H := by
@@ -216,16 +235,16 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Topology.isCompactSet_prod` and then `Topology.isCompact_prod`. The cover of `A` is `{U | T.IsOpen U ∧ ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H}`, each member carrying its own finite piece, and `Set.univ_prod_univ` reads the second theorem off the first.
+description: Prove `TopologicalSpace.isCompact_prod` and then `TopologicalSpace.isCompactSpace_prod`. The cover of `A` is `{U | T.IsOpen U ∧ ∃ H ⊆ F, H.Finite ∧ U ×ˢ B ⊆ ⋃₀ H}`, each member carrying its own finite piece, and `Set.univ_prod_univ` reads the second theorem off the first.
 stub_names:
-- Topology.isCompactSet_prod
-- Topology.isCompact_prod
+- TopologicalSpace.isCompact_prod
+- TopologicalSpace.isCompactSpace_prod
 namespace: GeneralTopology
 seq: 230
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/CompactHausdorff.lean
-  line: 401
+  line: 409
   closure_rounds: 1
   check_kind: theorem

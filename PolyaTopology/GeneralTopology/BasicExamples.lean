@@ -30,11 +30,11 @@ A field of a structure may be filled by a proof that ignores its hypotheses. `tr
 Define `discrete X`, whose `IsOpen` is `fun _ => True`. Each of the three conditions is `trivial`, the last two after their hypotheses are taken and discarded.
 -/
 
-def discrete (X : Type u) : Topology X where
+def discrete (X : Type u) : TopologicalSpace X where
   IsOpen := fun _ => True
-  univ := trivial
-  inter := fun _ _ => trivial
-  sUnion := fun _ => trivial
+  isOpen_univ := trivial
+  isOpen_inter := fun _ _ => trivial
+  isOpen_sUnion := fun _ => trivial
 
 /-- @spec -/
 example (X : Type) (U : Set X) : (discrete X).IsOpen U ↔ True := Iff.rfl
@@ -78,25 +78,25 @@ theorem trivial_sUnion {X : Type u} {F : Set (Set X)}
 
 /-!
 @problem define_codiscrete
-@title The Codiscrete Topology
+@title The Indiscrete Topology
 @concept extreme_topologies
 
 @preamble
-Now the other extreme: call open only what must be, the whole set and the empty set. This is the *codiscrete* topology, the coarsest there is.
+Now the other extreme: call open only what must be, the whole set and the empty set. This is the *indiscrete* topology, the coarsest there is. Older texts and the categorical literature call it indiscrete; Mathlib calls it indiscrete, and so do we.
 
 With the two facts in hand there is nothing left to check — which is the same shape as the metric topology, where three theorems came first and the construction was a matter of naming them.
 @description
-Define `codiscrete X`, whose `IsOpen U` is `U = ∅ ∨ U = Set.univ`. The whole space is open on the right of the disjunction, and the other two fields are the two theorems above.
+Define `indiscrete X`, whose `IsOpen U` is `U = ∅ ∨ U = Set.univ`. The whole space is open on the right of the disjunction, and the other two fields are the two theorems above.
 -/
 
-def codiscrete (X : Type u) : Topology X where
+def indiscrete (X : Type u) : TopologicalSpace X where
   IsOpen := fun U => U = ∅ ∨ U = Set.univ
-  univ := Or.inr rfl
-  inter := trivial_inter
-  sUnion := trivial_sUnion
+  isOpen_univ := Or.inr rfl
+  isOpen_inter := trivial_inter
+  isOpen_sUnion := trivial_sUnion
 
 /-- @spec -/
-example (X : Type) (U : Set X) : (codiscrete X).IsOpen U ↔ (U = ∅ ∨ U = Set.univ) := Iff.rfl
+example (X : Type) (U : Set X) : (indiscrete X).IsOpen U ↔ (U = ∅ ∨ U = Set.univ) := Iff.rfl
 
 /-! @end -/
 
@@ -106,18 +106,18 @@ example (X : Type) (U : Set X) : (codiscrete X).IsOpen U ↔ (U = ∅ ∨ U = Se
 @concept extreme_topologies
 
 @preamble
-The two extremes bound every other topology on the same set. Whatever `T` is, anything the codiscrete topology calls open is open in `T` — the empty set and the whole set are open in every topology — and anything `T` calls open is open in the discrete one, which calls everything open.
+The two extremes bound every other topology on the same set. Whatever `T` is, anything the indiscrete topology calls open is open in `T` — the empty set and the whole set are open in every topology — and anything `T` calls open is open in the discrete one, which calls everything open.
 
 So the topologies on a set are ordered by how many sets they call open, with these two at the ends. A finer topology has more open sets, and so more of everything defined from them.
 @description
-Prove both containments. For the first, take the disjunction apart and use `T.empty` and `T.univ`; the second holds whatever the hypothesis says.
+Prove both containments. For the first, take the disjunction apart and use `T.empty` and `T.isOpen_univ`; the second holds whatever the hypothesis says.
 -/
-theorem codiscrete_le_le_discrete {X : Type u} (T : Topology X) {U : Set X} :
-    ((codiscrete X).IsOpen U → T.IsOpen U) ∧ (T.IsOpen U → (discrete X).IsOpen U) := by
+theorem indiscrete_le_le_discrete {X : Type u} (T : TopologicalSpace X) {U : Set X} :
+    ((indiscrete X).IsOpen U → T.IsOpen U) ∧ (T.IsOpen U → (discrete X).IsOpen U) := by
   constructor
   · rintro (rfl | rfl)
     · exact T.empty
-    · exact T.univ
+    · exact T.isOpen_univ
   · intro _
     trivial
 
@@ -126,7 +126,7 @@ theorem codiscrete_le_le_discrete {X : Type u} (T : Topology X) {U : Set X} :
 @title The Sierpiński Space
 @kind definition
 
-The smallest space that is neither discrete nor codiscrete has two points, one of which is open and the other not. It is the standard source of the phenomena that vanish when a space is nice: two distinct points that no open set separates, and a point whose only neighbourhood is everything.
+The smallest space that is neither discrete nor indiscrete has two points, one of which is open and the other not. It is the standard source of the phenomena that vanish when a space is nice: two distinct points that no open set separates, and a point whose only neighbourhood is everything.
 -/
 
 /-!
@@ -142,11 +142,11 @@ Written this way each condition is an implication, and the proofs are short. Tha
 Define `sierpinski`, a topology on `Bool` whose `IsOpen U` is `false ∈ U → true ∈ U`. The whole set holds it trivially; an intersection holds it from both halves; and for a union, the member that supplies `false` supplies `true`.
 -/
 
-def sierpinski : Topology Bool where
+def sierpinski : TopologicalSpace Bool where
   IsOpen := fun U => false ∈ U → true ∈ U
-  univ := fun _ => trivial
-  inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
-  sUnion := by
+  isOpen_univ := fun _ => trivial
+  isOpen_inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
+  isOpen_sUnion := by
     intro F h hf
     obtain ⟨U, hUF, hU⟩ := hf
     exact ⟨U, hUF, h U hUF hU⟩
@@ -226,11 +226,11 @@ With the two facts proved, the topology assembles. Only the whole space is left,
 Define `cofinite X`, whose `IsOpen U` is `U = ∅ ∨ Uᶜ.Finite`. For the whole space, `Set.compl_univ` and `Set.finite_empty`; the other two fields are the two theorems above.
 -/
 
-def cofinite (X : Type u) : Topology X where
+def cofinite (X : Type u) : TopologicalSpace X where
   IsOpen := fun U => U = ∅ ∨ Uᶜ.Finite
-  univ := Or.inr (by rw [Set.compl_univ]; exact Set.finite_empty)
-  inter := cofinite_inter
-  sUnion := cofinite_sUnion
+  isOpen_univ := Or.inr (by rw [Set.compl_univ]; exact Set.finite_empty)
+  isOpen_inter := cofinite_inter
+  isOpen_sUnion := cofinite_sUnion
 
 /-- @spec -/
 example (X : Type) (U : Set X) : (cofinite X).IsOpen U ↔ (U = ∅ ∨ Uᶜ.Finite) := Iff.rfl
@@ -255,18 +255,20 @@ Let `A` be a subset of a space `X`. A point of `A` is a term of the type `A` —
 
 The conditions transfer because taking preimages commutes with both operations. The union needs one turn of thought: the collection to unite in `X` is the open sets whose trace lies in the given collection, and that is enough, because every member of the collection is the trace of one of them.
 @description
-Define `Topology.subspace`, the topology `T` induces on `A`. For the whole set take `Set.univ`; for an intersection, `rintro` the two witnesses with `rfl` and offer their intersection. For the union, offer `⋃₀ {U | T.IsOpen U ∧ Subtype.val ⁻¹' U ∈ F}` and prove the two containments with `Set.Subset.antisymm`.
+Define `TopologicalSpace.subspace`, the topology `T` induces on `A`. For the whole set take `Set.univ`; for an intersection, `rintro` the two witnesses with `rfl` and offer their intersection. For the union, offer `⋃₀ {U | T.IsOpen U ∧ Subtype.val ⁻¹' U ∈ F}` and prove the two containments with `Set.Subset.antisymm`.
 -/
 
-def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A where
+def TopologicalSpace.subspace {X : Type u} (T : TopologicalSpace X) (A : Set X)
+    : TopologicalSpace A where
   IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U
-  univ := ⟨Set.univ, T.univ, rfl⟩
-  inter := by
+  isOpen_univ := ⟨Set.univ, T.isOpen_univ, rfl⟩
+  isOpen_inter := by
     rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
-    exact ⟨U ∩ U', T.inter hU hU', rfl⟩
-  sUnion := by
+    exact ⟨U ∩ U', T.isOpen_inter hU hU', rfl⟩
+  isOpen_sUnion := by
     intro F h
-    refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+    refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F},
+      T.isOpen_sUnion (fun U hU => hU.1), ?_⟩
     apply Set.Subset.antisymm
     · rintro x ⟨V, hVF, hxV⟩
       obtain ⟨U, hU, rfl⟩ := h V hVF
@@ -275,7 +277,7 @@ def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A whe
       exact ⟨_, hUF, hxU⟩
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (A : Set X) (V : Set A) :
+example (X : Type) (T : TopologicalSpace X) (A : Set X) (V : Set A) :
     (T.subspace A).IsOpen V ↔ ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U := Iff.rfl
 
 /-! @end -/

@@ -10,86 +10,86 @@ statement: |-
 concepts:
 - compact_metric
 stub: |-
-  theorem Metric.isBounded_of_isCompactSet {X : Type u} (M : Metric X) {K : Set X}
-      (hK : M.toTopology.IsCompactSet K) (hne : K.Nonempty) : M.IsBounded K := sorry
+  theorem MetricSpace.isBounded_of_isCompact {X : Type u} (M : MetricSpace X) {K : Set X}
+      (hK : M.toTopologicalSpace.IsCompact K) (hne : K.Nonempty) : M.IsBounded K := sorry
 
-  theorem line_not_isCompact : ¬ line.toTopology.IsCompact := sorry
+  theorem line_not_isCompactSpace : ¬ line.toTopologicalSpace.IsCompactSpace := sorry
 reference: |-
-  theorem Metric.isBounded_of_isCompactSet {X : Type u} (M : Metric X) {K : Set X}
-      (hK : M.toTopology.IsCompactSet K) (hne : K.Nonempty) : M.IsBounded K := by
+  theorem MetricSpace.isBounded_of_isCompact {X : Type u} (M : MetricSpace X) {K : Set X}
+      (hK : M.toTopologicalSpace.IsCompact K) (hne : K.Nonempty) : M.IsBounded K := by
     obtain ⟨x₀, hx₀⟩ := hne
-    obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {U | ∃ y : X, U = Metric.ball M y 1}
-      (by rintro U ⟨y, rfl⟩; exact Metric.isOpenSet_ball M y 1)
-      (fun y _ => ⟨Metric.ball M y 1, ⟨y, rfl⟩, Metric.mem_ball_self M y 1 one_pos⟩)
-    refine Metric.isBounded_subset M _ _ (Metric.isBounded_sUnion M x₀ hGfin ?_) hGcov
+    obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {U | ∃ y : X, U = MetricSpace.ball M y 1}
+      (by rintro U ⟨y, rfl⟩; exact MetricSpace.isOpenSet_ball M y 1)
+      (fun y _ => ⟨MetricSpace.ball M y 1, ⟨y, rfl⟩, MetricSpace.mem_ball_self M y 1 one_pos⟩)
+    refine MetricSpace.isBounded_subset M _ _ (MetricSpace.isBounded_sUnion M x₀ hGfin ?_) hGcov
     rintro U hU
     obtain ⟨y, rfl⟩ := hGF hU
-    exact Metric.isBounded_ball M y 1
+    exact MetricSpace.isBounded_ball M y 1
 
-  theorem line_not_isCompact : ¬ line.toTopology.IsCompact := by
+  theorem line_not_isCompactSpace : ¬ line.toTopologicalSpace.IsCompactSpace := by
     intro h
-    obtain ⟨x, ε, hsub⟩ := Metric.isBounded_of_isCompactSet line h ⟨0, trivial⟩
+    obtain ⟨x, ε, hsub⟩ := MetricSpace.isBounded_of_isCompact line h ⟨0, trivial⟩
     have h1 : |x - (x + ε)| < ε := hsub (Set.mem_univ _)
     have h2 : |x - (x + ε)| = |ε| := by ring_nf; rw [abs_neg]
     rw [h2] at h1
     exact absurd (le_abs_self ε) (not_le.mpr h1)
 spec: |-
-  example : ∀ {X : Type u} (M : Metric X) {K : Set X}
-      (hK : M.toTopology.IsCompactSet K) (hne : K.Nonempty), M.IsBounded K := _root_.GeneralTopology.Metric.isBounded_of_isCompactSet
-  example : ¬ line.toTopology.IsCompact := _root_.GeneralTopology.line_not_isCompact
+  example : ∀ {X : Type u} (M : MetricSpace X) {K : Set X}
+      (hK : M.toTopologicalSpace.IsCompact K) (hne : K.Nonempty), M.IsBounded K := _root_.GeneralTopology.MetricSpace.isBounded_of_isCompact
+  example : ¬ line.toTopologicalSpace.IsCompactSpace := _root_.GeneralTopology.line_not_isCompactSpace
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
-    M.eq_zero.mpr rfl
+  theorem MetricSpace.dist_self {X : Type u} (M : MetricSpace X) {x : X} : M.dist x x = 0 :=
+    M.dist_eq_zero.mpr rfl
 
-  def line : Metric ℝ where
+  def line : MetricSpace ℝ where
     dist x y := |x - y|
-    symm {x y} := abs_sub_comm x y
-    triangle x y z := abs_sub_le x y z
-    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+    dist_comm {x y} := abs_sub_comm x y
+    dist_triangle x y z := abs_sub_le x y z
+    dist_eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
 
-  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+  def MetricSpace.ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+  theorem MetricSpace.mem_ball {X : Type u} (M : MetricSpace X) {x y : X} {ε : ℝ} :
       y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
-  theorem Metric.mem_ball_self {X : Type u} (M : Metric X) (x : X) (ε : ℝ) (h : 0 < ε) :
+  theorem MetricSpace.mem_ball_self {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) (h : 0 < ε) :
       x ∈ M.ball x ε := by
     rw [M.mem_ball, M.dist_self]
     exact h
 
-  theorem Metric.ball_mono {X : Type u} (M : Metric X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
+  theorem MetricSpace.ball_mono {X : Type u} (M : MetricSpace X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
       M.ball x ε ⊆ M.ball x δ :=
     fun _ hy => lt_of_lt_of_le hy h
 
-  theorem Metric.ball_subset_ball {X : Type u} (M : Metric X) (x y : X) (ε : ℝ) :
+  theorem MetricSpace.ball_subset_ball {X : Type u} (M : MetricSpace X) (x y : X) (ε : ℝ) :
       M.ball y ε ⊆ M.ball x (M.dist x y + ε) := by
     intro z hz
     rw [M.mem_ball] at hz ⊢
-    have h := M.triangle x y z
+    have h := M.dist_triangle x y z
     linarith
 
-  def Metric.IsBounded {X : Type u} (M : Metric X) (S : Set X) : Prop :=
+  def MetricSpace.IsBounded {X : Type u} (M : MetricSpace X) (S : Set X) : Prop :=
     ∃ (x : X) (ε : ℝ), S ⊆ M.ball x ε
 
-  theorem Metric.isBounded_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+  theorem MetricSpace.isBounded_ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) :
       M.IsBounded (M.ball x ε) :=
     ⟨x, ε, subset_rfl⟩
 
-  theorem Metric.isBounded_subset {X : Type u} (M : Metric X) (S T : Set X)
+  theorem MetricSpace.isBounded_subset {X : Type u} (M : MetricSpace X) (S T : Set X)
       (h : M.IsBounded S) (hTS : T ⊆ S) : M.IsBounded T := by
     obtain ⟨x, ε, hx⟩ := h
     exact ⟨x, ε, fun y hy => hx (hTS hy)⟩
 
-  theorem Metric.isBounded_union {X : Type u} (M : Metric X) (S T : Set X)
+  theorem MetricSpace.isBounded_union {X : Type u} (M : MetricSpace X) (S T : Set X)
       (hS : M.IsBounded S) (hT : M.IsBounded T) : M.IsBounded (S ∪ T) := by
     obtain ⟨x, ε, hx⟩ := hS
     obtain ⟨y, δ, hy⟩ := hT
@@ -98,23 +98,24 @@ preamble: |
     · exact M.ball_mono (le_max_left _ _) (hx hz)
     · exact M.ball_mono (le_max_right _ _) (M.ball_subset_ball x y δ (hy hz))
 
-  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+  def MetricSpace.IsOpenSet {X : Type u} (M : MetricSpace X) (U : Set X) : Prop :=
     ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
 
-  theorem Metric.isOpenSet_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+  theorem MetricSpace.isOpenSet_ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) :
       M.IsOpenSet (M.ball x ε) := by
     intro y hy
     rw [M.mem_ball] at hy
     refine ⟨ε - M.dist x y, by linarith, ?_⟩
     intro z hz
     rw [M.mem_ball] at hz ⊢
-    have h := M.triangle x y z
+    have h := M.dist_triangle x y z
     linarith
 
-  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+  theorem MetricSpace.isOpenSet_univ {X : Type u} (M : MetricSpace X) : M.IsOpenSet (Set.univ : Set X)
+      :=
     fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
 
-  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+  theorem MetricSpace.isOpenSet_inter {X : Type u} (M : MetricSpace X) {U V : Set X}
       (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
     intro x hx
     obtain ⟨a, ha, hau⟩ := hU x hx.1
@@ -124,52 +125,53 @@ preamble: |
     rw [M.mem_ball] at hy
     exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
 
-  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+  theorem MetricSpace.isOpenSet_sUnion {X : Type u} (M : MetricSpace X) {F : Set (Set X)}
       (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
     intro x hx
     obtain ⟨U, hUF, hxU⟩ := hx
     obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
     exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
 
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+  def MetricSpace.toTopologicalSpace {X : Type u} (M : MetricSpace X) : TopologicalSpace X where
     IsOpen := M.IsOpenSet
-    univ := M.isOpenSet_univ
-    inter := M.isOpenSet_inter
-    sUnion := M.isOpenSet_sUnion
+    isOpen_univ := M.isOpenSet_univ
+    isOpen_inter := M.isOpenSet_inter
+    isOpen_sUnion := M.isOpenSet_sUnion
 
-  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
       ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
 
-  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+  def TopologicalSpace.IsCompactSpace {X : Type u} (T : TopologicalSpace X) : Prop
+      := T.IsCompact Set.univ
 
-  theorem Metric.isBounded_sUnion {X : Type u} (M : Metric X) (x₀ : X) {G : Set (Set X)}
+  theorem MetricSpace.isBounded_sUnion {X : Type u} (M : MetricSpace X) (x₀ : X) {G : Set (Set X)}
       (hfin : G.Finite) (h : ∀ U ∈ G, M.IsBounded U) : M.IsBounded (⋃₀ G) := by
     induction G, hfin using Set.Finite.induction_on with
     | empty => exact ⟨x₀, 0, by rintro z ⟨U, hU, -⟩; exact hU.elim⟩
     | insert _ _ ih =>
       rw [Set.sUnion_insert]
-      exact Metric.isBounded_union M _ _ (h _ (Set.mem_insert _ _))
+      exact MetricSpace.isBounded_union M _ _ (h _ (Set.mem_insert _ _))
         (ih (fun U hU => h U (Set.mem_insert_of_mem _ hU)))
 
   end GeneralTopology
   open GeneralTopology
-description: 'Prove `Metric.isBounded_of_isCompactSet` and `line_not_isCompact`. The cover is `{U | ∃ y : X, U = Metric.ball M y 1}`; `Metric.isOpenSet_ball` makes its members open and `Metric.mem_ball_self` puts each point in one. For the line, apply the first to `Set.univ` and evaluate the distance that results.'
+description: 'Prove `MetricSpace.isBounded_of_isCompact` and `line_not_isCompactSpace`. The cover is `{U | ∃ y : X, U = MetricSpace.ball M y 1}`; `MetricSpace.isOpenSet_ball` makes its members open and `MetricSpace.mem_ball_self` puts each point in one. For the line, apply the first to `Set.univ` and evaluate the distance that results.'
 stub_names:
-- Metric.isBounded_of_isCompactSet
-- line_not_isCompact
+- MetricSpace.isBounded_of_isCompact
+- line_not_isCompactSpace
 namespace: GeneralTopology
 seq: 205
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Compactness.lean
-  line: 232
+  line: 234
   closure_rounds: 1
   check_kind: theorem

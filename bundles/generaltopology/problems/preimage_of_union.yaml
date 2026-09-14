@@ -28,7 +28,7 @@ namespace: GeneralTopology
 seq: 122
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
   line: 22
   closure_rounds: 1

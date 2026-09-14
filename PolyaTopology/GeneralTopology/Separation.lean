@@ -15,7 +15,7 @@ namespace GeneralTopology
 @title The First Three Separation Axioms
 @kind definition
 
-A topology need not tell its points apart: the codiscrete one cannot distinguish any two of them. The separation axioms say how well a given topology can, each asking for open sets around distinct points and each stronger than the one before. They are the first thing asked of a space once it exists, and most of what follows assumes one of them.
+A topology need not tell its points apart: the indiscrete one cannot distinguish any two of them. The separation axioms say how well a given topology can, each asking for open sets around distinct points and each stronger than the one before. They are the first thing asked of a space once it exists, and most of what follows assumes one of them.
 -/
 
 /-!
@@ -32,25 +32,25 @@ T₁ asks it of both points at once: each has an open set around it that the oth
 
 T₂, or *Hausdorff*, asks more. Each point has an open set around it and the two sets are disjoint, so the points are not merely distinguished but held apart.
 @description
-Define `Topology.IsT0`, `Topology.IsT1` and `Topology.IsHausdorff`, each quantified over `x y : X` with `x ≠ y`. Write T₁ as `∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U`; T₀ as that disjunct or the same with the two points exchanged; and Hausdorff as `∃ U V` with the five conditions `T.IsOpen U`, `T.IsOpen V`, `x ∈ U`, `y ∈ V`, `U ∩ V = ∅`, in that order.
+Define `TopologicalSpace.IsT0`, `TopologicalSpace.IsT1` and `TopologicalSpace.IsT2`, each quantified over `x y : X` with `x ≠ y`. Write T₁ as `∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U`; T₀ as that disjunct or the same with the two points exchanged; and Hausdorff as `∃ U V` with the five conditions `T.IsOpen U`, `T.IsOpen V`, `x ∈ U`, `y ∈ V`, `U ∩ V = ∅`, in that order.
 -/
 
-def Topology.IsT0 {X : Type u} (T : Topology X) : Prop :=
+def TopologicalSpace.IsT0 {X : Type u} (T : TopologicalSpace X) : Prop :=
   ∀ x y : X, x ≠ y →
     (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)
 
-def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+def TopologicalSpace.IsT1 {X : Type u} (T : TopologicalSpace X) : Prop :=
   ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
 
-def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+def TopologicalSpace.IsT2 {X : Type u} (T : TopologicalSpace X) : Prop :=
   ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
 
 /-- @spec -/
-example (X : Type) (T : Topology X) :
+example (X : Type) (T : TopologicalSpace X) :
     (T.IsT0 ↔ ∀ x y : X, x ≠ y →
         (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V))
       ∧ (T.IsT1 ↔ ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U)
-      ∧ (T.IsHausdorff ↔ ∀ x y : X, x ≠ y →
+      ∧ (T.IsT2 ↔ ∀ x y : X, x ≠ y →
         ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅) :=
   ⟨Iff.rfl, Iff.rfl, Iff.rfl⟩
 
@@ -68,13 +68,13 @@ T₁ gives T₀ by taking the left disjunct: the set it supplies around `x` is o
 
 Hausdorff gives T₁ by forgetting `V`. The set `U` around `x` already leaves `y` out, because `y` lies in `V` and the two sets meet nowhere: a point in both would lie in `U ∩ V`, which is empty.
 @description
-Prove `Topology.isT0_of_isT1` and `Topology.isT1_of_isHausdorff`. For the second, assume `y ∈ U`, put `y` into `U ∩ V` with an anonymous constructor, rewrite by the hypothesis that this set is empty, and a membership in `∅` is absurd.
+Prove `TopologicalSpace.isT0_of_isT1` and `TopologicalSpace.isT1_of_isT2`. For the second, assume `y ∈ U`, put `y` into `U ∩ V` with an anonymous constructor, rewrite by the hypothesis that this set is empty, and a membership in `∅` is absurd.
 -/
 
-theorem Topology.isT0_of_isT1 {X : Type u} {T : Topology X} (h : T.IsT1) : T.IsT0 :=
+theorem TopologicalSpace.isT0_of_isT1 {X : Type u} {T : TopologicalSpace X} (h : T.IsT1) : T.IsT0 :=
   fun x y hxy => Or.inl (h x y hxy)
 
-theorem Topology.isT1_of_isHausdorff {X : Type u} {T : Topology X} (h : T.IsHausdorff) :
+theorem TopologicalSpace.isT1_of_isT2 {X : Type u} {T : TopologicalSpace X} (h : T.IsT2) :
     T.IsT1 := by
   intro x y hxy
   obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := h x y hxy
@@ -102,14 +102,15 @@ An axiom earns its place by what it admits and what it rules out. Every metric s
 @preamble
 The axioms give `M.dist x y = 0` exactly when `x = y`, and the distance is never negative. Between distinct points it is therefore strictly positive.
 
-That is the fact every separation argument in a metric space begins with, since the radius it works with is read off from it. A real number that is at least `0` is either greater than `0` or equal to it, which is what `lt_or_eq_of_le` says of `Metric.nonneg M x y`.
+That is the fact every separation argument in a metric space begins with, since the radius it works with is read off from it. A real number that is at least `0` is either greater than `0` or equal to it, which is what `lt_or_eq_of_le` says of `MetricSpace.nonneg M x y`.
 @description
-Show that `0 < M.dist x y` when `x ≠ y`. Split the non-negativity with `lt_or_eq_of_le`; in the second case `M.eq_zero` turns the equation into `x = y`, which the hypothesis refutes.
+Show that `0 < M.dist x y` when `x ≠ y`. Split the non-negativity with `lt_or_eq_of_le`; in the second case `M.dist_eq_zero` turns the equation into `x = y`, which the hypothesis refutes.
 -/
-theorem Metric.dist_pos {X : Type u} (M : Metric X) {x y : X} (h : x ≠ y) : 0 < M.dist x y := by
-  rcases lt_or_eq_of_le (Metric.nonneg M x y) with hlt | heq
+theorem MetricSpace.dist_pos {X : Type u} (M : MetricSpace X) {x y : X} (h : x ≠ y) : 0 < M.dist x y
+    := by
+  rcases lt_or_eq_of_le (MetricSpace.nonneg M x y) with hlt | heq
   · exact hlt
-  · exact absurd (M.eq_zero.mp heq.symm) h
+  · exact absurd (M.dist_eq_zero.mp heq.symm) h
 
 /--
 @problem metric_hausdorff
@@ -123,24 +124,24 @@ A point in both balls would be within `d / 2` of `x` and within `d / 2` of `y`, 
 
 So a metric space satisfies the strongest of the three axioms, and by the implications above all three. This is the reason the axioms are worth imposing: they are the conditions that hold wherever there is a distance.
 @description
-Show that `M.toTopology.IsHausdorff`. Offer the two balls of radius `M.dist x y / 2`, whose openness and two memberships are `Metric.isOpenSet_ball` and `Metric.mem_ball_self`. For the emptiness, `Set.eq_empty_of_forall_notMem` takes a point of the intersection apart; `M.triangle x z y` and `M.symm` then leave the contradiction to `linarith`.
+Show that `M.toTopologicalSpace.IsT2`. Offer the two balls of radius `M.dist x y / 2`, whose openness and two memberships are `MetricSpace.isOpenSet_ball` and `MetricSpace.mem_ball_self`. For the emptiness, `Set.eq_empty_of_forall_notMem` takes a point of the intersection apart; `M.dist_triangle x z y` and `M.dist_comm` then leave the contradiction to `linarith`.
 -/
-theorem Metric.isHausdorff {X : Type u} (M : Metric X) : M.toTopology.IsHausdorff := by
+theorem MetricSpace.isT2 {X : Type u} (M : MetricSpace X) : M.toTopologicalSpace.IsT2 := by
   intro x y hxy
-  have h0 : 0 < M.dist x y := Metric.dist_pos M hxy
-  refine ⟨M.ball x (M.dist x y / 2), M.ball y (M.dist x y / 2), Metric.isOpenSet_ball M x _,
-    Metric.isOpenSet_ball M y _, Metric.mem_ball_self M x _ (by linarith),
-    Metric.mem_ball_self M y _ (by linarith), ?_⟩
+  have h0 : 0 < M.dist x y := MetricSpace.dist_pos M hxy
+  refine ⟨M.ball x (M.dist x y / 2), M.ball y (M.dist x y / 2), MetricSpace.isOpenSet_ball M x _,
+    MetricSpace.isOpenSet_ball M y _, MetricSpace.mem_ball_self M x _ (by linarith),
+    MetricSpace.mem_ball_self M y _ (by linarith), ?_⟩
   apply Set.eq_empty_of_forall_notMem
   rintro z ⟨hz1, hz2⟩
-  rw [Metric.mem_ball M] at hz1 hz2
-  have e : M.dist y z = M.dist z y := M.symm
-  have ht := M.triangle x z y
+  rw [MetricSpace.mem_ball M] at hz1 hz2
+  have e : M.dist y z = M.dist z y := M.dist_comm
+  have ht := M.dist_triangle x z y
   linarith
 
 /--
 @problem codiscrete_not_separated
-@title The Codiscrete Topology Separates Nothing
+@title The Indiscrete Topology Separates Nothing
 @concept separation_examples
 
 @preamble
@@ -148,9 +149,9 @@ At the other end stands the topology whose only open sets are the empty one and 
 
 A set with two distinct points therefore fails even T₀ under that topology, the weakest of the three conditions. Separation is a demand for open sets, and this topology has none to spare.
 @description
-Show that `(codiscrete X).IsT0` is false when `X` has two distinct points `x` and `y`. Take the disjunction apart with `rcases`, and in each branch `rcases` the openness, which says the set is `∅` or `Set.univ`; the first case contradicts a membership and the second a non-membership, which `trivial` supplies.
+Show that `(indiscrete X).IsT0` is false when `X` has two distinct points `x` and `y`. Take the disjunction apart with `rcases`, and in each branch `rcases` the openness, which says the set is `∅` or `Set.univ`; the first case contradicts a membership and the second a non-membership, which `trivial` supplies.
 -/
-theorem codiscrete_not_isT0 {X : Type u} {x y : X} (h : x ≠ y) : ¬ (codiscrete X).IsT0 := by
+theorem indiscrete_not_isT0 {X : Type u} {x y : X} (h : x ≠ y) : ¬ (indiscrete X).IsT0 := by
   intro hT
   rcases hT x y h with ⟨U, hU, hxU, hyU⟩ | ⟨U, hU, hyU, hxU⟩ <;> rcases hU with rfl | rfl
   · exact hxU
@@ -200,7 +201,7 @@ The cofinite topology is T₁ on any set. The complement of a single point is op
 
 On an infinite set it is not Hausdorff, because its open sets are too large to avoid one another. If two of them were disjoint and nonempty, their complements would have finite size and would cover everything between them — so the whole set would be finite.
 @description
-Prove `cofinite_isT1` for any `X`, and `cofinite_not_isHausdorff` for `ℕ`. In the first, `compl_compl` and `Set.finite_singleton` show `{y}ᶜ` open. In the second, `Or.resolve_left` turns each open set's disjunction into the finiteness of its complement, `Set.compl_inter` rewrites `Set.univ` as the union of the two complements, and `Set.infinite_univ` refutes its finiteness.
+Prove `cofinite_isT1` for any `X`, and `cofinite_not_isT2` for `ℕ`. In the first, `compl_compl` and `Set.finite_singleton` show `{y}ᶜ` open. In the second, `Or.resolve_left` turns each open set's disjunction into the finiteness of its complement, `Set.compl_inter` rewrites `Set.univ` as the union of the two complements, and `Set.infinite_univ` refutes its finiteness.
 -/
 
 theorem cofinite_isT1 {X : Type u} : (cofinite X).IsT1 := by
@@ -211,7 +212,7 @@ theorem cofinite_isT1 {X : Type u} : (cofinite X).IsT1 := by
   · intro h
     exact h rfl
 
-theorem cofinite_not_isHausdorff : ¬ (cofinite ℕ).IsHausdorff := by
+theorem cofinite_not_isT2 : ¬ (cofinite ℕ).IsT2 := by
   intro h
   obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := h 0 1 (by norm_num)
   have hUc : Uᶜ.Finite := hU.resolve_left (fun he => by rw [he] at hxU; exact hxU)
@@ -242,32 +243,33 @@ So `x ∈ T.closure {y}` says exactly: every open set containing `x` contains `y
 
 Read as a comparison, that same condition says the closure of `{x}` lies inside the closure of `{y}`. The closure of `{y}` is a closed set, so it contains the closure of `{x}` exactly when it contains `x`.
 @description
-Prove `Topology.mem_closure_singleton` and `Topology.closure_singleton_subset_iff`. Both rest on `Topology.mem_closure_iff` and `Topology.nbhd_of_isOpen`; a membership in a singleton is an equation, which `show` restates for `rw`. The second reads the first at `x` and closes its other direction with `Topology.closure_min`.
+Prove `TopologicalSpace.mem_closure_singleton` and `TopologicalSpace.closure_singleton_iff`. Both rest on `TopologicalSpace.mem_closure_iff` and `TopologicalSpace.nbhd_of_isOpen`; a membership in a singleton is an equation, which `show` restates for `rw`. The second reads the first at `x` and closes its other direction with `TopologicalSpace.closure_min`.
 -/
 
-theorem Topology.mem_closure_singleton {X : Type u} (T : Topology X) {x y : X} :
+theorem TopologicalSpace.mem_closure_singleton {X : Type u} (T : TopologicalSpace X) {x y : X} :
     x ∈ T.closure {y} ↔ ∀ U, T.IsOpen U → x ∈ U → y ∈ U := by
   constructor
   · intro hx U hU hxU
     obtain ⟨z, hzU, hzy⟩ :=
-      (Topology.mem_closure_iff T).mp hx U (Topology.nbhd_of_isOpen T hU hxU)
+      (TopologicalSpace.mem_closure_iff T).mp hx U (TopologicalSpace.nbhd_of_isOpen T hU hxU)
     rw [show z = y from hzy] at hzU
     exact hzU
   · intro h
-    apply (Topology.mem_closure_iff T).mpr
+    apply (TopologicalSpace.mem_closure_iff T).mpr
     rintro N ⟨U, hU, hxU, hUN⟩
     exact ⟨y, hUN (h U hU hxU), rfl⟩
 
-theorem Topology.closure_singleton_subset_iff {X : Type u} (T : Topology X) {x y : X} :
+theorem TopologicalSpace.closure_singleton_iff {X : Type u} (T : TopologicalSpace X) {x y : X} :
     T.closure {x} ⊆ T.closure {y} ↔ ∀ U, T.IsOpen U → x ∈ U → y ∈ U := by
   constructor
   · intro h
-    exact (Topology.mem_closure_singleton T).mp (h (Topology.subset_closure T {x} rfl))
+    exact (TopologicalSpace.mem_closure_singleton T).mp
+      (h (TopologicalSpace.subset_closure T {x} rfl))
   · intro h
-    refine Topology.closure_min T (Topology.isClosed_closure T {y}) ?_
+    refine TopologicalSpace.closure_min T (TopologicalSpace.isClosed_closure T {y}) ?_
     intro z hz
     rw [show z = x from hz]
-    exact (Topology.mem_closure_singleton T).mpr h
+    exact (TopologicalSpace.mem_closure_singleton T).mpr h
 
 /-! @end -/
 
@@ -283,14 +285,14 @@ If the points are closed then, given `x ≠ y`, the set `{y}ᶜ` is open, it con
 
 Conversely, suppose the axiom holds, and look at `{x}ᶜ`. Each of its points `y` is distinct from `x`, so the axiom supplies an open set holding `y` and missing `x`; an open set missing `x` lies inside `{x}ᶜ`. So `{x}ᶜ` is a neighbourhood of each of its own points, and is therefore open.
 @description
-Prove `Topology.isT1_iff_isClosed_singleton`. Forwards, restate the closedness with `show` and turn it into a statement at each point with `Topology.isOpen_iff_nbhd`. A membership `y ∈ {x}` is the equation `y = x`, so a point of `{x}ᶜ` arrives with exactly the hypothesis `y ≠ x` the axiom wants.
+Prove `TopologicalSpace.isT1_iff_isClosed_singleton`. Forwards, restate the closedness with `show` and turn it into a statement at each point with `TopologicalSpace.isOpen_iff_nbhd`. A membership `y ∈ {x}` is the equation `y = x`, so a point of `{x}ᶜ` arrives with exactly the hypothesis `y ≠ x` the axiom wants.
 -/
-theorem Topology.isT1_iff_isClosed_singleton {X : Type u} (T : Topology X) :
+theorem TopologicalSpace.isT1_iff_isClosed_singleton {X : Type u} (T : TopologicalSpace X) :
     T.IsT1 ↔ ∀ x : X, T.IsClosed {x} := by
   constructor
   · intro h x
     show T.IsOpen _
-    rw [Topology.isOpen_iff_nbhd]
+    rw [TopologicalSpace.isOpen_iff_nbhd]
     intro y hy
     obtain ⟨U, hU, hyU, hxU⟩ := h y x hy
     exact ⟨U, hU, hyU, fun z hz he => hxU (by rw [← show z = x from he]; exact hz)⟩
@@ -307,15 +309,15 @@ The weakest axiom has a closure form as well. Two points are indistinguishable w
 
 So T₀ says that the closure of a point determines the point: the assignment carrying `x` to `T.closure {x}` is injective. Where T₀ fails, two different points have the very same closure, and nothing built out of open sets will ever separate them.
 @description
-Prove `Topology.isT0_iff_closure_injective`, stating the right-hand side as `∀ x y, T.closure {x} = T.closure {y} → x = y`. Forwards, take the two containments out of the equation with `.subset` and `.symm.subset` and read them through `Topology.closure_singleton_subset_iff`; the axiom's two branches then contradict them. Backwards, `by_contra` and `push Not at` turn the failure of the axiom into the two hypotheses that build the equation.
+Prove `TopologicalSpace.isT0_iff_closure_injective`, stating the right-hand side as `∀ x y, T.closure {x} = T.closure {y} → x = y`. Forwards, take the two containments out of the equation with `.subset` and `.symm.subset` and read them through `TopologicalSpace.closure_singleton_iff`; the axiom's two branches then contradict them. Backwards, `by_contra` and `push Not at` turn the failure of the axiom into the two hypotheses that build the equation.
 -/
-theorem Topology.isT0_iff_closure_injective {X : Type u} (T : Topology X) :
+theorem TopologicalSpace.isT0_iff_closure_injective {X : Type u} (T : TopologicalSpace X) :
     T.IsT0 ↔ ∀ x y : X, T.closure {x} = T.closure {y} → x = y := by
   constructor
   · intro h x y he
     by_contra hxy
-    have h1 := (Topology.closure_singleton_subset_iff T).mp he.subset
-    have h2 := (Topology.closure_singleton_subset_iff T).mp he.symm.subset
+    have h1 := (TopologicalSpace.closure_singleton_iff T).mp he.subset
+    have h2 := (TopologicalSpace.closure_singleton_iff T).mp he.symm.subset
     rcases h x y hxy with ⟨U, hU, hxU, hyU⟩ | ⟨U, hU, hyU, hxU⟩
     · exact hyU (h1 U hU hxU)
     · exact hxU (h2 U hU hyU)
@@ -323,8 +325,8 @@ theorem Topology.isT0_iff_closure_injective {X : Type u} (T : Topology X) :
     by_contra hc
     push Not at hc
     exact hxy (h x y (Set.Subset.antisymm
-      ((Topology.closure_singleton_subset_iff T).mpr hc.1)
-      ((Topology.closure_singleton_subset_iff T).mpr hc.2)))
+      ((TopologicalSpace.closure_singleton_iff T).mpr hc.1)
+      ((TopologicalSpace.closure_singleton_iff T).mpr hc.2)))
 
 /-!
 @problem hausdorff_iff_diagonal
@@ -336,14 +338,14 @@ The *diagonal* of a space is the set of pairs `(x, x)` inside `X × X`: a copy o
 
 A point off the diagonal is a pair whose two coordinates differ. To say the complement of the diagonal is open is to put an open box `U ×ˢ V` around each such pair inside that complement — and a box misses the diagonal exactly when `U` and `V` are disjoint, since a point `z` of both would put the pair `(z, z)` inside the box.
 @description
-Prove `Topology.isClosed_diagonal_of_isHausdorff` and `Topology.isHausdorff_of_isClosed_diagonal`, both against `T.prod T`. Each restates the closedness with `show` and then reads the definition of the product topology directly: forwards the separating pair becomes the box, and backwards the box at `(x, y)` becomes the separating pair, with `(z, z)` the point that shows it disjoint.
+Prove `TopologicalSpace.isClosed_diagonal_of_isT2` and `TopologicalSpace.isT2_of_isClosed_diagonal`, both against `T.prod T`. Each restates the closedness with `show` and then reads the definition of the product topology directly: forwards the separating pair becomes the box, and backwards the box at `(x, y)` becomes the separating pair, with `(z, z)` the point that shows it disjoint.
 -/
 
 /-- @given -/
 def diagonal (X : Type u) : Set (X × X) := {p | p.1 = p.2}
 
-theorem Topology.isClosed_diagonal_of_isHausdorff {X : Type u} {T : Topology X}
-    (h : T.IsHausdorff) : (T.prod T).IsClosed (diagonal X) := by
+theorem TopologicalSpace.isClosed_diagonal_of_isT2 {X : Type u} {T : TopologicalSpace X}
+    (h : T.IsT2) : (T.prod T).IsClosed (diagonal X) := by
   show (T.prod T).IsOpen _
   intro p hp
   obtain ⟨U, V, hU, hV, h1, h2, hUV⟩ := h p.1 p.2 hp
@@ -353,8 +355,8 @@ theorem Topology.isClosed_diagonal_of_isHausdorff {X : Type u} {T : Topology X}
   rw [hUV] at hz
   exact hz
 
-theorem Topology.isHausdorff_of_isClosed_diagonal {X : Type u} {T : Topology X}
-    (h : (T.prod T).IsClosed (diagonal X)) : T.IsHausdorff := by
+theorem TopologicalSpace.isT2_of_isClosed_diagonal {X : Type u} {T : TopologicalSpace X}
+    (h : (T.prod T).IsClosed (diagonal X)) : T.IsT2 := by
   intro x y hxy
   obtain ⟨U, V, hU, hV, hp, hsub⟩ := h (x, y) hxy
   refine ⟨U, V, hU, hV, hp.1, hp.2, ?_⟩
@@ -382,24 +384,26 @@ A subset of a space carries the traces of the ambient open sets, and that is all
 
 Disjointness survives too, because a preimage commutes with intersecting: the traces of two disjoint sets meet in the trace of the empty set, which is empty.
 @description
-Prove `Topology.isT0_subspace`, `Topology.isT1_subspace` and `Topology.isHausdorff_subspace`. In each, `Subtype.ext` turns an equality of the underlying points back into an equality of the points of `A`; the trace of an open `U` is open by `⟨U, hU, rfl⟩`, and `Set.preimage_inter` with `Set.preimage_empty` closes the last one.
+Prove `TopologicalSpace.isT0_subspace`, `TopologicalSpace.isT1_subspace` and `TopologicalSpace.isT2_subspace`. In each, `Subtype.ext` turns an equality of the underlying points back into an equality of the points of `A`; the trace of an open `U` is open by `⟨U, hU, rfl⟩`, and `Set.preimage_inter` with `Set.preimage_empty` closes the last one.
 -/
 
-theorem Topology.isT0_subspace {X : Type u} {T : Topology X} (h : T.IsT0) (A : Set X) :
+theorem TopologicalSpace.isT0_subspace {X : Type u} {T : TopologicalSpace X} (h : T.IsT0)
+    (A : Set X) :
     (T.subspace A).IsT0 := by
   intro a b hab
   rcases h a.val b.val (fun e => hab (Subtype.ext e)) with ⟨U, hU, haU, hbU⟩ | ⟨U, hU, hbU, haU⟩
   · exact Or.inl ⟨Subtype.val ⁻¹' U, ⟨U, hU, rfl⟩, haU, hbU⟩
   · exact Or.inr ⟨Subtype.val ⁻¹' U, ⟨U, hU, rfl⟩, hbU, haU⟩
 
-theorem Topology.isT1_subspace {X : Type u} {T : Topology X} (h : T.IsT1) (A : Set X) :
+theorem TopologicalSpace.isT1_subspace {X : Type u} {T : TopologicalSpace X} (h : T.IsT1)
+    (A : Set X) :
     (T.subspace A).IsT1 := by
   intro a b hab
   obtain ⟨U, hU, haU, hbU⟩ := h a.val b.val (fun e => hab (Subtype.ext e))
   exact ⟨Subtype.val ⁻¹' U, ⟨U, hU, rfl⟩, haU, hbU⟩
 
-theorem Topology.isHausdorff_subspace {X : Type u} {T : Topology X} (h : T.IsHausdorff)
-    (A : Set X) : (T.subspace A).IsHausdorff := by
+theorem TopologicalSpace.isT2_subspace {X : Type u} {T : TopologicalSpace X} (h : T.IsT2)
+    (A : Set X) : (T.subspace A).IsT2 := by
   intro a b hab
   obtain ⟨U, V, hU, hV, haU, hbV, hUV⟩ := h a.val b.val (fun e => hab (Subtype.ext e))
   refine ⟨Subtype.val ⁻¹' U, Subtype.val ⁻¹' V, ⟨U, hU, rfl⟩, ⟨V, hV, rfl⟩, haU, hbV, ?_⟩
@@ -417,19 +421,20 @@ Two distinct points of a product differ in at least one coordinate. Suppose they
 
 The projections are continuous, which is what makes the preimages open, and a preimage commutes with intersecting, which is what keeps them disjoint. The case where the points differ in the second coordinate is the same argument along the second projection.
 @description
-Show that `(T.prod T').IsHausdorff` when both factors are Hausdorff. Split on `p.1 = q.1` with `by_cases`; in the equal case `Prod.ext` shows the second coordinates differ. `Topology.continuous_fst` and `Topology.continuous_snd` supply the openness of the preimages, and `Set.preimage_inter` with `Set.preimage_empty` their disjointness.
+Show that `(T.prod T').IsT2` when both factors are Hausdorff. Split on `p.1 = q.1` with `by_cases`; in the equal case `Prod.ext` shows the second coordinates differ. `TopologicalSpace.continuous_fst` and `TopologicalSpace.continuous_snd` supply the openness of the preimages, and `Set.preimage_inter` with `Set.preimage_empty` their disjointness.
 -/
-theorem Topology.isHausdorff_prod {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : T.IsHausdorff) (h' : T'.IsHausdorff) : (T.prod T').IsHausdorff := by
+theorem TopologicalSpace.isT2_prod {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : T.IsT2) (h' : T'.IsT2) : (T.prod T').IsT2 := by
   intro p q hpq
   by_cases h1 : p.1 = q.1
   · obtain ⟨U, V, hU, hV, hpU, hqV, hUV⟩ := h' p.2 q.2 (fun e => hpq (Prod.ext h1 e))
-    refine ⟨Prod.snd ⁻¹' U, Prod.snd ⁻¹' V, Topology.continuous_snd T T' U hU,
-      Topology.continuous_snd T T' V hV, hpU, hqV, ?_⟩
+    refine ⟨Prod.snd ⁻¹' U, Prod.snd ⁻¹' V, TopologicalSpace.continuous_snd T T' U hU,
+      TopologicalSpace.continuous_snd T T' V hV, hpU, hqV, ?_⟩
     rw [← Set.preimage_inter, hUV, Set.preimage_empty]
   · obtain ⟨U, V, hU, hV, hpU, hqV, hUV⟩ := h p.1 q.1 h1
-    refine ⟨Prod.fst ⁻¹' U, Prod.fst ⁻¹' V, Topology.continuous_fst T T' U hU,
-      Topology.continuous_fst T T' V hV, hpU, hqV, ?_⟩
+    refine ⟨Prod.fst ⁻¹' U, Prod.fst ⁻¹' V, TopologicalSpace.continuous_fst T T' U hU,
+      TopologicalSpace.continuous_fst T T' V hV, hpU, hqV, ?_⟩
     rw [← Set.preimage_inter, hUV, Set.preimage_empty]
 
 /--
@@ -440,12 +445,13 @@ theorem Topology.isHausdorff_prod {X : Type u} {Y : Type v} {T : Topology X} {T'
 @preamble
 Nothing in the Hausdorff condition mentions anything but open sets and points, so a homeomorphism carries it across. Given two distinct points of the second space, send them back by the inverse map — they are still distinct, since the forward map returns them — separate them there, and pull the two open sets forward along the inverse map, which is continuous.
 
-Discreteness and codiscreteness were transported across a homeomorphism in an earlier section, and each of the other axioms here moves by the argument just given. A property that survives every homeomorphism is a property of the space and not of the names of its points.
+Discreteness and indiscreteness were transported across a homeomorphism in an earlier section, and each of the other axioms here moves by the argument just given. A property that survives every homeomorphism is a property of the space and not of the names of its points.
 @description
-Show that `T'.IsHausdorff` when `Homeomorphic T T'` and `T.IsHausdorff`. Take the homeomorphism out of the hypothesis with `obtain ⟨e⟩`. The two open sets are `e.invFun ⁻¹' U` and `e.invFun ⁻¹' V`, open by `e.continuous_invFun`; `e.right_inv` is what shows the two pulled-back points distinct.
+Show that `T'.IsT2` when `Homeomorphic T T'` and `T.IsT2`. Take the homeomorphism out of the hypothesis with `obtain ⟨e⟩`. The two open sets are `e.invFun ⁻¹' U` and `e.invFun ⁻¹' V`, open by `e.continuous_invFun`; `e.right_inv` is what shows the two pulled-back points distinct.
 -/
-theorem Homeomorphic.isHausdorff {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphic T T') (hT : T.IsHausdorff) : T'.IsHausdorff := by
+theorem Homeomorphic.isT2 {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : Homeomorphic T T') (hT : T.IsT2) : T'.IsT2 := by
   obtain ⟨e⟩ := h
   intro x y hxy
   obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := hT (e.invFun x) (e.invFun y)
@@ -472,24 +478,24 @@ The Hausdorff condition separates two points. Ask the same of a point and a clos
 
 A space is *regular*, or T₃, when it is T₁ and every point outside a closed set has disjoint open sets separating it from that set. It is *normal*, or T₄, when it is T₁ and any two disjoint closed sets have disjoint open sets separating them.
 
-Each carries T₁ as a conjunct, and without it the hierarchy would break: it is T₁ that makes a single point a closed set, and so makes the Hausdorff condition a case of regularity.
+Each carries T₁ as a conjunct, and without it the hierarchy would break: it is T₁ that makes a single point a closed set, and so makes the Hausdorff condition a case of regularity. Mathlib names these two `T3Space` and `T4Space`; what it calls `RegularSpace` and `NormalSpace` are the conditions with the T₁ left off.
 @description
-Define `Topology.IsRegular` and `Topology.IsNormal`, each a conjunction whose first half is `T.IsT1`. The second half of the first quantifies over `x : X` and `C : Set X` with `T.IsClosed C` and `x ∉ C`, and asks for `U` and `V` with `T.IsOpen U`, `T.IsOpen V`, `x ∈ U`, `C ⊆ V`, `U ∩ V = ∅`, in that order. The second quantifies over `C D : Set X`, both closed, with `C ∩ D = ∅`, and asks for `C ⊆ U` and `D ⊆ V` in the corresponding places.
+Define `TopologicalSpace.IsT3` and `TopologicalSpace.IsT4`, each a conjunction whose first half is `T.IsT1`. The second half of the first quantifies over `x : X` and `C : Set X` with `T.IsClosed C` and `x ∉ C`, and asks for `U` and `V` with `T.IsOpen U`, `T.IsOpen V`, `x ∈ U`, `C ⊆ V`, `U ∩ V = ∅`, in that order. The second quantifies over `C D : Set X`, both closed, with `C ∩ D = ∅`, and asks for `C ⊆ U` and `D ⊆ V` in the corresponding places.
 -/
 
-def Topology.IsRegular {X : Type u} (T : Topology X) : Prop :=
+def TopologicalSpace.IsT3 {X : Type u} (T : TopologicalSpace X) : Prop :=
   T.IsT1 ∧ ∀ (x : X) (C : Set X), T.IsClosed C → x ∉ C →
     ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ C ⊆ V ∧ U ∩ V = ∅
 
-def Topology.IsNormal {X : Type u} (T : Topology X) : Prop :=
+def TopologicalSpace.IsT4 {X : Type u} (T : TopologicalSpace X) : Prop :=
   T.IsT1 ∧ ∀ C D : Set X, T.IsClosed C → T.IsClosed D → C ∩ D = ∅ →
     ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ C ⊆ U ∧ D ⊆ V ∧ U ∩ V = ∅
 
 /-- @spec -/
-example (X : Type) (T : Topology X) :
-    (T.IsRegular ↔ T.IsT1 ∧ ∀ (x : X) (C : Set X), T.IsClosed C → x ∉ C →
+example (X : Type) (T : TopologicalSpace X) :
+    (T.IsT3 ↔ T.IsT1 ∧ ∀ (x : X) (C : Set X), T.IsClosed C → x ∉ C →
         ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ C ⊆ V ∧ U ∩ V = ∅)
-      ∧ (T.IsNormal ↔ T.IsT1 ∧ ∀ C D : Set X, T.IsClosed C → T.IsClosed D → C ∩ D = ∅ →
+      ∧ (T.IsT4 ↔ T.IsT1 ∧ ∀ C D : Set X, T.IsClosed C → T.IsClosed D → C ∩ D = ∅ →
         ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ C ⊆ U ∧ D ⊆ V ∧ U ∩ V = ∅) :=
   ⟨Iff.rfl, Iff.rfl⟩
 
@@ -507,11 +513,11 @@ A normal space is regular. A point is a closed set, by the characterisation of T
 
 A regular space is Hausdorff. Given `x ≠ y`, the set `{y}` is closed and `x` does not belong to it, so regularity separates `x` from `{y}`; an open set containing `{y}` contains `y`, which is the point the Hausdorff condition wanted separated.
 @description
-Prove `Topology.isRegular_of_isNormal` and `Topology.isHausdorff_of_isRegular`. Both apply `Topology.isT1_iff_isClosed_singleton` to the first half of the hypothesis. For the first, `Set.eq_empty_of_forall_notMem` proves `{x} ∩ C = ∅`; in both, a containment `{x} ⊆ U` applied to `rfl` is the membership `x ∈ U`.
+Prove `TopologicalSpace.isT3_of_isT4` and `TopologicalSpace.isT2_of_isT3`. Both apply `TopologicalSpace.isT1_iff_isClosed_singleton` to the first half of the hypothesis. For the first, `Set.eq_empty_of_forall_notMem` proves `{x} ∩ C = ∅`; in both, a containment `{x} ⊆ U` applied to `rfl` is the membership `x ∈ U`.
 -/
 
-theorem Topology.isRegular_of_isNormal {X : Type u} {T : Topology X} (h : T.IsNormal) :
-    T.IsRegular := by
+theorem TopologicalSpace.isT3_of_isT4 {X : Type u} {T : TopologicalSpace X} (h : T.IsT4) :
+    T.IsT3 := by
   refine ⟨h.1, fun x C hC hx => ?_⟩
   have hd : ({x} : Set X) ∩ C = ∅ := by
     apply Set.eq_empty_of_forall_notMem
@@ -519,14 +525,14 @@ theorem Topology.isRegular_of_isNormal {X : Type u} {T : Topology X} (h : T.IsNo
     rw [show z = x from hz1] at hz2
     exact hx hz2
   obtain ⟨U, V, hU, hV, hxU, hCV, hUV⟩ :=
-    h.2 {x} C ((Topology.isT1_iff_isClosed_singleton T).mp h.1 x) hC hd
+    h.2 {x} C ((TopologicalSpace.isT1_iff_isClosed_singleton T).mp h.1 x) hC hd
   exact ⟨U, V, hU, hV, hxU rfl, hCV, hUV⟩
 
-theorem Topology.isHausdorff_of_isRegular {X : Type u} {T : Topology X} (h : T.IsRegular) :
-    T.IsHausdorff := by
+theorem TopologicalSpace.isT2_of_isT3 {X : Type u} {T : TopologicalSpace X} (h : T.IsT3) :
+    T.IsT2 := by
   intro x y hxy
   obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ :=
-    h.2 x {y} ((Topology.isT1_iff_isClosed_singleton T).mp h.1 y) hxy
+    h.2 x {y} ((TopologicalSpace.isT1_iff_isClosed_singleton T).mp h.1 y) hxy
   exact ⟨U, V, hU, hV, hxU, hyV rfl, hUV⟩
 
 /-! @end -/
@@ -539,11 +545,11 @@ theorem Topology.isHausdorff_of_isRegular {X : Type u} {T : Topology X} (h : T.I
 @preamble
 Where every subset is open there is nothing to arrange. Two disjoint closed sets are already two disjoint open sets, and each separates the other; the T₁ half is as cheap, since the complement of a point is open like everything else.
 
-So the discrete topology satisfies all five axioms, and the codiscrete one fails the first. The two extremes bound the hierarchy as they bound everything else built from open sets.
+So the discrete topology satisfies all five axioms, and the indiscrete one fails the first. The two extremes bound the hierarchy as they bound everything else built from open sets.
 @description
-Show that `(discrete X).IsNormal`. For the T₁ half offer `{y}ᶜ`; for the second half offer the two closed sets unchanged, with `subset_rfl` for the two containments and the hypothesis for the disjointness. Openness in the discrete topology is `trivial`.
+Show that `(discrete X).IsT4`. For the T₁ half offer `{y}ᶜ`; for the second half offer the two closed sets unchanged, with `subset_rfl` for the two containments and the hypothesis for the disjointness. Openness in the discrete topology is `trivial`.
 -/
-theorem discrete_isNormal (X : Type u) : (discrete X).IsNormal := by
+theorem discrete_isT4 (X : Type u) : (discrete X).IsT4 := by
   constructor
   · intro x y hxy
     exact ⟨{y}ᶜ, trivial, hxy, fun hn => hn rfl⟩
@@ -562,22 +568,22 @@ Halve that radius. Around `x` put `M.ball x (ε / 2)`; around `C` put the union 
 
 The two do not meet. A point `z` in both is within `ε / 2` of `x` and within `ε / 2` of some `c` of `C`, so `x` is within `ε` of `c` — and no point of `C` is that close to `x`.
 @description
-Show that `M.toTopology.IsRegular`. The T₁ half is the Hausdorff problem read through the implications. Write the union as `⋃₀ {B | ∃ c ∈ C, B = M.ball c (ε / 2)}`, whose openness is `Metric.isOpenSet_sUnion` once a member is taken apart by `rintro B ⟨c, _, rfl⟩`; `M.triangle x z c` and `M.symm` then feed `linarith`.
+Show that `M.toTopologicalSpace.IsT3`. The T₁ half is the Hausdorff problem read through the implications. Write the union as `⋃₀ {B | ∃ c ∈ C, B = M.ball c (ε / 2)}`, whose openness is `MetricSpace.isOpenSet_sUnion` once a member is taken apart by `rintro B ⟨c, _, rfl⟩`; `M.dist_triangle x z c` and `M.dist_comm` then feed `linarith`.
 -/
-theorem Metric.isRegular {X : Type u} (M : Metric X) : M.toTopology.IsRegular := by
-  refine ⟨Topology.isT1_of_isHausdorff (Metric.isHausdorff M), fun x C hC hx => ?_⟩
+theorem MetricSpace.isT3 {X : Type u} (M : MetricSpace X) : M.toTopologicalSpace.IsT3 := by
+  refine ⟨TopologicalSpace.isT1_of_isT2 (MetricSpace.isT2 M), fun x C hC hx => ?_⟩
   obtain ⟨ε, hε, hball⟩ := hC x hx
   have hopen : M.IsOpenSet (⋃₀ {B | ∃ c ∈ C, B = M.ball c (ε / 2)}) :=
-    Metric.isOpenSet_sUnion M (by rintro B ⟨c, _, rfl⟩; exact Metric.isOpenSet_ball M c _)
+    MetricSpace.isOpenSet_sUnion M (by rintro B ⟨c, _, rfl⟩; exact MetricSpace.isOpenSet_ball M c _)
   have hCV : C ⊆ ⋃₀ {B | ∃ c ∈ C, B = M.ball c (ε / 2)} :=
-    fun c hc => ⟨M.ball c (ε / 2), ⟨c, hc, rfl⟩, Metric.mem_ball_self M c _ (by linarith)⟩
-  refine ⟨M.ball x (ε / 2), _, Metric.isOpenSet_ball M x _, hopen,
-    Metric.mem_ball_self M x _ (by linarith), hCV, ?_⟩
+    fun c hc => ⟨M.ball c (ε / 2), ⟨c, hc, rfl⟩, MetricSpace.mem_ball_self M c _ (by linarith)⟩
+  refine ⟨M.ball x (ε / 2), _, MetricSpace.isOpenSet_ball M x _, hopen,
+    MetricSpace.mem_ball_self M x _ (by linarith), hCV, ?_⟩
   apply Set.eq_empty_of_forall_notMem
   rintro z ⟨hz1, B, ⟨c, hc, rfl⟩, hz2⟩
-  rw [Metric.mem_ball M] at hz1 hz2
-  have e : M.dist c z = M.dist z c := M.symm
-  have ht := M.triangle x z c
-  exact hball ((Metric.mem_ball M).mpr (by linarith)) hc
+  rw [MetricSpace.mem_ball M] at hz1 hz2
+  have e : M.dist c z = M.dist z c := M.dist_comm
+  have ht := M.dist_triangle x z c
+  exact hball ((MetricSpace.mem_ball M).mpr (by linarith)) hc
 
 end GeneralTopology

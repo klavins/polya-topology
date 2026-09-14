@@ -2,23 +2,23 @@ slug: two_point_topologies
 kind: example
 title: Three Spaces on Two Points, No Two the Same
 statement: |-
-  Now the three are separated. The discrete space is discrete and neither of the others is, which distinguishes it from both; the codiscrete space is codiscrete and the Sierpiński space is not, which distinguishes those two.
+  Now the three are separated. The discrete space is discrete and neither of the others is, which distinguishes it from both; the indiscrete space is indiscrete and the Sierpiński space is not, which distinguishes those two.
 
-  One consequence is worth stating. The identity map from the discrete space to the codiscrete space on `Bool` is a continuous bijection: every map out of a discrete space is continuous, and the identity is its own inverse. Yet the two spaces are not homeomorphic, so a continuous bijection need not be one — which is why the open-map hypothesis was needed above.
+  One consequence is worth stating. The identity map from the discrete space to the indiscrete space on `Bool` is a continuous bijection: every map out of a discrete space is continuous, and the identity is its own inverse. Yet the two spaces are not homeomorphic, so a continuous bijection need not be one — which is why the open-map hypothesis was needed above.
 concepts:
 - topological_invariants
 stub: |-
-  theorem discrete_not_homeomorphic_codiscrete :
-      ¬ Homeomorphic (discrete Bool) (codiscrete Bool) := sorry
+  theorem discrete_not_homeomorphic_indiscrete :
+      ¬ Homeomorphic (discrete Bool) (indiscrete Bool) := sorry
 
   theorem discrete_not_homeomorphic_sierpinski :
       ¬ Homeomorphic (discrete Bool) sierpinski := sorry
 
-  theorem codiscrete_not_homeomorphic_sierpinski :
-      ¬ Homeomorphic (codiscrete Bool) sierpinski := sorry
+  theorem indiscrete_not_homeomorphic_sierpinski :
+      ¬ Homeomorphic (indiscrete Bool) sierpinski := sorry
 reference: |-
-  theorem discrete_not_homeomorphic_codiscrete :
-      ¬ Homeomorphic (discrete Bool) (codiscrete Bool) := by
+  theorem discrete_not_homeomorphic_indiscrete :
+      ¬ Homeomorphic (discrete Bool) (indiscrete Bool) := by
     intro h
     exact singleton_true_not_trivial (h.isDiscrete (discrete_isDiscrete Bool) {true})
 
@@ -27,28 +27,28 @@ reference: |-
     intro h
     exact sierpinski_not_discrete (h.isDiscrete (discrete_isDiscrete Bool))
 
-  theorem codiscrete_not_homeomorphic_sierpinski :
-      ¬ Homeomorphic (codiscrete Bool) sierpinski := by
+  theorem indiscrete_not_homeomorphic_sierpinski :
+      ¬ Homeomorphic (indiscrete Bool) sierpinski := by
     intro h
-    exact sierpinski_not_codiscrete (h.isCodiscrete (codiscrete_isCodiscrete Bool))
+    exact sierpinski_not_indiscrete (h.isIndiscrete (indiscrete_isIndiscrete Bool))
 spec: |-
-  example : ¬ Homeomorphic (discrete Bool) (codiscrete Bool) := _root_.GeneralTopology.discrete_not_homeomorphic_codiscrete
+  example : ¬ Homeomorphic (discrete Bool) (indiscrete Bool) := _root_.GeneralTopology.discrete_not_homeomorphic_indiscrete
   example : ¬ Homeomorphic (discrete Bool) sierpinski := _root_.GeneralTopology.discrete_not_homeomorphic_sierpinski
-  example : ¬ Homeomorphic (codiscrete Bool) sierpinski := _root_.GeneralTopology.codiscrete_not_homeomorphic_sierpinski
+  example : ¬ Homeomorphic (indiscrete Bool) sierpinski := _root_.GeneralTopology.indiscrete_not_homeomorphic_sierpinski
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def discrete (X : Type u) : Topology X where
+  def discrete (X : Type u) : TopologicalSpace X where
     IsOpen := fun _ => True
-    univ := trivial
-    inter := fun _ _ => trivial
-    sUnion := fun _ => trivial
+    isOpen_univ := trivial
+    isOpen_inter := fun _ _ => trivial
+    isOpen_sUnion := fun _ => trivial
 
   theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
       (hV : V = ∅ ∨ V = Set.univ) : U ∩ V = ∅ ∨ U ∩ V = Set.univ := by
@@ -68,17 +68,17 @@ preamble: |
       · rfl
       · exact absurd hUF hu
 
-  def codiscrete (X : Type u) : Topology X where
+  def indiscrete (X : Type u) : TopologicalSpace X where
     IsOpen := fun U => U = ∅ ∨ U = Set.univ
-    univ := Or.inr rfl
-    inter := trivial_inter
-    sUnion := trivial_sUnion
+    isOpen_univ := Or.inr rfl
+    isOpen_inter := trivial_inter
+    isOpen_sUnion := trivial_sUnion
 
-  def sierpinski : Topology Bool where
+  def sierpinski : TopologicalSpace Bool where
     IsOpen := fun U => false ∈ U → true ∈ U
-    univ := fun _ => trivial
-    inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
-    sUnion := by
+    isOpen_univ := fun _ => trivial
+    isOpen_inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
+    isOpen_sUnion := by
       intro F h hf
       obtain ⟨U, hUF, hU⟩ := hf
       exact ⟨U, hUF, h U hUF hU⟩
@@ -88,11 +88,13 @@ preamble: |
     have : (true : Bool) ∈ ({false} : Set Bool) := h rfl
     simp at this
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+  structure Homeomorph {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) where
     toFun : X → Y
     invFun : Y → X
     left_inv : ∀ x, invFun (toFun x) = x
@@ -100,19 +102,21 @@ preamble: |
     continuous_toFun : T.Continuous T' toFun
     continuous_invFun : T'.Continuous T invFun
 
-  def Homeomorphic {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) : Prop :=
-    Nonempty (Homeomorphism T T')
+  def Homeomorphic {X : Type u} {Y : Type v} (T : TopologicalSpace X) (T' : TopologicalSpace Y) : Prop
+      :=
+    Nonempty (Homeomorph T T')
 
-  theorem Homeomorphism.preimage_preimage {X : Type u} {Y : Type v} {T : Topology X}
-      {T' : Topology Y} (h : Homeomorphism T T') (V : Set Y) :
+  theorem Homeomorph.preimage_preimage {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} (h : Homeomorph T T') (V : Set Y) :
       h.invFun ⁻¹' (h.toFun ⁻¹' V) = V := by
     apply Set.ext
     intro y
     show h.toFun (h.invFun y) ∈ V ↔ y ∈ V
     rw [h.right_inv]
 
-  theorem Homeomorphism.isOpen_iff {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-      (h : Homeomorphism T T') (V : Set Y) : T'.IsOpen V ↔ T.IsOpen (h.toFun ⁻¹' V) := by
+  theorem Homeomorph.isOpen_iff {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y}
+      (h : Homeomorph T T') (V : Set Y) : T'.IsOpen V ↔ T.IsOpen (h.toFun ⁻¹' V) := by
     constructor
     · intro hV
       exact h.continuous_toFun V hV
@@ -120,23 +124,25 @@ preamble: |
       have hp := h.continuous_invFun _ hV
       rwa [h.preimage_preimage] at hp
 
-  def Topology.IsDiscrete {X : Type u} (T : Topology X) : Prop := ∀ U, T.IsOpen U
+  def TopologicalSpace.IsDiscrete {X : Type u} (T : TopologicalSpace X) : Prop := ∀ U, T.IsOpen U
 
-  def Topology.IsCodiscrete {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsIndiscrete {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ
 
   theorem discrete_isDiscrete (X : Type u) : (discrete X).IsDiscrete := fun _ => trivial
 
-  theorem codiscrete_isCodiscrete (X : Type u) : (codiscrete X).IsCodiscrete := fun _ hU => hU
+  theorem indiscrete_isIndiscrete (X : Type u) : (indiscrete X).IsIndiscrete := fun _ hU => hU
 
-  theorem Homeomorphic.isDiscrete {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+  theorem Homeomorphic.isDiscrete {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y}
       (h : Homeomorphic T T') (hT : T.IsDiscrete) : T'.IsDiscrete := by
     obtain ⟨e⟩ := h
     intro V
     exact (e.isOpen_iff V).mpr (hT _)
 
-  theorem Homeomorphic.isCodiscrete {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-      (h : Homeomorphic T T') (hT : T.IsCodiscrete) : T'.IsCodiscrete := by
+  theorem Homeomorphic.isIndiscrete {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y}
+      (h : Homeomorphic T T') (hT : T.IsIndiscrete) : T'.IsIndiscrete := by
     obtain ⟨e⟩ := h
     intro V hV
     rcases hT _ ((e.isOpen_iff V).mp hV) with he | he
@@ -157,22 +163,22 @@ preamble: |
   theorem sierpinski_not_discrete : ¬ sierpinski.IsDiscrete := fun h =>
     sierpinski_singleton_false_not_open (h {false})
 
-  theorem sierpinski_not_codiscrete : ¬ sierpinski.IsCodiscrete := fun h =>
+  theorem sierpinski_not_indiscrete : ¬ sierpinski.IsIndiscrete := fun h =>
     singleton_true_not_trivial (h {true} (fun _ => rfl))
 
   end GeneralTopology
   open GeneralTopology
-description: Prove that no two of `discrete Bool`, `codiscrete Bool` and `sierpinski` are homeomorphic. Each proof transports one of the two invariants along the assumed homeomorphism and contradicts a fact from the previous problems.
+description: Prove that no two of `discrete Bool`, `indiscrete Bool` and `sierpinski` are homeomorphic. Each proof transports one of the two invariants along the assumed homeomorphism and contradicts a fact from the previous problems.
 stub_names:
-- discrete_not_homeomorphic_codiscrete
+- discrete_not_homeomorphic_indiscrete
 - discrete_not_homeomorphic_sierpinski
-- codiscrete_not_homeomorphic_sierpinski
+- indiscrete_not_homeomorphic_sierpinski
 namespace: GeneralTopology
 seq: 104
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
-  line: 573
+  line: 589
   closure_rounds: 1
   check_kind: theorem

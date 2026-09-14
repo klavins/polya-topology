@@ -48,7 +48,7 @@ namespace: GeneralTopology
 seq: 45
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/BasicExamples.lean
   line: 45
   closure_rounds: 1

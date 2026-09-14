@@ -10,14 +10,14 @@ statement: |-
 concepts:
 - regular_normal
 stub: |-
-  theorem Topology.isRegular_of_isNormal {X : Type u} {T : Topology X} (h : T.IsNormal) :
-      T.IsRegular := sorry
+  theorem TopologicalSpace.isT3_of_isT4 {X : Type u} {T : TopologicalSpace X} (h : T.IsT4) :
+      T.IsT3 := sorry
 
-  theorem Topology.isHausdorff_of_isRegular {X : Type u} {T : Topology X} (h : T.IsRegular) :
-      T.IsHausdorff := sorry
+  theorem TopologicalSpace.isT2_of_isT3 {X : Type u} {T : TopologicalSpace X} (h : T.IsT3) :
+      T.IsT2 := sorry
 reference: |-
-  theorem Topology.isRegular_of_isNormal {X : Type u} {T : Topology X} (h : T.IsNormal) :
-      T.IsRegular := by
+  theorem TopologicalSpace.isT3_of_isT4 {X : Type u} {T : TopologicalSpace X} (h : T.IsT4) :
+      T.IsT3 := by
     refine ⟨h.1, fun x C hC hx => ?_⟩
     have hd : ({x} : Set X) ∩ C = ∅ := by
       apply Set.eq_empty_of_forall_notMem
@@ -25,37 +25,38 @@ reference: |-
       rw [show z = x from hz1] at hz2
       exact hx hz2
     obtain ⟨U, V, hU, hV, hxU, hCV, hUV⟩ :=
-      h.2 {x} C ((Topology.isT1_iff_isClosed_singleton T).mp h.1 x) hC hd
+      h.2 {x} C ((TopologicalSpace.isT1_iff_isClosed_singleton T).mp h.1 x) hC hd
     exact ⟨U, V, hU, hV, hxU rfl, hCV, hUV⟩
 
-  theorem Topology.isHausdorff_of_isRegular {X : Type u} {T : Topology X} (h : T.IsRegular) :
-      T.IsHausdorff := by
+  theorem TopologicalSpace.isT2_of_isT3 {X : Type u} {T : TopologicalSpace X} (h : T.IsT3) :
+      T.IsT2 := by
     intro x y hxy
     obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ :=
-      h.2 x {y} ((Topology.isT1_iff_isClosed_singleton T).mp h.1 y) hxy
+      h.2 x {y} ((TopologicalSpace.isT1_iff_isClosed_singleton T).mp h.1 y) hxy
     exact ⟨U, V, hU, hV, hxU, hyV rfl, hUV⟩
 spec: |-
-  example : ∀ {X : Type u} {T : Topology X} (h : T.IsNormal), T.IsRegular := _root_.GeneralTopology.Topology.isRegular_of_isNormal
-  example : ∀ {X : Type u} {T : Topology X} (h : T.IsRegular), T.IsHausdorff := _root_.GeneralTopology.Topology.isHausdorff_of_isRegular
+  example : ∀ {X : Type u} {T : TopologicalSpace X} (h : T.IsT4), T.IsT3 := _root_.GeneralTopology.TopologicalSpace.isT3_of_isT4
+  example : ∀ {X : Type u} {T : TopologicalSpace X} (h : T.IsT3), T.IsT2 := _root_.GeneralTopology.TopologicalSpace.isT2_of_isT3
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
-  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+  def TopologicalSpace.IsNbhd {X : Type u} (T : TopologicalSpace X) (x : X) (N : Set X) : Prop :=
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
 
-  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+  theorem TopologicalSpace.nbhd_of_isOpen {X : Type u} (T : TopologicalSpace X) {U : Set X}
       (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
     ⟨U, hU, hx, subset_rfl⟩
 
-  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+  theorem TopologicalSpace.union_of_opens_inside {X : Type u} (T : TopologicalSpace X) (U : Set X)
       (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
     apply Set.Subset.antisymm
     · intro x hx
@@ -64,53 +65,53 @@ preamble: |
     · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
       exact hVU hxV
 
-  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+  theorem TopologicalSpace.isOpen_iff_nbhd {X : Type u} (T : TopologicalSpace X) (U : Set X) :
       T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
     constructor
     · intro hU x hx
       exact T.nbhd_of_isOpen hU hx
     · intro h
       rw [T.union_of_opens_inside U h]
-      exact T.sUnion (fun V hV => hV.1)
+      exact T.isOpen_sUnion (fun V hV => hV.1)
 
-  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT1 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
 
-  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT2 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
 
-  theorem Topology.isT1_iff_isClosed_singleton {X : Type u} (T : Topology X) :
+  theorem TopologicalSpace.isT1_iff_isClosed_singleton {X : Type u} (T : TopologicalSpace X) :
       T.IsT1 ↔ ∀ x : X, T.IsClosed {x} := by
     constructor
     · intro h x
       show T.IsOpen _
-      rw [Topology.isOpen_iff_nbhd]
+      rw [TopologicalSpace.isOpen_iff_nbhd]
       intro y hy
       obtain ⟨U, hU, hyU, hxU⟩ := h y x hy
       exact ⟨U, hU, hyU, fun z hz he => hxU (by rw [← show z = x from he]; exact hz)⟩
     · intro h x y hxy
       exact ⟨{y}ᶜ, h y, hxy, fun hn => hn rfl⟩
 
-  def Topology.IsRegular {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT3 {X : Type u} (T : TopologicalSpace X) : Prop :=
     T.IsT1 ∧ ∀ (x : X) (C : Set X), T.IsClosed C → x ∉ C →
       ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ C ⊆ V ∧ U ∩ V = ∅
 
-  def Topology.IsNormal {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT4 {X : Type u} (T : TopologicalSpace X) : Prop :=
     T.IsT1 ∧ ∀ C D : Set X, T.IsClosed C → T.IsClosed D → C ∩ D = ∅ →
       ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ C ⊆ U ∧ D ⊆ V ∧ U ∩ V = ∅
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Topology.isRegular_of_isNormal` and `Topology.isHausdorff_of_isRegular`. Both apply `Topology.isT1_iff_isClosed_singleton` to the first half of the hypothesis. For the first, `Set.eq_empty_of_forall_notMem` proves `{x} ∩ C = ∅`; in both, a containment `{x} ⊆ U` applied to `rfl` is the membership `x ∈ U`.
+description: Prove `TopologicalSpace.isT3_of_isT4` and `TopologicalSpace.isT2_of_isT3`. Both apply `TopologicalSpace.isT1_iff_isClosed_singleton` to the first half of the hypothesis. For the first, `Set.eq_empty_of_forall_notMem` proves `{x} ∩ C = ∅`; in both, a containment `{x} ⊆ U` applied to `rfl` is the membership `x ∈ U`.
 stub_names:
-- Topology.isRegular_of_isNormal
-- Topology.isHausdorff_of_isRegular
+- TopologicalSpace.isT3_of_isT4
+- TopologicalSpace.isT2_of_isT3
 namespace: GeneralTopology
 seq: 157
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Separation.lean
-  line: 499
+  line: 505
   closure_rounds: 1
   check_kind: theorem

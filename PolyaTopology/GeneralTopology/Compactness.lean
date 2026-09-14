@@ -27,24 +27,25 @@ Spread open sets over a space until they cover it and you may need infinitely ma
 @preamble
 An *open cover* of a set `S` is a collection `F` of open sets whose union contains `S`, so that every point of `S` lies in at least one member. A collection of sets is a `Set (Set X)` and its union is `⋃₀ F`, as they were when the union condition of a topology was written down.
 
-A *subcover* is a subcollection that still covers `S`. Compactness asks whether a finite one can always be found.
+A *subcover* is a subcollection that still covers `S`. Compactness asks whether a finite one can always be found. Mathlib defines compactness by filters rather than covers, and recovers this form as `isCompact_iff_finite_subcover`.
 
 We ask the question of a set, using the open sets of the space around it, and read it off at the whole space to ask it of the space. `S.Finite` says that `S` has finitely many points, and `∃ G ⊆ F, p G` abbreviates `∃ G, G ⊆ F ∧ p G`.
 @description
-Define `Topology.IsCompactSet T S`: for every `F : Set (Set X)` whose members are all open, if `S ⊆ ⋃₀ F` then some `G ⊆ F` has `G.Finite` and `S ⊆ ⋃₀ G`, those two conjuncts in that order. Then define `Topology.IsCompact` as `T.IsCompactSet Set.univ`. Both containments are written `⊆`, not as equations.
+Define `TopologicalSpace.IsCompact T S`: for every `F : Set (Set X)` whose members are all open, if `S ⊆ ⋃₀ F` then some `G ⊆ F` has `G.Finite` and `S ⊆ ⋃₀ G`, those two conjuncts in that order. Then define `TopologicalSpace.IsCompactSpace` as `T.IsCompact Set.univ`. Both containments are written `⊆`, not as equations.
 -/
 
-def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
   ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
     ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
 
-def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+def TopologicalSpace.IsCompactSpace {X : Type u} (T : TopologicalSpace X) : Prop
+    := T.IsCompact Set.univ
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (S : Set X) :
-    (T.IsCompactSet S ↔ ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
+example (X : Type) (T : TopologicalSpace X) (S : Set X) :
+    (T.IsCompact S ↔ ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
         ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G)
-      ∧ (T.IsCompact ↔ T.IsCompactSet Set.univ) :=
+      ∧ (T.IsCompactSpace ↔ T.IsCompact Set.univ) :=
   ⟨Iff.rfl, Iff.rfl⟩
 
 /-! @end -/
@@ -59,15 +60,15 @@ Two sets are compact because there is so little of them to cover. The empty set 
 
 A single point needs one. The cover reaches `x`, so some member `U` holds it; `{U}` is a subcollection of one set, and every point of `{x}` — which is to say `x` — lies in it.
 @description
-Prove `Topology.isCompactSet_empty` and `Topology.isCompactSet_singleton`. `Set.empty_subset` proves both obligations of the first. For the second, a membership `y ∈ {x}` is the equation `y = x` and must be named as one before it can be rewritten; `Set.singleton_subset_iff` turns a containment of a singleton into a membership.
+Prove `TopologicalSpace.isCompact_empty` and `TopologicalSpace.isCompact_singleton`. `Set.empty_subset` proves both obligations of the first. For the second, a membership `y ∈ {x}` is the equation `y = x` and must be named as one before it can be rewritten; `Set.singleton_subset_iff` turns a containment of a singleton into a membership.
 -/
 
-theorem Topology.isCompactSet_empty {X : Type u} (T : Topology X) :
-    T.IsCompactSet (∅ : Set X) :=
+theorem TopologicalSpace.isCompact_empty {X : Type u} (T : TopologicalSpace X) :
+    T.IsCompact (∅ : Set X) :=
   fun _ _ _ => ⟨∅, Set.empty_subset _, Set.finite_empty, Set.empty_subset _⟩
 
-theorem Topology.isCompactSet_singleton {X : Type u} (T : Topology X) (x : X) :
-    T.IsCompactSet {x} := by
+theorem TopologicalSpace.isCompact_singleton {X : Type u} (T : TopologicalSpace X) (x : X) :
+    T.IsCompact {x} := by
   intro F _ hcov
   obtain ⟨U, hUF, hxU⟩ := hcov rfl
   refine ⟨{U}, Set.singleton_subset_iff.mpr hUF, Set.finite_singleton U, ?_⟩
@@ -87,10 +88,10 @@ A cover of `S ∪ S'` covers each half. Each half keeps finitely many members of
 
 This is where *two* matters. Two finite selections have a finite union, and infinitely many of them need not; a union of infinitely many compact sets is usually not compact, the line being a union of closed intervals.
 @description
-Prove `Topology.isCompactSet_union`. Feed each half its own restriction of the cover, then offer the union of the two subcollections; `Set.union_subset` shows it inside `F`, and `Set.Finite.union` that it is finite. `Set.sUnion_mono` carries a point of one subcollection's union into the union of both.
+Prove `TopologicalSpace.isCompact_union`. Feed each half its own restriction of the cover, then offer the union of the two subcollections; `Set.union_subset` shows it inside `F`, and `Set.Finite.union` that it is finite. `Set.sUnion_mono` carries a point of one subcollection's union into the union of both.
 -/
-theorem Topology.isCompactSet_union {X : Type u} (T : Topology X) {S S' : Set X}
-    (hS : T.IsCompactSet S) (hS' : T.IsCompactSet S') : T.IsCompactSet (S ∪ S') := by
+theorem TopologicalSpace.isCompact_union {X : Type u} (T : TopologicalSpace X) {S S' : Set X}
+    (hS : T.IsCompact S) (hS' : T.IsCompact S') : T.IsCompact (S ∪ S') := by
   intro F hFo hcov
   obtain ⟨G, hGF, hGfin, hGcov⟩ := hS F hFo (fun x hx => hcov (Or.inl hx))
   obtain ⟨G', hG'F, hG'fin, hG'cov⟩ := hS' F hFo (fun x hx => hcov (Or.inr hx))
@@ -117,20 +118,20 @@ A set with finitely many points is compact, and no property of the topology is u
 
 The argument is an induction on the finiteness itself. A finite set is built from the empty set by adding one point at a time, so it is enough to know that the empty set is compact and that adding a point preserves compactness — and adding a point is uniting with a singleton, which the last problem already handles.
 @description
-Prove `Topology.isCompactSet_of_finite` and then `Topology.isCompact_of_finite`, which is the first at `Set.univ`. `induction S, hS using Set.Finite.induction_on` splits the finiteness into its two cases, named `empty` and `insert`; `Set.insert_eq` rewrites `insert x S` as `{x} ∪ S`.
+Prove `TopologicalSpace.isCompact_of_finite` and then `TopologicalSpace.isCompactSpace_of_finite`, which is the first at `Set.univ`. `induction S, hS using Set.Finite.induction_on` splits the finiteness into its two cases, named `empty` and `insert`; `Set.insert_eq` rewrites `insert x S` as `{x} ∪ S`.
 -/
 
-theorem Topology.isCompactSet_of_finite {X : Type u} (T : Topology X) {S : Set X}
-    (hS : S.Finite) : T.IsCompactSet S := by
+theorem TopologicalSpace.isCompact_of_finite {X : Type u} (T : TopologicalSpace X) {S : Set X}
+    (hS : S.Finite) : T.IsCompact S := by
   induction S, hS using Set.Finite.induction_on with
-  | empty => exact Topology.isCompactSet_empty T
+  | empty => exact TopologicalSpace.isCompact_empty T
   | insert _ _ ih =>
     rw [Set.insert_eq]
-    exact Topology.isCompactSet_union T (Topology.isCompactSet_singleton T _) ih
+    exact TopologicalSpace.isCompact_union T (TopologicalSpace.isCompact_singleton T _) ih
 
-theorem Topology.isCompact_of_finite {X : Type u} (T : Topology X)
-    (h : (Set.univ : Set X).Finite) : T.IsCompact :=
-  Topology.isCompactSet_of_finite T h
+theorem TopologicalSpace.isCompactSpace_of_finite {X : Type u} (T : TopologicalSpace X)
+    (h : (Set.univ : Set X).Finite) : T.IsCompactSpace :=
+  TopologicalSpace.isCompact_of_finite T h
 
 /-! @end -/
 
@@ -140,14 +141,14 @@ theorem Topology.isCompact_of_finite {X : Type u} (T : Topology X)
 @concept compact_basics
 
 @preamble
-The codiscrete topology has two open sets, and a cover can only use them. Whichever member of a cover catches a point must be the whole space, since the empty set catches nothing, and that one member covers everything by itself. Every codiscrete space is compact, however many points it has.
+The indiscrete topology has two open sets, and a cover can only use them. Whichever member of a cover catches a point must be the whole space, since the empty set catches nothing, and that one member covers everything by itself. Every indiscrete space is compact, however many points it has.
 
 The discrete topology is the other extreme, and it is the subject's first space that is not compact. Every singleton is open, so the singletons cover the space; and no finite collection of them covers a space with infinitely many points, since a finite union of finite sets is finite.
 @description
-Prove `codiscrete_isCompact` and `discrete_not_isCompact`. For the first, keep exactly the members equal to `Set.univ`, a subcollection of `{Set.univ}` and so finite. For the second, `Set.infinite_univ` is the contradiction wanted, `Set.Finite.sUnion` makes the union of a finite collection of finite sets finite, and `trivial` proves whatever the discrete topology asks.
+Prove `indiscrete_isCompactSpace` and `discrete_not_isCompactSpace`. For the first, keep exactly the members equal to `Set.univ`, a subcollection of `{Set.univ}` and so finite. For the second, `Set.infinite_univ` is the contradiction wanted, `Set.Finite.sUnion` makes the union of a finite collection of finite sets finite, and `trivial` proves whatever the discrete topology asks.
 -/
 
-theorem codiscrete_isCompact (X : Type u) : (codiscrete X).IsCompact := by
+theorem indiscrete_isCompactSpace (X : Type u) : (indiscrete X).IsCompactSpace := by
   intro F hFo hcov
   refine ⟨{U | U ∈ F ∧ U = Set.univ}, fun U hU => hU.1,
     Set.Finite.subset (Set.finite_singleton Set.univ) (fun U hU => hU.2), ?_⟩
@@ -158,7 +159,7 @@ theorem codiscrete_isCompact (X : Type u) : (codiscrete X).IsCompact := by
     exact hyU.elim
   · exact ⟨U, ⟨hUF, h⟩, hyU⟩
 
-theorem discrete_not_isCompact (X : Type u) [Infinite X] : ¬ (discrete X).IsCompact := by
+theorem discrete_not_isCompactSpace (X : Type u) [Infinite X] : ¬ (discrete X).IsCompactSpace := by
   intro h
   obtain ⟨G, hGF, hGfin, hGcov⟩ := h {U | ∃ x : X, U = {x}} (fun _ _ => trivial)
     (fun x _ => ⟨{x}, ⟨x, rfl⟩, rfl⟩)
@@ -180,10 +181,11 @@ Let `C` be closed in a compact space and let `F` cover `C`. Then `F` need not co
 
 The space is compact, so finitely many of those cover it. Throw `Cᶜ` away again. What is left is a finite subcollection of `F`, and it still covers `C`, because the member that caught a point of `C` was not the one thrown away.
 @description
-Prove `Topology.isCompactSet_of_isClosed`. `insert Cᶜ F` is the enlarged cover, and `rintro U (rfl | hU)` splits a member of it into the new set and an old one. `G ∩ F` is the collection with `Cᶜ` thrown away; `Set.Finite.subset` shows it finite, and `Or.resolve_left` rules out the discarded member at a point of `C`.
+Prove `TopologicalSpace.isCompact_of_isClosed`. `insert Cᶜ F` is the enlarged cover, and `rintro U (rfl | hU)` splits a member of it into the new set and an old one. `G ∩ F` is the collection with `Cᶜ` thrown away; `Set.Finite.subset` shows it finite, and `Or.resolve_left` rules out the discarded member at a point of `C`.
 -/
-theorem Topology.isCompactSet_of_isClosed {X : Type u} (T : Topology X) (hT : T.IsCompact)
-    {C : Set X} (hC : T.IsClosed C) : T.IsCompactSet C := by
+theorem TopologicalSpace.isCompact_of_isClosed {X : Type u} (T : TopologicalSpace X)
+    (hT : T.IsCompactSpace)
+    {C : Set X} (hC : T.IsClosed C) : T.IsCompact C := by
   intro F hFo hcov
   have hopen : ∀ U ∈ insert Cᶜ F, T.IsOpen U := by
     rintro U (rfl | hU)
@@ -217,15 +219,15 @@ Two bounded sets have a ball holding both, and that is as far as the earlier arg
 
 The induction begins at the empty collection, whose union is empty and is held by a ball of radius zero — about any point at all. A point has to be supplied, since a space with no points has no balls, and here the point is an argument to the theorem.
 @description
-Prove `Metric.isBounded_sUnion`: a finite collection of bounded sets has a bounded union, given a point `x₀` to centre the empty case on. `induction G, hfin using Set.Finite.induction_on` splits the finiteness, and `Set.sUnion_insert` rewrites the union of an enlarged collection as one set united with the rest.
+Prove `MetricSpace.isBounded_sUnion`: a finite collection of bounded sets has a bounded union, given a point `x₀` to centre the empty case on. `induction G, hfin using Set.Finite.induction_on` splits the finiteness, and `Set.sUnion_insert` rewrites the union of an enlarged collection as one set united with the rest.
 -/
-theorem Metric.isBounded_sUnion {X : Type u} (M : Metric X) (x₀ : X) {G : Set (Set X)}
+theorem MetricSpace.isBounded_sUnion {X : Type u} (M : MetricSpace X) (x₀ : X) {G : Set (Set X)}
     (hfin : G.Finite) (h : ∀ U ∈ G, M.IsBounded U) : M.IsBounded (⋃₀ G) := by
   induction G, hfin using Set.Finite.induction_on with
   | empty => exact ⟨x₀, 0, by rintro z ⟨U, hU, -⟩; exact hU.elim⟩
   | insert _ _ ih =>
     rw [Set.sUnion_insert]
-    exact Metric.isBounded_union M _ _ (h _ (Set.mem_insert _ _))
+    exact MetricSpace.isBounded_union M _ _ (h _ (Set.mem_insert _ _))
       (ih (fun U hU => h U (Set.mem_insert_of_mem _ hU)))
 
 /-!
@@ -240,23 +242,23 @@ The set must be nonempty for the statement to mean anything, since boundedness n
 
 The line is not compact, and boundedness is what says so. No ball holds the whole line: whatever centre and radius are offered, the point one radius to the right of the centre escapes.
 @description
-Prove `Metric.isBounded_of_isCompactSet` and `line_not_isCompact`. The cover is `{U | ∃ y : X, U = Metric.ball M y 1}`; `Metric.isOpenSet_ball` makes its members open and `Metric.mem_ball_self` puts each point in one. For the line, apply the first to `Set.univ` and evaluate the distance that results.
+Prove `MetricSpace.isBounded_of_isCompact` and `line_not_isCompactSpace`. The cover is `{U | ∃ y : X, U = MetricSpace.ball M y 1}`; `MetricSpace.isOpenSet_ball` makes its members open and `MetricSpace.mem_ball_self` puts each point in one. For the line, apply the first to `Set.univ` and evaluate the distance that results.
 -/
 
-theorem Metric.isBounded_of_isCompactSet {X : Type u} (M : Metric X) {K : Set X}
-    (hK : M.toTopology.IsCompactSet K) (hne : K.Nonempty) : M.IsBounded K := by
+theorem MetricSpace.isBounded_of_isCompact {X : Type u} (M : MetricSpace X) {K : Set X}
+    (hK : M.toTopologicalSpace.IsCompact K) (hne : K.Nonempty) : M.IsBounded K := by
   obtain ⟨x₀, hx₀⟩ := hne
-  obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {U | ∃ y : X, U = Metric.ball M y 1}
-    (by rintro U ⟨y, rfl⟩; exact Metric.isOpenSet_ball M y 1)
-    (fun y _ => ⟨Metric.ball M y 1, ⟨y, rfl⟩, Metric.mem_ball_self M y 1 one_pos⟩)
-  refine Metric.isBounded_subset M _ _ (Metric.isBounded_sUnion M x₀ hGfin ?_) hGcov
+  obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {U | ∃ y : X, U = MetricSpace.ball M y 1}
+    (by rintro U ⟨y, rfl⟩; exact MetricSpace.isOpenSet_ball M y 1)
+    (fun y _ => ⟨MetricSpace.ball M y 1, ⟨y, rfl⟩, MetricSpace.mem_ball_self M y 1 one_pos⟩)
+  refine MetricSpace.isBounded_subset M _ _ (MetricSpace.isBounded_sUnion M x₀ hGfin ?_) hGcov
   rintro U hU
   obtain ⟨y, rfl⟩ := hGF hU
-  exact Metric.isBounded_ball M y 1
+  exact MetricSpace.isBounded_ball M y 1
 
-theorem line_not_isCompact : ¬ line.toTopology.IsCompact := by
+theorem line_not_isCompactSpace : ¬ line.toTopologicalSpace.IsCompactSpace := by
   intro h
-  obtain ⟨x, ε, hsub⟩ := Metric.isBounded_of_isCompactSet line h ⟨0, trivial⟩
+  obtain ⟨x, ε, hsub⟩ := MetricSpace.isBounded_of_isCompact line h ⟨0, trivial⟩
   have h1 : |x - (x + ε)| < ε := hsub (Set.mem_univ _)
   have h2 : |x - (x + ε)| = |ε| := by ring_nf; rw [abs_neg]
   rw [h2] at h1
@@ -274,22 +276,22 @@ Fix a point `x` and take any other point `y`. The ball about `y` of radius half 
 
 That is one ball. For finitely many sets, each keeping some positive distance from `x`, the smallest of the distances is positive and every one of them keeps it — which is the second place in this section where finiteness is what makes a largest or a smallest exist.
 @description
-Prove `Metric.half_dist_pos`, `Metric.le_dist_of_mem_ball_half` and `Metric.exists_dist_ge_sUnion`. `Metric.dist_pos` from the section on separation is the positive distance between distinct points; restating a membership in a ball as the inequality it abbreviates, together with `Metric.triangle` and `Metric.symm`, gives the second to `linarith`. The third is again an induction on the finiteness, with `min` for the step.
+Prove `MetricSpace.half_dist_pos`, `MetricSpace.le_dist_of_mem_ball_half` and `MetricSpace.exists_dist_ge_sUnion`. `MetricSpace.dist_pos` from the section on separation is the positive distance between distinct points; restating a membership in a ball as the inequality it abbreviates, together with `MetricSpace.dist_triangle` and `MetricSpace.dist_comm`, gives the second to `linarith`. The third is again an induction on the finiteness, with `min` for the step.
 -/
 
-theorem Metric.half_dist_pos {X : Type u} (M : Metric X) {x y : X} (h : x ≠ y) :
+theorem MetricSpace.half_dist_pos {X : Type u} (M : MetricSpace X) {x y : X} (h : x ≠ y) :
     0 < M.dist x y / 2 := by
-  have := Metric.dist_pos M h
+  have := MetricSpace.dist_pos M h
   linarith
 
-theorem Metric.le_dist_of_mem_ball_half {X : Type u} (M : Metric X) {x y z : X}
+theorem MetricSpace.le_dist_of_mem_ball_half {X : Type u} (M : MetricSpace X) {x y z : X}
     (h : z ∈ M.ball y (M.dist x y / 2)) : M.dist x y / 2 ≤ M.dist x z := by
   have h1 : M.dist y z < M.dist x y / 2 := h
-  have h2 := M.triangle x z y
-  have h3 : M.dist z y = M.dist y z := M.symm
+  have h2 := M.dist_triangle x z y
+  have h3 : M.dist z y = M.dist y z := M.dist_comm
   linarith
 
-theorem Metric.exists_dist_ge_sUnion {X : Type u} (M : Metric X) {x : X} {G : Set (Set X)}
+theorem MetricSpace.exists_dist_ge_sUnion {X : Type u} (M : MetricSpace X) {x : X} {G : Set (Set X)}
     (hfin : G.Finite) (h : ∀ U ∈ G, ∃ r > 0, ∀ z ∈ U, r ≤ M.dist x z) :
     ∃ r > 0, ∀ z ∈ ⋃₀ G, r ≤ M.dist x z := by
   induction G, hfin using Set.Finite.induction_on with
@@ -314,21 +316,21 @@ Let `K` be compact and let `x` lie outside it. Around each point `y` of `K` draw
 
 Each of the finitely many keeps a positive distance from `x`, so together they keep the smallest of those distances, `r`. The ball of radius `r` about `x` therefore meets none of them, and so meets none of `K`. Every point outside `K` has room around it, which is what it means for the complement to be open.
 @description
-Prove `Metric.isClosed_of_isCompactSet`. Unfolding the goal leaves a point `x` of `Kᶜ` and asks for a radius; the cover is `{U | ∃ y ∈ K, U = Metric.ball M y (M.dist x y / 2)}`, and the previous problem supplies both the positive distance each of its members keeps and the smallest distance the finitely many kept members keep together.
+Prove `MetricSpace.isClosed_of_isCompact`. Unfolding the goal leaves a point `x` of `Kᶜ` and asks for a radius; the cover is `{U | ∃ y ∈ K, U = MetricSpace.ball M y (M.dist x y / 2)}`, and the previous problem supplies both the positive distance each of its members keeps and the smallest distance the finitely many kept members keep together.
 -/
-theorem Metric.isClosed_of_isCompactSet {X : Type u} (M : Metric X) {K : Set X}
-    (hK : M.toTopology.IsCompactSet K) : M.toTopology.IsClosed K := by
+theorem MetricSpace.isClosed_of_isCompact {X : Type u} (M : MetricSpace X) {K : Set X}
+    (hK : M.toTopologicalSpace.IsCompact K) : M.toTopologicalSpace.IsClosed K := by
   intro x hx
   have hpos : ∀ y ∈ K, 0 < M.dist x y / 2 := fun y hy =>
-    Metric.half_dist_pos M (by rintro rfl; exact hx hy)
-  obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {U | ∃ y ∈ K, U = Metric.ball M y (M.dist x y / 2)}
-    (by rintro U ⟨y, -, rfl⟩; exact Metric.isOpenSet_ball M y _)
+    MetricSpace.half_dist_pos M (by rintro rfl; exact hx hy)
+  obtain ⟨G, hGF, hGfin, hGcov⟩ := hK {U | ∃ y ∈ K, U = MetricSpace.ball M y (M.dist x y / 2)}
+    (by rintro U ⟨y, -, rfl⟩; exact MetricSpace.isOpenSet_ball M y _)
     (fun y hy => ⟨_, ⟨y, hy, rfl⟩, by
-      rw [Metric.mem_ball M, Metric.dist_self M]; exact hpos y hy⟩)
-  obtain ⟨r, hr, hrG⟩ := Metric.exists_dist_ge_sUnion M hGfin (by
+      rw [MetricSpace.mem_ball M, MetricSpace.dist_self M]; exact hpos y hy⟩)
+  obtain ⟨r, hr, hrG⟩ := MetricSpace.exists_dist_ge_sUnion M hGfin (by
     rintro U hU
     obtain ⟨y, hy, rfl⟩ := hGF hU
-    exact ⟨_, hpos y hy, fun z hz => Metric.le_dist_of_mem_ball_half M hz⟩)
+    exact ⟨_, hpos y hy, fun z hz => MetricSpace.le_dist_of_mem_ball_half M hz⟩)
   refine ⟨r, hr, fun z hz hzK => ?_⟩
   have h1 : M.dist x z < r := hz
   linarith [hrG z (hGcov hzK)]
@@ -351,11 +353,12 @@ Let `f` be continuous and `S` compact, and let `F` cover `f '' S`. The preimages
 
 Naming those members is the one delicate step. A preimage does not remember the set it came from, so we choose one for each member `V` of the finite subcollection: `hGF hV` is the proof that `V` is a preimage, and its `choose` is the set chosen.
 @description
-Prove `Topology.isCompactSet_image`. The pulled-back cover is `{V | ∃ U ∈ F, V = f ⁻¹' U}`. The subcollection to offer is `{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}`, written in exactly that order because `Set.Finite.dependent_image` — which proves it finite — is stated that way round.
+Prove `TopologicalSpace.isCompact_image`. The pulled-back cover is `{V | ∃ U ∈ F, V = f ⁻¹' U}`. The subcollection to offer is `{U | ∃ V, ∃ hV : V ∈ G, (hGF hV).choose = U}`, written in exactly that order because `Set.Finite.dependent_image` — which proves it finite — is stated that way round.
 -/
-theorem Topology.isCompactSet_image {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
-    {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompactSet S) :
-    T'.IsCompactSet (f '' S) := by
+theorem TopologicalSpace.isCompact_image {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    {T' : TopologicalSpace Y}
+    {f : X → Y} (hf : T.Continuous T' f) {S : Set X} (hS : T.IsCompact S) :
+    T'.IsCompact (f '' S) := by
   intro F hFo hcov
   have hpre : S ⊆ ⋃₀ {V | ∃ U ∈ F, V = f ⁻¹' U} := by
     intro x hxS
@@ -381,13 +384,14 @@ Homeomorphic spaces are the same space as far as a topology can tell, and compac
 
 No new argument is needed. A homeomorphism is onto, so the image of the whole of the first space is the whole of the second; and the image of a compact set is compact. The same reasoning showed connectedness to be a topological property, and it will show as much of any property written in open sets.
 @description
-Show `Homeomorphic.isCompact`. `obtain ⟨e⟩` opens the existence of a homeomorphism, and `Set.image_univ` with `Set.range_eq_univ` turns the image of the whole space into the whole space, which is where `Homeomorphism.surjective` is wanted.
+Show `Homeomorphic.isCompactSpace`. `obtain ⟨e⟩` opens the existence of a homeomorphism, and `Set.image_univ` with `Set.range_eq_univ` turns the image of the whole space into the whole space, which is where `Homeomorph.surjective` is wanted.
 -/
-theorem Homeomorphic.isCompact {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphic T T') (hT : T.IsCompact) : T'.IsCompact := by
+theorem Homeomorphic.isCompactSpace {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : Homeomorphic T T') (hT : T.IsCompactSpace) : T'.IsCompactSpace := by
   obtain ⟨e⟩ := h
-  have him := Topology.isCompactSet_image T e.continuous_toFun hT
-  rwa [Set.image_univ, Set.range_eq_univ.mpr (Homeomorphism.surjective e)] at him
+  have him := TopologicalSpace.isCompact_image T e.continuous_toFun hT
+  rwa [Set.image_univ, Set.range_eq_univ.mpr (Homeomorph.surjective e)] at him
 
 /--
 @problem line_bounds
@@ -423,18 +427,18 @@ A nonempty compact set of reals is bounded, so it has a least upper bound `a`; a
 
 The smallest element needs no new argument. Reflect the set in the origin — the map is continuous and carries compact to compact — take the largest element of the reflection, and reflect it back.
 @description
-Prove `line_exists_max` and `line_exists_min`. `Real.exists_isLUB` supplies the bound, `hlub.1` is its upper-bound half and `hlub.exists_between` produces a member of the set above `a - δ`; `Metric.mem_closure_iff` is the ball form of membership in a closure. For the second, `line_continuous_affine_top (-1) 0` is the reflection.
+Prove `line_exists_max` and `line_exists_min`. `Real.exists_isLUB` supplies the bound, `hlub.1` is its upper-bound half and `hlub.exists_between` produces a member of the set above `a - δ`; `MetricSpace.mem_closure_iff` is the ball form of membership in a closure. For the second, `line_continuous_affine_top (-1) 0` is the reflection.
 -/
 
-theorem line_exists_max {K : Set ℝ} (hK : line.toTopology.IsCompactSet K) (hne : K.Nonempty) :
+theorem line_exists_max {K : Set ℝ} (hK : line.toTopologicalSpace.IsCompact K) (hne : K.Nonempty) :
     ∃ a ∈ K, ∀ x ∈ K, x ≤ a := by
   obtain ⟨a, hlub⟩ := Real.exists_isLUB hne
-    (line_bddAbove_bddBelow (Metric.isBounded_of_isCompactSet line hK hne)).1
+    (line_bddAbove_bddBelow (MetricSpace.isBounded_of_isCompact line hK hne)).1
   refine ⟨a, ?_, fun x hx => hlub.1 hx⟩
-  have hcl : line.toTopology.closure K = K :=
-    (Topology.isClosed_iff_closure_eq line.toTopology K).mp
-      (Metric.isClosed_of_isCompactSet line hK)
-  rw [← hcl, Metric.mem_closure_iff]
+  have hcl : line.toTopologicalSpace.closure K = K :=
+    (TopologicalSpace.isClosed_iff_closure_eq line.toTopologicalSpace K).mp
+      (MetricSpace.isClosed_of_isCompact line hK)
+  rw [← hcl, MetricSpace.mem_closure_iff]
   intro δ hδ
   obtain ⟨y, hyK, hy1, hy2⟩ := hlub.exists_between (show a - δ < a by linarith)
   refine ⟨y, ?_, hyK⟩
@@ -442,10 +446,10 @@ theorem line_exists_max {K : Set ℝ} (hK : line.toTopology.IsCompactSet K) (hne
   rw [abs_lt]
   constructor <;> linarith
 
-theorem line_exists_min {K : Set ℝ} (hK : line.toTopology.IsCompactSet K) (hne : K.Nonempty) :
+theorem line_exists_min {K : Set ℝ} (hK : line.toTopologicalSpace.IsCompact K) (hne : K.Nonempty) :
     ∃ a ∈ K, ∀ x ∈ K, a ≤ x := by
-  have hc : line.toTopology.IsCompactSet ((fun x => -1 * x + 0) '' K) :=
-    Topology.isCompactSet_image line.toTopology
+  have hc : line.toTopologicalSpace.IsCompact ((fun x => -1 * x + 0) '' K) :=
+    TopologicalSpace.isCompact_image line.toTopologicalSpace
       (line_continuous_affine_top (-1) 0 (by norm_num)) hK
   obtain ⟨b, ⟨a, haK, hab⟩, hmax⟩ := line_exists_max hc (hne.image _)
   refine ⟨a, haK, fun x hx => ?_⟩
@@ -465,22 +469,24 @@ A continuous real-valued function on a nonempty compact set attains its largest 
 
 What the theorem needs of the domain is only compactness. It is a statement about any space at all, and the closed interval enters only when one asks which sets of reals are compact.
 @description
-Prove `Topology.exists_max_of_isCompactSet` and `Topology.exists_min_of_isCompactSet`. Apply the previous problem to the image, whose compactness is `Topology.isCompactSet_image` and whose nonemptiness is `Set.Nonempty.image`; `obtain ⟨a, haS, rfl⟩` then names the point the largest value is taken at.
+Prove `TopologicalSpace.exists_max_of_isCompact` and `TopologicalSpace.exists_min_of_isCompact`. Apply the previous problem to the image, whose compactness is `TopologicalSpace.isCompact_image` and whose nonemptiness is `Set.Nonempty.image`; `obtain ⟨a, haS, rfl⟩` then names the point the largest value is taken at.
 -/
 
-theorem Topology.exists_max_of_isCompactSet {X : Type u} (T : Topology X) {f : X → ℝ}
-    (hf : T.Continuous line.toTopology f) {S : Set X} (hS : T.IsCompactSet S) (hne : S.Nonempty) :
+theorem TopologicalSpace.exists_max_of_isCompact {X : Type u} (T : TopologicalSpace X) {f : X → ℝ}
+    (hf : T.Continuous line.toTopologicalSpace f) {S : Set X} (hS : T.IsCompact S)
+      (hne : S.Nonempty) :
     ∃ a ∈ S, ∀ x ∈ S, f x ≤ f a := by
   obtain ⟨b, hbK, hbmax⟩ :=
-    line_exists_max (Topology.isCompactSet_image T hf hS) (hne.image f)
+    line_exists_max (TopologicalSpace.isCompact_image T hf hS) (hne.image f)
   obtain ⟨a, haS, rfl⟩ := hbK
   exact ⟨a, haS, fun x hx => hbmax (f x) ⟨x, hx, rfl⟩⟩
 
-theorem Topology.exists_min_of_isCompactSet {X : Type u} (T : Topology X) {f : X → ℝ}
-    (hf : T.Continuous line.toTopology f) {S : Set X} (hS : T.IsCompactSet S) (hne : S.Nonempty) :
+theorem TopologicalSpace.exists_min_of_isCompact {X : Type u} (T : TopologicalSpace X) {f : X → ℝ}
+    (hf : T.Continuous line.toTopologicalSpace f) {S : Set X} (hS : T.IsCompact S)
+      (hne : S.Nonempty) :
     ∃ a ∈ S, ∀ x ∈ S, f a ≤ f x := by
   obtain ⟨b, hbK, hbmin⟩ :=
-    line_exists_min (Topology.isCompactSet_image T hf hS) (hne.image f)
+    line_exists_min (TopologicalSpace.isCompact_image T hf hS) (hne.image f)
   obtain ⟨a, haS, rfl⟩ := hbK
   exact ⟨a, haS, fun x hx => hbmin (f x) ⟨x, hx, rfl⟩⟩
 
@@ -555,7 +561,7 @@ A least upper bound is approached from within, so the collection holds a point `
 Prove `exists_coveredUpTo_of_isLUB`. `hlub.exists_between` produces the point above `c - ε`, the previous problem adds `U` to what it reached, and restating a membership in a ball as `|c - y| < ε` leaves two inequalities for `linarith`.
 -/
 theorem exists_coveredUpTo_of_isLUB {F : Set (Set ℝ)}
-    (hFo : ∀ U ∈ F, line.toTopology.IsOpen U) (hFcov : unitInterval ⊆ ⋃₀ F) {c : ℝ}
+    (hFo : ∀ U ∈ F, line.toTopologicalSpace.IsOpen U) (hFcov : unitInterval ⊆ ⋃₀ F) {c : ℝ}
     (hc0 : 0 ≤ c) (hc1 : c ≤ 1) (hlub : IsLUB {x | 0 ≤ x ∧ x ≤ 1 ∧ CoveredUpTo F x} c) :
     ∃ δ > 0, ∀ z, 0 ≤ z → z < c + δ → CoveredUpTo F z := by
   obtain ⟨U, hUF, hcU⟩ := hFcov ⟨hc0, hc1⟩
@@ -578,10 +584,10 @@ Then `c` is `1`. If it were less, a point between `c` and the smaller of `1` and
 
 The extreme value theorem of calculus follows: a continuous function on the unit interval attains its largest value.
 @description
-Prove `unitInterval_isCompactSet` and then `unitInterval_exists_max`. `Real.exists_isLUB` supplies `c` from the point `0` and the bound `1`; `hlub.1` is the upper-bound half and `hlub.2` the least half. The second is the extreme value theorem at this set, whose nonemptiness is witnessed by `0`.
+Prove `unitInterval_isCompact` and then `unitInterval_exists_max`. `Real.exists_isLUB` supplies `c` from the point `0` and the bound `1`; `hlub.1` is the upper-bound half and `hlub.2` the least half. The second is the extreme value theorem at this set, whose nonemptiness is witnessed by `0`.
 -/
 
-theorem unitInterval_isCompactSet : line.toTopology.IsCompactSet unitInterval := by
+theorem unitInterval_isCompact : line.toTopologicalSpace.IsCompact unitInterval := by
   intro F hFo hFcov
   obtain ⟨c, hlub⟩ := Real.exists_isLUB (s := {x | 0 ≤ x ∧ x ≤ 1 ∧ CoveredUpTo F x})
     ⟨0, le_refl 0, zero_le_one, coveredUpTo_zero hFcov⟩ ⟨1, fun x hx => hx.2.1⟩
@@ -598,9 +604,9 @@ theorem unitInterval_isCompactSet : line.toTopology.IsCompactSet unitInterval :=
   exact key 1 zero_le_one (by linarith)
 
 theorem unitInterval_exists_max {f : ℝ → ℝ}
-    (hf : line.toTopology.Continuous line.toTopology f) :
+    (hf : line.toTopologicalSpace.Continuous line.toTopologicalSpace f) :
     ∃ a ∈ unitInterval, ∀ x ∈ unitInterval, f x ≤ f a :=
-  Topology.exists_max_of_isCompactSet line.toTopology hf unitInterval_isCompactSet
+  TopologicalSpace.exists_max_of_isCompact line.toTopologicalSpace hf unitInterval_isCompact
     ⟨0, le_refl 0, zero_le_one⟩
 
 /-! @end -/

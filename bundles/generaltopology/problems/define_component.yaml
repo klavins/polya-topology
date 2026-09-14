@@ -8,34 +8,36 @@ statement: |-
 concepts:
 - components
 stub: |-
-  def Topology.component {X : Type u} (T : Topology X) (x : X) : Set X := sorry
+  def TopologicalSpace.connectedComponent {X : Type u} (T : TopologicalSpace X) (x : X) : Set X := sorry
 
-  theorem Topology.mem_component {X : Type u} (T : Topology X) (x : X) : x ∈ T.component x := sorry
+  theorem TopologicalSpace.mem_component {X : Type u} (T : TopologicalSpace X) (x : X)
+      : x ∈ T.connectedComponent x := sorry
 reference: |-
-  def Topology.component {X : Type u} (T : Topology X) (x : X) : Set X :=
-    ⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S}
+  def TopologicalSpace.connectedComponent {X : Type u} (T : TopologicalSpace X) (x : X) : Set X :=
+    ⋃₀ {S | T.IsPreconnected S ∧ x ∈ S}
 
-  theorem Topology.mem_component {X : Type u} (T : Topology X) (x : X) : x ∈ T.component x :=
-    ⟨{x}, ⟨Topology.isConnectedSet_singleton T x, rfl⟩, rfl⟩
+  theorem TopologicalSpace.mem_component {X : Type u} (T : TopologicalSpace X) (x : X)
+      : x ∈ T.connectedComponent x :=
+    ⟨{x}, ⟨TopologicalSpace.isPreconnected_singleton T x, rfl⟩, rfl⟩
 spec: |-
-  example {X : Type u} (T : Topology X) (x : X) : _root_.GeneralTopology.Topology.component T x = (⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S} : Set X) := rfl
-  example : ∀ {X : Type u} (T : Topology X) (x : X), x ∈ T.component x := _root_.GeneralTopology.Topology.mem_component
-  example (X : Type) (T : Topology X) (x y : X) :
-      y ∈ T.component x ↔ ∃ S, (T.IsConnectedSet S ∧ x ∈ S) ∧ y ∈ S := Iff.rfl
+  example {X : Type u} (T : TopologicalSpace X) (x : X) : _root_.GeneralTopology.TopologicalSpace.connectedComponent T x = (⋃₀ {S | T.IsPreconnected S ∧ x ∈ S} : Set X) := rfl
+  example : ∀ {X : Type u} (T : TopologicalSpace X) (x : X), x ∈ T.connectedComponent x := _root_.GeneralTopology.TopologicalSpace.mem_component
+  example (X : Type) (T : TopologicalSpace X) (x y : X) :
+      y ∈ T.connectedComponent x ↔ ∃ S, (T.IsPreconnected S ∧ x ∈ S) ∧ y ∈ S := Iff.rfl
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsPreconnected {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
 
-  theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
-      T.IsConnectedSet {x} := by
+  theorem TopologicalSpace.isPreconnected_singleton {X : Type u} (T : TopologicalSpace X) (x : X) :
+      T.IsPreconnected {x} := by
     intro U V _ _ _ hcov
     have hx : x ∈ ({x} : Set X) := rfl
     rcases hcov hx with h | h
@@ -50,16 +52,16 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Define `Topology.component`, the union `⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S}`, and prove `Topology.mem_component`. The witness for the second is the singleton, whose connectedness is the previous problem and whose two memberships are `rfl`.
+description: Define `TopologicalSpace.connectedComponent`, the union `⋃₀ {S | T.IsPreconnected S ∧ x ∈ S}`, and prove `TopologicalSpace.mem_component`. The witness for the second is the singleton, whose connectedness is the previous problem and whose two memberships are `rfl`.
 stub_names:
-- Topology.component
-- Topology.mem_component
+- TopologicalSpace.connectedComponent
+- TopologicalSpace.mem_component
 namespace: GeneralTopology
 seq: 173
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Connectedness.lean
-  line: 446
+  line: 449
   closure_rounds: 1
   check_kind: mixed

@@ -10,12 +10,12 @@ statement: |-
 concepts:
 - interior_boundary
 stub: |-
-  theorem Topology.boundary_eq_empty_iff {X : Type u} (T : Topology X) (S : Set X) :
-      T.boundary S = ∅ ↔ T.IsOpen S ∧ T.IsClosed S := sorry
+  theorem TopologicalSpace.frontier_eq_empty_iff {X : Type u} (T : TopologicalSpace X) (S : Set X) :
+      T.frontier S = ∅ ↔ T.IsOpen S ∧ T.IsClosed S := sorry
 reference: |-
-  theorem Topology.boundary_eq_empty_iff {X : Type u} (T : Topology X) (S : Set X) :
-      T.boundary S = ∅ ↔ T.IsOpen S ∧ T.IsClosed S := by
-    have hb : T.boundary S = T.closure S \ T.interior S := rfl
+  theorem TopologicalSpace.frontier_eq_empty_iff {X : Type u} (T : TopologicalSpace X) (S : Set X) :
+      T.frontier S = ∅ ↔ T.IsOpen S ∧ T.IsClosed S := by
+    have hb : T.frontier S = T.closure S \ T.interior S := rfl
     rw [hb, Set.sdiff_eq_empty]
     constructor
     · intro h
@@ -26,26 +26,27 @@ reference: |-
         exact Set.Subset.antisymm (h.trans (T.interior_subset S)) (T.subset_closure S)
     · rintro ⟨hO, hC⟩
       rw [(T.isClosed_iff_closure_eq S).mp hC, (T.isOpen_iff_interior_eq S).mp hO]
-spec: 'example : ∀ {X : Type u} (T : Topology X) (S : Set X), T.boundary S = ∅ ↔ T.IsOpen S ∧ T.IsClosed S := _root_.GeneralTopology.Topology.boundary_eq_empty_iff'
+spec: 'example : ∀ {X : Type u} (T : TopologicalSpace X) (S : Set X), T.frontier S = ∅ ↔ T.IsOpen S ∧ T.IsClosed S := _root_.GeneralTopology.TopologicalSpace.frontier_eq_empty_iff'
 preamble: |
   universe u
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
-  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+  def TopologicalSpace.IsNbhd {X : Type u} (T : TopologicalSpace X) (x : X) (N : Set X) : Prop :=
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
 
-  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+  theorem TopologicalSpace.nbhd_of_isOpen {X : Type u} (T : TopologicalSpace X) {U : Set X}
       (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
     ⟨U, hU, hx, subset_rfl⟩
 
-  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+  theorem TopologicalSpace.union_of_opens_inside {X : Type u} (T : TopologicalSpace X) (U : Set X)
       (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
     apply Set.Subset.antisymm
     · intro x hx
@@ -54,40 +55,41 @@ preamble: |
     · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
       exact hVU hxV
 
-  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+  theorem TopologicalSpace.isOpen_iff_nbhd {X : Type u} (T : TopologicalSpace X) (U : Set X) :
       T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
     constructor
     · intro hU x hx
       exact T.nbhd_of_isOpen hU hx
     · intro h
       rw [T.union_of_opens_inside U h]
-      exact T.sUnion (fun V hV => hV.1)
+      exact T.isOpen_sUnion (fun V hV => hV.1)
 
-  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+  theorem TopologicalSpace.isClosed_sInter {X : Type u} (T : TopologicalSpace X) {F : Set (Set X)}
       (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
     show T.IsOpen _
     rw [Set.compl_sInter]
-    apply T.sUnion
+    apply T.isOpen_sUnion
     rintro U ⟨C, hCF, rfl⟩
     exact h C hCF
 
-  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+  def TopologicalSpace.closure {X : Type u} (T : TopologicalSpace X) (S : Set X) : Set X :=
     ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
 
-  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+  theorem TopologicalSpace.subset_closure {X : Type u} (T : TopologicalSpace X) (S : Set X)
+      : S ⊆ T.closure S := by
     intro x hx C hC
     exact hC.2 hx
 
-  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.isClosed_closure {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.IsClosed (T.closure S) :=
     T.isClosed_sInter (fun _ hC => hC.1)
 
-  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+  theorem TopologicalSpace.closure_min {X : Type u} (T : TopologicalSpace X) {S C : Set X}
       (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
     intro x hx
     exact hx C ⟨hC, hSC⟩
 
-  theorem Topology.isClosed_iff_closure_eq {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.isClosed_iff_closure_eq {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.IsClosed S ↔ T.closure S = S := by
     constructor
     · intro hS
@@ -96,19 +98,19 @@ preamble: |
       rw [← h]
       exact T.isClosed_closure S
 
-  def Topology.interior {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+  def TopologicalSpace.interior {X : Type u} (T : TopologicalSpace X) (S : Set X) : Set X :=
     ⋃₀ {U | T.IsOpen U ∧ U ⊆ S}
 
-  theorem Topology.isOpen_interior {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.isOpen_interior {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.IsOpen (T.interior S) :=
-    T.sUnion (fun _ hU => hU.1)
+    T.isOpen_sUnion (fun _ hU => hU.1)
 
-  theorem Topology.interior_subset {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.interior_subset {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.interior S ⊆ S := by
     rintro x ⟨U, ⟨_, hUS⟩, hxU⟩
     exact hUS hxU
 
-  theorem Topology.isOpen_iff_interior_eq {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.isOpen_iff_interior_eq {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.IsOpen S ↔ T.interior S = S := by
     constructor
     · intro hS
@@ -117,20 +119,20 @@ preamble: |
       rw [← h]
       exact T.isOpen_interior S
 
-  def Topology.boundary {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+  def TopologicalSpace.frontier {X : Type u} (T : TopologicalSpace X) (S : Set X) : Set X :=
     T.closure S \ T.interior S
 
   end GeneralTopology
   open GeneralTopology
-description: Prove that `T.boundary S = ∅` exactly when `S` is open and closed. `Set.sdiff_eq_empty` turns an empty difference into a containment, after a `have` restates the boundary as the difference it is; the two equivalences proved above then convert between openness and the two equalities.
+description: Prove that `T.frontier S = ∅` exactly when `S` is open and closed. `Set.sdiff_eq_empty` turns an empty difference into a containment, after a `have` restates the boundary as the difference it is; the two equivalences proved above then convert between openness and the two equalities.
 stub_names:
-- Topology.boundary_eq_empty_iff
+- TopologicalSpace.frontier_eq_empty_iff
 namespace: GeneralTopology
 seq: 67
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Closure.lean
-  line: 376
+  line: 381
   closure_rounds: 1
   check_kind: theorem

@@ -8,25 +8,28 @@ statement: |-
 concepts:
 - quotient_space
 stub: |-
-  theorem Topology.isOpen_image_of_saturated {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y)
+  theorem TopologicalSpace.isOpen_image_of_saturated {X : Type u} {Y : Type v}
+      (T : TopologicalSpace X) (f : X → Y)
       {S : Set X} (hS : T.IsOpen S) (hsat : IsSaturated f S) : (T.coinduced f).IsOpen (f '' S) := sorry
 reference: |-
-  theorem Topology.isOpen_image_of_saturated {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y)
+  theorem TopologicalSpace.isOpen_image_of_saturated {X : Type u} {Y : Type v}
+      (T : TopologicalSpace X) (f : X → Y)
       {S : Set X} (hS : T.IsOpen S) (hsat : IsSaturated f S) : (T.coinduced f).IsOpen (f '' S) := by
     show T.IsOpen (f ⁻¹' (f '' S))
     rw [← hsat]
     exact hS
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y)
-      {S : Set X} (hS : T.IsOpen S) (hsat : IsSaturated f S), (T.coinduced f).IsOpen (f '' S) := _root_.GeneralTopology.Topology.isOpen_image_of_saturated
+  example : ∀ {X : Type u} {Y : Type v}
+      (T : TopologicalSpace X) (f : X → Y)
+      {S : Set X} (hS : T.IsOpen S) (hsat : IsSaturated f S), (T.coinduced f).IsOpen (f '' S) := _root_.GeneralTopology.TopologicalSpace.isOpen_image_of_saturated
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
   theorem preimage_sUnion_image {X : Type u} {Y : Type v} (f : X → Y) (F : Set (Set Y)) :
       f ⁻¹' (⋃₀ F) = ⋃₀ (Set.preimage f '' F) := by
@@ -36,19 +39,20 @@ preamble: |
     · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
       exact ⟨V, hVF, hxW⟩
 
-  def Topology.coinduced {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) : Topology Y where
+  def TopologicalSpace.coinduced {X : Type u} {Y : Type v} (T : TopologicalSpace X) (f : X → Y)
+      : TopologicalSpace Y where
     IsOpen := fun V => T.IsOpen (f ⁻¹' V)
-    univ := by
+    isOpen_univ := by
       rw [Set.preimage_univ]
-      exact T.univ
-    inter := by
+      exact T.isOpen_univ
+    isOpen_inter := by
       intro V W hV hW
       rw [Set.preimage_inter]
-      exact T.inter hV hW
-    sUnion := by
+      exact T.isOpen_inter hV hW
+    isOpen_sUnion := by
       intro F h
       rw [preimage_sUnion_image]
-      refine T.sUnion ?_
+      refine T.isOpen_sUnion ?_
       rintro W ⟨V, hVF, rfl⟩
       exact h V hVF
 
@@ -59,13 +63,13 @@ preamble: |
   open GeneralTopology
 description: Show that `f '' S` is open in `T.coinduced f` when `S` is open and saturated for `f`. Restate the goal with `show`, rewrite backwards along the saturation, and the hypothesis is what remains.
 stub_names:
-- Topology.isOpen_image_of_saturated
+- TopologicalSpace.isOpen_image_of_saturated
 namespace: GeneralTopology
 seq: 132
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 290
+  line: 294
   closure_rounds: 1
   check_kind: theorem

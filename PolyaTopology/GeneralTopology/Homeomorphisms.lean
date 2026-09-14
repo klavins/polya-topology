@@ -28,12 +28,13 @@ A continuous map carries one space into another, but it may lose almost everythi
 
 So a *homeomorphism* is a pair of maps, one each way, each continuous, whose composites in both orders are the identity. Both conditions are stated pointwise: `invFun (toFun x) = x` for every `x` of `X`, and `toFun (invFun y) = y` for every `y` of `Y`.
 
-As with `Metric` and `Norm`, the pair and its four conditions are bundled into a structure carried as an ordinary argument.
+As with `MetricSpace` and `Norm`, the pair and its four conditions are bundled into a structure carried as an ordinary argument.
 @description
-Define the structure `Homeomorphism`, on a topology `T` on `X` and a topology `T'` on `Y`, with six fields in this order: `toFun`, `invFun`, then `left_inv` and `right_inv` carrying the two inverse conditions, then `continuous_toFun` and `continuous_invFun` carrying the two continuities. Bind `X` and `Y` implicitly, since the two topologies fix them.
+Define the structure `Homeomorph`, on a topology `T` on `X` and a topology `T'` on `Y`, with six fields in this order: `toFun`, `invFun`, then `left_inv` and `right_inv` carrying the two inverse conditions, then `continuous_toFun` and `continuous_invFun` carrying the two continuities. Bind `X` and `Y` implicitly, since the two topologies fix them.
 -/
 
-structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+structure Homeomorph {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) where
   toFun : X → Y
   invFun : Y → X
   left_inv : ∀ x, invFun (toFun x) = x
@@ -42,7 +43,7 @@ structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topolog
   continuous_invFun : T'.Continuous T invFun
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) (h : Homeomorphism T T') :
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (h : Homeomorph T T') :
     (∀ x, h.invFun (h.toFun x) = x) ∧ (∀ y, h.toFun (h.invFun y) = y)
       ∧ T.Continuous T' h.toFun ∧ T'.Continuous T h.invFun := by
   refine ⟨fun x => ?_, fun y => ?_, h.continuous_toFun, h.continuous_invFun⟩
@@ -66,13 +67,15 @@ Injectivity comes from the left condition. If two points have the same image, ap
 Show that the forward map of a homeomorphism is injective and surjective. For injectivity, rewrite both sides of the goal backwards with `h.left_inv` and the hypothesis closes it; for surjectivity, the point wanted is the image of `y` under the inverse.
 -/
 
-theorem Homeomorphism.injective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphism T T') : Function.Injective h.toFun := by
+theorem Homeomorph.injective {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : Homeomorph T T') : Function.Injective h.toFun := by
   intro x x' hx
   rw [← h.left_inv x, ← h.left_inv x', hx]
 
-theorem Homeomorphism.surjective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphism T T') : Function.Surjective h.toFun :=
+theorem Homeomorph.surjective {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : Homeomorph T T') : Function.Surjective h.toFun :=
   fun y => ⟨h.invFun y, h.right_inv y⟩
 
 /-! @end -/
@@ -87,19 +90,19 @@ A space is the same space as itself, by the identity map, which is its own inver
 
 And the relation is symmetric, for a reason worth noticing: the definition is already symmetric in its two maps. Exchanging `toFun` with `invFun` exchanges the two inverse conditions with each other and the two continuities with each other, so a homeomorphism from `T` to `T'` becomes one from `T'` to `T` with no work at all.
 @description
-Define `Homeomorphism.refl T`, the identity homeomorphism from `T` to itself, and `Homeomorphism.symm h`, the homeomorphism the other way. Every field of each is either `rfl`, `Topology.continuous_id` at the topology in hand, or one of the fields of `h` under a different name.
+Define `Homeomorph.refl T`, the identity homeomorphism from `T` to itself, and `Homeomorph.symm h`, the homeomorphism the other way. Every field of each is either `rfl`, `TopologicalSpace.continuous_id` at the topology in hand, or one of the fields of `h` under a different name.
 -/
 
-def Homeomorphism.refl {X : Type u} (T : Topology X) : Homeomorphism T T where
+def Homeomorph.refl {X : Type u} (T : TopologicalSpace X) : Homeomorph T T where
   toFun := id
   invFun := id
   left_inv := fun _ => rfl
   right_inv := fun _ => rfl
-  continuous_toFun := Topology.continuous_id T
-  continuous_invFun := Topology.continuous_id T
+  continuous_toFun := TopologicalSpace.continuous_id T
+  continuous_invFun := TopologicalSpace.continuous_id T
 
-def Homeomorphism.symm {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphism T T') : Homeomorphism T' T where
+def Homeomorph.symm {X : Type u} {Y : Type v} {T : TopologicalSpace X} {T' : TopologicalSpace Y}
+    (h : Homeomorph T T') : Homeomorph T' T where
   toFun := h.invFun
   invFun := h.toFun
   left_inv := h.right_inv
@@ -108,9 +111,9 @@ def Homeomorphism.symm {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology
   continuous_invFun := h.continuous_toFun
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) (h : Homeomorphism T T')
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (h : Homeomorph T T')
     (x : X) (y : Y) :
-    (Homeomorphism.refl T).toFun x = x ∧ (Homeomorphism.refl T).invFun x = x
+    (Homeomorph.refl T).toFun x = x ∧ (Homeomorph.refl T).invFun x = x
       ∧ h.symm.toFun y = h.invFun y ∧ h.symm.invFun x = h.toFun x :=
   ⟨rfl, rfl, rfl, rfl⟩
 
@@ -126,12 +129,13 @@ Sameness is transitive, and the composite is what shows it. Compose the forward 
 
 The continuities are the composition law of the last section, applied once in each direction. Three spaces means three types, so the statement carries three universe variables.
 @description
-Define `Homeomorphism.trans h h'`, the composite homeomorphism from `T` to `T''`. For the two inverse conditions, `show` restates the goal with the composition unfolded and two rewrites cancel the pairs; for the two continuities, `Topology.continuous_comp` takes the topology of the source and then the two continuities in the order they are applied.
+Define `Homeomorph.trans h h'`, the composite homeomorphism from `T` to `T''`. For the two inverse conditions, `show` restates the goal with the composition unfolded and two rewrites cancel the pairs; for the two continuities, `TopologicalSpace.continuous_comp` takes the topology of the source and then the two continuities in the order they are applied.
 -/
 
-def Homeomorphism.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-    {T' : Topology Y} {T'' : Topology Z} (h : Homeomorphism T T') (h' : Homeomorphism T' T'') :
-    Homeomorphism T T'' where
+def Homeomorph.trans {X : Type u} {Y : Type v} {Z : Type w} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} (h : Homeomorph T T')
+      (h' : Homeomorph T' T'') :
+    Homeomorph T T'' where
   toFun := h'.toFun ∘ h.toFun
   invFun := h.invFun ∘ h'.invFun
   left_inv := fun x => by
@@ -140,12 +144,12 @@ def Homeomorphism.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
   right_inv := fun z => by
     show h'.toFun (h.toFun (h.invFun (h'.invFun z))) = z
     rw [h.right_inv, h'.right_inv]
-  continuous_toFun := Topology.continuous_comp T h.continuous_toFun h'.continuous_toFun
-  continuous_invFun := Topology.continuous_comp T'' h'.continuous_invFun h.continuous_invFun
+  continuous_toFun := TopologicalSpace.continuous_comp T h.continuous_toFun h'.continuous_toFun
+  continuous_invFun := TopologicalSpace.continuous_comp T'' h'.continuous_invFun h.continuous_invFun
 
 /-- @spec -/
-example (X Y Z : Type) (T : Topology X) (T' : Topology Y) (T'' : Topology Z)
-    (h : Homeomorphism T T') (h' : Homeomorphism T' T'') (x : X) (z : Z) :
+example (X Y Z : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (T'' : TopologicalSpace Z)
+    (h : Homeomorph T T') (h' : Homeomorph T' T'') (x : X) (z : Z) :
     (h.trans h').toFun x = h'.toFun (h.toFun x)
       ∧ (h.trans h').invFun z = h.invFun (h'.invFun z) := ⟨rfl, rfl⟩
 
@@ -163,30 +167,33 @@ A homeomorphism is data — a particular pair of maps — and usually one wants 
 
 The three constructions above then say that this relation is reflexive, symmetric and transitive.
 @description
-Define `Homeomorphic T T'` as `Nonempty (Homeomorphism T T')`, and prove the three properties. Each is one line: take the homeomorphisms out of the hypotheses with `obtain`, build the new one with `Homeomorphism.refl`, `.symm` or `.trans`, and wrap it in `⟨_⟩`.
+Define `Homeomorphic T T'` as `Nonempty (Homeomorph T T')`, and prove the three properties. Each is one line: take the homeomorphisms out of the hypotheses with `obtain`, build the new one with `Homeomorph.refl`, `.symm` or `.trans`, and wrap it in `⟨_⟩`.
 -/
 
-def Homeomorphic {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) : Prop :=
-  Nonempty (Homeomorphism T T')
+def Homeomorphic {X : Type u} {Y : Type v} (T : TopologicalSpace X) (T' : TopologicalSpace Y) : Prop
+    :=
+  Nonempty (Homeomorph T T')
 
-theorem Homeomorphic.refl {X : Type u} (T : Topology X) : Homeomorphic T T :=
-  ⟨Homeomorphism.refl T⟩
+theorem Homeomorphic.refl {X : Type u} (T : TopologicalSpace X) : Homeomorphic T T :=
+  ⟨Homeomorph.refl T⟩
 
-theorem Homeomorphic.symm {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+theorem Homeomorphic.symm {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
     (h : Homeomorphic T T') : Homeomorphic T' T := by
   obtain ⟨e⟩ := h
   exact ⟨e.symm⟩
 
-theorem Homeomorphic.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-    {T' : Topology Y} {T'' : Topology Z} (h : Homeomorphic T T') (h' : Homeomorphic T' T'') :
+theorem Homeomorphic.trans {X : Type u} {Y : Type v} {Z : Type w} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} (h : Homeomorphic T T')
+      (h' : Homeomorphic T' T'') :
     Homeomorphic T T'' := by
   obtain ⟨e⟩ := h
   obtain ⟨e'⟩ := h'
   exact ⟨e.trans e'⟩
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) :
-    Homeomorphic T T' ↔ Nonempty (Homeomorphism T T') := Iff.rfl
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) :
+    Homeomorphic T T' ↔ Nonempty (Homeomorph T T') := Iff.rfl
 
 /-! @end -/
 
@@ -210,19 +217,21 @@ Neither follows from continuity, and neither implies the other. The two conditio
 
 We write `f '' U` for the image `{y | ∃ x ∈ U, f x = y}`, and a membership `y ∈ f '' U` is taken apart by `rintro ⟨x, hx, rfl⟩`.
 @description
-Define `Topology.IsOpenMap` and `Topology.IsClosedMap`, each taking a topology `T` on `X`, a topology `T'` on `Y` and a map `f : X → Y`. Neither definition asks for continuity; it is a separate hypothesis wherever both are wanted.
+Define `TopologicalSpace.IsOpenMap` and `TopologicalSpace.IsClosedMap`, each taking a topology `T` on `X`, a topology `T'` on `Y` and a map `f : X → Y`. Neither definition asks for continuity; it is a separate hypothesis wherever both are wanted.
 -/
 
-def Topology.IsOpenMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+def TopologicalSpace.IsOpenMap {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
     (f : X → Y) : Prop :=
   ∀ U, T.IsOpen U → T'.IsOpen (f '' U)
 
-def Topology.IsClosedMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+def TopologicalSpace.IsClosedMap {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
     (f : X → Y) : Prop :=
   ∀ C, T.IsClosed C → T'.IsClosed (f '' C)
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) (f : X → Y) :
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (f : X → Y) :
     (T.IsOpenMap T' f ↔ ∀ U, T.IsOpen U → T'.IsOpen (f '' U))
       ∧ (T.IsClosedMap T' f ↔ ∀ C, T.IsClosed C → T'.IsClosed (f '' C)) := ⟨Iff.rfl, Iff.rfl⟩
 
@@ -240,7 +249,7 @@ A point `y` lies in `f '' U` when `y = f x` for some `x` of `U`; applying `g` gi
 
 This one equation is why a homeomorphism is well behaved on images as well as preimages, which is what the rest of this concept rests on.
 @description
-Prove `image_eq_preimage_of_inverse`, for maps `f` and `g` whose composites in both orders are the identity, and then read off `Homeomorphism.image_eq_preimage`. In the first, `Set.ext` reduces to a membership at each point; `show` restates each side as what it abbreviates before rewriting.
+Prove `image_eq_preimage_of_inverse`, for maps `f` and `g` whose composites in both orders are the identity, and then read off `Homeomorph.image_eq_preimage`. In the first, `Set.ext` reduces to a membership at each point; `show` restates each side as what it abbreviates before rewriting.
 -/
 
 theorem image_eq_preimage_of_inverse {X : Type u} {Y : Type v} {f : X → Y} {g : Y → X}
@@ -255,8 +264,8 @@ theorem image_eq_preimage_of_inverse {X : Type u} {Y : Type v} {f : X → Y} {g 
   · intro hy
     exact ⟨g y, hy, hfg y⟩
 
-theorem Homeomorphism.image_eq_preimage {X : Type u} {Y : Type v} {T : Topology X}
-    {T' : Topology Y} (h : Homeomorphism T T') (U : Set X) : h.toFun '' U = h.invFun ⁻¹' U :=
+theorem Homeomorph.image_eq_preimage {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y} (h : Homeomorph T T') (U : Set X) : h.toFun '' U = h.invFun ⁻¹' U :=
   image_eq_preimage_of_inverse h.left_inv h.right_inv U
 
 /-! @end -/
@@ -274,14 +283,16 @@ So a homeomorphism is both an open map and a closed map — which is to say that
 Show that the forward map of a homeomorphism is an open map and a closed map. Rewrite the image as a preimage and apply the continuity of the inverse. For the closed case, `show T'.IsOpen _` names the goal, and `Set.preimage_compl` moves the complement inside the preimage where the hypothesis has it.
 -/
 
-theorem Homeomorphism.isOpenMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphism T T') : T.IsOpenMap T' h.toFun := by
+theorem Homeomorph.isOpenMap {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : Homeomorph T T') : T.IsOpenMap T' h.toFun := by
   intro U hU
   rw [h.image_eq_preimage]
   exact h.continuous_invFun U hU
 
-theorem Homeomorphism.isClosedMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphism T T') : T.IsClosedMap T' h.toFun := by
+theorem Homeomorph.isClosedMap {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : Homeomorph T T') : T.IsClosedMap T' h.toFun := by
   intro C hC
   show T'.IsOpen _
   rw [h.image_eq_preimage, ← Set.preimage_compl]
@@ -299,12 +310,13 @@ The converse holds, and it is the useful direction: to build a homeomorphism it 
 
 A bijection is presented here as it is everywhere in this section — by the map `g` that undoes it, in both orders. Then `g ⁻¹' U` is `f '' U`, which the open-map hypothesis calls open, and that is exactly the continuity of `g`.
 @description
-Define `Homeomorphism.ofOpenMap`, building a homeomorphism from a continuous open map `f` and a two-sided inverse `g`. Four of the six fields are hypotheses already; for the last, rewrite the preimage backwards with `image_eq_preimage_of_inverse` and apply the open-map hypothesis.
+Define `Homeomorph.ofOpenMap`, building a homeomorphism from a continuous open map `f` and a two-sided inverse `g`. Four of the six fields are hypotheses already; for the last, rewrite the preimage backwards with `image_eq_preimage_of_inverse` and apply the open-map hypothesis.
 -/
 
-def Homeomorphism.ofOpenMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+def Homeomorph.ofOpenMap {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
     {f : X → Y} {g : Y → X} (hf : T.Continuous T' f) (hopen : T.IsOpenMap T' f)
-    (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) : Homeomorphism T T' where
+    (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) : Homeomorph T T' where
   toFun := f
   invFun := g
   left_inv := hgf
@@ -316,11 +328,11 @@ def Homeomorphism.ofOpenMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Top
     exact hopen U hU
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) (f : X → Y) (g : Y → X)
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (f : X → Y) (g : Y → X)
     (hf : T.Continuous T' f) (hopen : T.IsOpenMap T' f)
     (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) (x : X) (y : Y) :
-    (Homeomorphism.ofOpenMap hf hopen hgf hfg).toFun x = f x
-      ∧ (Homeomorphism.ofOpenMap hf hopen hgf hfg).invFun y = g y := ⟨rfl, rfl⟩
+    (Homeomorph.ofOpenMap hf hopen hgf hfg).toFun x = f x
+      ∧ (Homeomorph.ofOpenMap hf hopen hgf hfg).invFun y = g y := ⟨rfl, rfl⟩
 
 /-! @end -/
 
@@ -342,15 +354,15 @@ Two metrics on the same set are *equivalent* when each one's balls contain balls
 
 Nothing is said about the radii except that they are positive. The taxicab ball of radius `ε` sits inside the supremum ball of radius `ε`, and the supremum ball of radius `ε / 2` sits inside the taxicab ball of radius `ε`; the two radii differ, and the definition does not care.
 @description
-Define `Metric.Equivalent M N`, a conjunction of two statements: for every point `x` and every `ε > 0` some `N`-ball about `x` lies inside `M.ball x ε`, and for every `x` and `ε > 0` some `M`-ball about `x` lies inside `N.ball x ε`. Put the two in that order.
+Define `MetricSpace.Equivalent M N`, a conjunction of two statements: for every point `x` and every `ε > 0` some `N`-ball about `x` lies inside `M.ball x ε`, and for every `x` and `ε > 0` some `M`-ball about `x` lies inside `N.ball x ε`. Put the two in that order.
 -/
 
-def Metric.Equivalent {X : Type u} (M N : Metric X) : Prop :=
+def MetricSpace.Equivalent {X : Type u} (M N : MetricSpace X) : Prop :=
   (∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) ∧
     (∀ x ε, 0 < ε → ∃ δ > 0, M.ball x δ ⊆ N.ball x ε)
 
 /-- @spec -/
-example (X : Type) (M N : Metric X) :
+example (X : Type) (M N : MetricSpace X) :
     M.Equivalent N ↔ (∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε)
       ∧ (∀ x ε, 0 < ε → ∃ δ > 0, M.ball x δ ⊆ N.ball x ε) := Iff.rfl
 
@@ -368,7 +380,7 @@ Suppose every ball of `M` contains a ball of `N` about the same point, and let `
 @description
 Prove that `U` is open for `N` whenever it is open for `M`, given that every `M.ball x ε` with `ε > 0` contains some `N.ball x δ` with `δ > 0`. Take the radius `U`'s openness supplies, then the radius the hypothesis supplies for it, and offer the second; a point of the smaller ball travels through the larger one into `U`.
 -/
-theorem Metric.isOpenSet_of_ball_subset {X : Type u} {M N : Metric X}
+theorem MetricSpace.isOpenSet_of_ball_subset {X : Type u} {M N : MetricSpace X}
     (h : ∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) {U : Set X}
     (hU : M.IsOpenSet U) : N.IsOpenSet U := by
   intro x hx
@@ -386,16 +398,16 @@ Equivalent metrics call the same sets open, by the previous problem in each dire
 
 The spaces are therefore homeomorphic without any map being chosen: the points were never moved. What the two metrics disagree about — how far apart two points are — is precisely what the topology has dropped.
 @description
-Prove `Metric.Equivalent.isOpenSet_iff`, that equivalent metrics agree on which sets are open, and then define `Metric.Equivalent.toHomeomorphism`, the identity as a homeomorphism between the induced topologies. Both of its maps are `id` and both inverse conditions are `rfl`; each continuity is one direction of the equivalence just proved.
+Prove `MetricSpace.Equivalent.isOpenSet_iff`, that equivalent metrics agree on which sets are open, and then define `MetricSpace.Equivalent.toHomeomorph`, the identity as a homeomorphism between the induced topologies. Both of its maps are `id` and both inverse conditions are `rfl`; each continuity is one direction of the equivalence just proved.
 -/
 
-theorem Metric.Equivalent.isOpenSet_iff {X : Type u} {M N : Metric X} (h : M.Equivalent N)
+theorem MetricSpace.Equivalent.isOpenSet_iff {X : Type u} {M N : MetricSpace X} (h : M.Equivalent N)
     (U : Set X) : M.IsOpenSet U ↔ N.IsOpenSet U :=
-  ⟨fun hU => Metric.isOpenSet_of_ball_subset h.1 hU,
-   fun hU => Metric.isOpenSet_of_ball_subset h.2 hU⟩
+  ⟨fun hU => MetricSpace.isOpenSet_of_ball_subset h.1 hU,
+   fun hU => MetricSpace.isOpenSet_of_ball_subset h.2 hU⟩
 
-def Metric.Equivalent.toHomeomorphism {X : Type u} {M N : Metric X} (h : M.Equivalent N) :
-    Homeomorphism M.toTopology N.toTopology where
+def MetricSpace.Equivalent.toHomeomorph {X : Type u} {M N : MetricSpace X} (h : M.Equivalent N) :
+    Homeomorph M.toTopologicalSpace N.toTopologicalSpace where
   toFun := id
   invFun := id
   left_inv := fun _ => rfl
@@ -404,8 +416,8 @@ def Metric.Equivalent.toHomeomorphism {X : Type u} {M N : Metric X} (h : M.Equiv
   continuous_invFun := fun U hU => (h.isOpenSet_iff U).mp hU
 
 /-- @spec -/
-example (X : Type) (M N : Metric X) (h : M.Equivalent N) (x : X) :
-    h.toHomeomorphism.toFun x = x ∧ h.toHomeomorphism.invFun x = x := ⟨rfl, rfl⟩
+example (X : Type) (M N : MetricSpace X) (h : M.Equivalent N) (x : X) :
+    h.toHomeomorph.toFun x = x ∧ h.toHomeomorph.invFun x = x := ⟨rfl, rfl⟩
 
 /-! @end -/
 
@@ -422,7 +434,7 @@ It also proved the two containments this concept asks for: a taxicab ball of rad
 Show that the taxicab and supremum metrics on the plane are equivalent, and hence that the spaces they give are homeomorphic. Each half of the equivalence offers a radius — `ε / 2` for one and `ε` for the other — and cites `ball_supNorm_subset_taxicab` or `ball_taxicab_subset_supNorm`.
 -/
 
-theorem taxicab_equivalent_supNorm : taxicab.toMetric.Equivalent supNorm.toMetric := by
+theorem taxicab_equivalent_supNorm : taxicab.toMetricSpace.Equivalent supNorm.toMetricSpace := by
   constructor
   · intro x ε hε
     exact ⟨ε / 2, by linarith, ball_supNorm_subset_taxicab x ε⟩
@@ -430,8 +442,9 @@ theorem taxicab_equivalent_supNorm : taxicab.toMetric.Equivalent supNorm.toMetri
     exact ⟨ε, hε, ball_taxicab_subset_supNorm x ε⟩
 
 theorem plane_homeomorphic :
-    Homeomorphic taxicab.toMetric.toTopology supNorm.toMetric.toTopology :=
-  ⟨taxicab_equivalent_supNorm.toHomeomorphism⟩
+    Homeomorphic taxicab.toMetricSpace.toTopologicalSpace supNorm.toMetricSpace.toTopologicalSpace
+      :=
+  ⟨taxicab_equivalent_supNorm.toHomeomorph⟩
 
 /-! @end -/
 
@@ -456,16 +469,17 @@ A homeomorphism's two maps undo each other on sets as well as on points: the pre
 Prove the two. The first is a set equality at each point, restated with `show` and closed by rewriting with `h.right_inv`. In the second, the forward direction is the continuity of the map; the backward direction applies the continuity of the inverse and rewrites its conclusion by the first.
 -/
 
-theorem Homeomorphism.preimage_preimage {X : Type u} {Y : Type v} {T : Topology X}
-    {T' : Topology Y} (h : Homeomorphism T T') (V : Set Y) :
+theorem Homeomorph.preimage_preimage {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y} (h : Homeomorph T T') (V : Set Y) :
     h.invFun ⁻¹' (h.toFun ⁻¹' V) = V := by
   apply Set.ext
   intro y
   show h.toFun (h.invFun y) ∈ V ↔ y ∈ V
   rw [h.right_inv]
 
-theorem Homeomorphism.isOpen_iff {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphism T T') (V : Set Y) : T'.IsOpen V ↔ T.IsOpen (h.toFun ⁻¹' V) := by
+theorem Homeomorph.isOpen_iff {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : Homeomorph T T') (V : Set Y) : T'.IsOpen V ↔ T.IsOpen (h.toFun ⁻¹' V) := by
   constructor
   · intro hV
     exact h.continuous_toFun V hV
@@ -483,26 +497,26 @@ theorem Homeomorphism.isOpen_iff {X : Type u} {Y : Type v} {T : Topology X} {T' 
 @preamble
 The two extreme topologies of the third section were built; now the same two descriptions are read as properties that an arbitrary space may or may not have.
 
-A space is *discrete* when every subset is open, and *codiscrete* when the only open subsets are the empty one and the whole space. A space may be both, if it has at most one point, and most spaces are neither.
+A space is *discrete* when every subset is open, and *indiscrete* when the only open subsets are the empty one and the whole space. A space may be both, if it has at most one point, and most spaces are neither.
 
-The discrete topology is discrete and the codiscrete topology is codiscrete, which is what the names were chosen to make true.
+The discrete topology is discrete and the indiscrete topology is indiscrete, which is what the names were chosen to make true.
 @description
-Define `Topology.IsDiscrete` and `Topology.IsCodiscrete`, and then show that `discrete X` has the first property and `codiscrete X` the second. Both proofs are the definition unfolding: nothing has to be done to what `discrete` and `codiscrete` already say.
+Define `TopologicalSpace.IsDiscrete` and `TopologicalSpace.IsIndiscrete`, and then show that `discrete X` has the first property and `indiscrete X` the second. Both proofs are the definition unfolding: nothing has to be done to what `discrete` and `indiscrete` already say.
 -/
 
-def Topology.IsDiscrete {X : Type u} (T : Topology X) : Prop := ∀ U, T.IsOpen U
+def TopologicalSpace.IsDiscrete {X : Type u} (T : TopologicalSpace X) : Prop := ∀ U, T.IsOpen U
 
-def Topology.IsCodiscrete {X : Type u} (T : Topology X) : Prop :=
+def TopologicalSpace.IsIndiscrete {X : Type u} (T : TopologicalSpace X) : Prop :=
   ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ
 
 theorem discrete_isDiscrete (X : Type u) : (discrete X).IsDiscrete := fun _ => trivial
 
-theorem codiscrete_isCodiscrete (X : Type u) : (codiscrete X).IsCodiscrete := fun _ hU => hU
+theorem indiscrete_isIndiscrete (X : Type u) : (indiscrete X).IsIndiscrete := fun _ hU => hU
 
 /-- @spec -/
-example (X : Type) (T : Topology X) :
+example (X : Type) (T : TopologicalSpace X) :
     (T.IsDiscrete ↔ ∀ U, T.IsOpen U)
-      ∧ (T.IsCodiscrete ↔ ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ) := ⟨Iff.rfl, Iff.rfl⟩
+      ∧ (T.IsIndiscrete ↔ ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ) := ⟨Iff.rfl, Iff.rfl⟩
 
 /-! @end -/
 
@@ -512,21 +526,23 @@ example (X : Type) (T : Topology X) :
 @concept topological_invariants
 
 @preamble
-A property is a *topological invariant* when homeomorphic spaces either both have it or both lack it. Discreteness and codiscreteness are two, and the correspondence between the open sets is the whole proof of each.
+A property is a *topological invariant* when homeomorphic spaces either both have it or both lack it. Discreteness and indiscreteness are two, and the correspondence between the open sets is the whole proof of each.
 
-For discreteness: a set of `Y` is open when its preimage is, and upstairs every set is open. For codiscreteness: the preimage of an open set is open, hence empty or everything, and taking the preimage back under the inverse returns the set one started with — empty or everything accordingly.
+For discreteness: a set of `Y` is open when its preimage is, and upstairs every set is open. For indiscreteness: the preimage of an open set is open, hence empty or everything, and taking the preimage back under the inverse returns the set one started with — empty or everything accordingly.
 @description
-Prove that a space homeomorphic to a discrete space is discrete, and that a space homeomorphic to a codiscrete space is codiscrete. Take the homeomorphism out with `obtain`, and use `isOpen_iff` in each. For the second, rewrite the goal backwards with `preimage_preimage` before rewriting by the case in hand.
+Prove that a space homeomorphic to a discrete space is discrete, and that a space homeomorphic to a indiscrete space is indiscrete. Take the homeomorphism out with `obtain`, and use `isOpen_iff` in each. For the second, rewrite the goal backwards with `preimage_preimage` before rewriting by the case in hand.
 -/
 
-theorem Homeomorphic.isDiscrete {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+theorem Homeomorphic.isDiscrete {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
     (h : Homeomorphic T T') (hT : T.IsDiscrete) : T'.IsDiscrete := by
   obtain ⟨e⟩ := h
   intro V
   exact (e.isOpen_iff V).mpr (hT _)
 
-theorem Homeomorphic.isCodiscrete {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphic T T') (hT : T.IsCodiscrete) : T'.IsCodiscrete := by
+theorem Homeomorphic.isIndiscrete {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : Homeomorphic T T') (hT : T.IsIndiscrete) : T'.IsIndiscrete := by
   obtain ⟨e⟩ := h
   intro V hV
   rcases hT _ ((e.isOpen_iff V).mp hV) with he | he
@@ -545,11 +561,11 @@ theorem Homeomorphic.isCodiscrete {X : Type u} {Y : Type v} {T : Topology X} {T'
 @preamble
 A two-point set carries the two extreme topologies and the Sierpiński topology, and the invariants will tell the three apart once it is known which space has which property.
 
-The Sierpiński space is not discrete, since `{false}` is not open in it — that was the point of the example. It is not codiscrete either, since `{true}` is open in it and is neither empty nor everything.
+The Sierpiński space is not discrete, since `{false}` is not open in it — that was the point of the example. It is not indiscrete either, since `{true}` is open in it and is neither empty nor everything.
 
 The set `{true}` is where both failures are read, so it is worth recording once that it is not one of the two trivial subsets of `Bool`.
 @description
-Show that `{true}` is neither `∅` nor `Set.univ` as a subset of `Bool`, and that `sierpinski` is neither discrete nor codiscrete. For the first, a membership of `true` refutes the empty case and a membership of `false` the other; the openness of `{true}` in `sierpinski` is an implication whose hypothesis is not needed.
+Show that `{true}` is neither `∅` nor `Set.univ` as a subset of `Bool`, and that `sierpinski` is neither discrete nor indiscrete. For the first, a membership of `true` refutes the empty case and a membership of `false` the other; the openness of `{true}` in `sierpinski` is an implication whose hypothesis is not needed.
 -/
 
 theorem singleton_true_not_trivial :
@@ -564,7 +580,7 @@ theorem singleton_true_not_trivial :
 theorem sierpinski_not_discrete : ¬ sierpinski.IsDiscrete := fun h =>
   sierpinski_singleton_false_not_open (h {false})
 
-theorem sierpinski_not_codiscrete : ¬ sierpinski.IsCodiscrete := fun h =>
+theorem sierpinski_not_indiscrete : ¬ sierpinski.IsIndiscrete := fun h =>
   singleton_true_not_trivial (h {true} (fun _ => rfl))
 
 /-! @end -/
@@ -575,15 +591,15 @@ theorem sierpinski_not_codiscrete : ¬ sierpinski.IsCodiscrete := fun h =>
 @concept topological_invariants
 
 @preamble
-Now the three are separated. The discrete space is discrete and neither of the others is, which distinguishes it from both; the codiscrete space is codiscrete and the Sierpiński space is not, which distinguishes those two.
+Now the three are separated. The discrete space is discrete and neither of the others is, which distinguishes it from both; the indiscrete space is indiscrete and the Sierpiński space is not, which distinguishes those two.
 
-One consequence is worth stating. The identity map from the discrete space to the codiscrete space on `Bool` is a continuous bijection: every map out of a discrete space is continuous, and the identity is its own inverse. Yet the two spaces are not homeomorphic, so a continuous bijection need not be one — which is why the open-map hypothesis was needed above.
+One consequence is worth stating. The identity map from the discrete space to the indiscrete space on `Bool` is a continuous bijection: every map out of a discrete space is continuous, and the identity is its own inverse. Yet the two spaces are not homeomorphic, so a continuous bijection need not be one — which is why the open-map hypothesis was needed above.
 @description
-Prove that no two of `discrete Bool`, `codiscrete Bool` and `sierpinski` are homeomorphic. Each proof transports one of the two invariants along the assumed homeomorphism and contradicts a fact from the previous problems.
+Prove that no two of `discrete Bool`, `indiscrete Bool` and `sierpinski` are homeomorphic. Each proof transports one of the two invariants along the assumed homeomorphism and contradicts a fact from the previous problems.
 -/
 
-theorem discrete_not_homeomorphic_codiscrete :
-    ¬ Homeomorphic (discrete Bool) (codiscrete Bool) := by
+theorem discrete_not_homeomorphic_indiscrete :
+    ¬ Homeomorphic (discrete Bool) (indiscrete Bool) := by
   intro h
   exact singleton_true_not_trivial (h.isDiscrete (discrete_isDiscrete Bool) {true})
 
@@ -592,10 +608,10 @@ theorem discrete_not_homeomorphic_sierpinski :
   intro h
   exact sierpinski_not_discrete (h.isDiscrete (discrete_isDiscrete Bool))
 
-theorem codiscrete_not_homeomorphic_sierpinski :
-    ¬ Homeomorphic (codiscrete Bool) sierpinski := by
+theorem indiscrete_not_homeomorphic_sierpinski :
+    ¬ Homeomorphic (indiscrete Bool) sierpinski := by
   intro h
-  exact sierpinski_not_codiscrete (h.isCodiscrete (codiscrete_isCodiscrete Bool))
+  exact sierpinski_not_indiscrete (h.isIndiscrete (indiscrete_isIndiscrete Bool))
 
 /-! @end -/
 

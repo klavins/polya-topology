@@ -8,19 +8,19 @@ statement: |-
 concepts:
 - metric_equivalence
 stub: |-
-  theorem Metric.Equivalent.isOpenSet_iff {X : Type u} {M N : Metric X} (h : M.Equivalent N)
+  theorem MetricSpace.Equivalent.isOpenSet_iff {X : Type u} {M N : MetricSpace X} (h : M.Equivalent N)
       (U : Set X) : M.IsOpenSet U ↔ N.IsOpenSet U := sorry
 
-  def Metric.Equivalent.toHomeomorphism {X : Type u} {M N : Metric X} (h : M.Equivalent N) :
-      Homeomorphism M.toTopology N.toTopology := sorry
+  def MetricSpace.Equivalent.toHomeomorph {X : Type u} {M N : MetricSpace X} (h : M.Equivalent N) :
+      Homeomorph M.toTopologicalSpace N.toTopologicalSpace := sorry
 reference: |-
-  theorem Metric.Equivalent.isOpenSet_iff {X : Type u} {M N : Metric X} (h : M.Equivalent N)
+  theorem MetricSpace.Equivalent.isOpenSet_iff {X : Type u} {M N : MetricSpace X} (h : M.Equivalent N)
       (U : Set X) : M.IsOpenSet U ↔ N.IsOpenSet U :=
-    ⟨fun hU => Metric.isOpenSet_of_ball_subset h.1 hU,
-     fun hU => Metric.isOpenSet_of_ball_subset h.2 hU⟩
+    ⟨fun hU => MetricSpace.isOpenSet_of_ball_subset h.1 hU,
+     fun hU => MetricSpace.isOpenSet_of_ball_subset h.2 hU⟩
 
-  def Metric.Equivalent.toHomeomorphism {X : Type u} {M N : Metric X} (h : M.Equivalent N) :
-      Homeomorphism M.toTopology N.toTopology where
+  def MetricSpace.Equivalent.toHomeomorph {X : Type u} {M N : MetricSpace X} (h : M.Equivalent N) :
+      Homeomorph M.toTopologicalSpace N.toTopologicalSpace where
     toFun := id
     invFun := id
     left_inv := fun _ => rfl
@@ -28,32 +28,33 @@ reference: |-
     continuous_toFun := fun U hU => (h.isOpenSet_iff U).mpr hU
     continuous_invFun := fun U hU => (h.isOpenSet_iff U).mp hU
 spec: |-
-  example : ∀ {X : Type u} {M N : Metric X} (h : M.Equivalent N)
-      (U : Set X), M.IsOpenSet U ↔ N.IsOpenSet U := _root_.GeneralTopology.Metric.Equivalent.isOpenSet_iff
-  example (X : Type) (M N : Metric X) (h : M.Equivalent N) (x : X) :
-      h.toHomeomorphism.toFun x = x ∧ h.toHomeomorphism.invFun x = x := ⟨rfl, rfl⟩
+  example : ∀ {X : Type u} {M N : MetricSpace X} (h : M.Equivalent N)
+      (U : Set X), M.IsOpenSet U ↔ N.IsOpenSet U := _root_.GeneralTopology.MetricSpace.Equivalent.isOpenSet_iff
+  example (X : Type) (M N : MetricSpace X) (h : M.Equivalent N) (x : X) :
+      h.toHomeomorph.toFun x = x ∧ h.toHomeomorph.invFun x = x := ⟨rfl, rfl⟩
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+  def MetricSpace.ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+  theorem MetricSpace.mem_ball {X : Type u} (M : MetricSpace X) {x y : X} {ε : ℝ} :
       y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
-  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+  def MetricSpace.IsOpenSet {X : Type u} (M : MetricSpace X) (U : Set X) : Prop :=
     ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
 
-  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+  theorem MetricSpace.isOpenSet_univ {X : Type u} (M : MetricSpace X) : M.IsOpenSet (Set.univ : Set X)
+      :=
     fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
 
-  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+  theorem MetricSpace.isOpenSet_inter {X : Type u} (M : MetricSpace X) {U V : Set X}
       (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
     intro x hx
     obtain ⟨a, ha, hau⟩ := hU x hx.1
@@ -63,35 +64,38 @@ preamble: |
     rw [M.mem_ball] at hy
     exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
 
-  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+  theorem MetricSpace.isOpenSet_sUnion {X : Type u} (M : MetricSpace X) {F : Set (Set X)}
       (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
     intro x hx
     obtain ⟨U, hUF, hxU⟩ := hx
     obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
     exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
 
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+  def MetricSpace.toTopologicalSpace {X : Type u} (M : MetricSpace X) : TopologicalSpace X where
     IsOpen := M.IsOpenSet
-    univ := M.isOpenSet_univ
-    inter := M.isOpenSet_inter
-    sUnion := M.isOpenSet_sUnion
+    isOpen_univ := M.isOpenSet_univ
+    isOpen_inter := M.isOpenSet_inter
+    isOpen_sUnion := M.isOpenSet_sUnion
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := by
+  theorem TopologicalSpace.continuous_id {X : Type u} (T : TopologicalSpace X) : T.Continuous T id
+      := by
     intro U hU
     rw [Set.preimage_id]
     exact hU
 
-  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+  structure Homeomorph {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) where
     toFun : X → Y
     invFun : Y → X
     left_inv : ∀ x, invFun (toFun x) = x
@@ -99,19 +103,19 @@ preamble: |
     continuous_toFun : T.Continuous T' toFun
     continuous_invFun : T'.Continuous T invFun
 
-  def Homeomorphism.refl {X : Type u} (T : Topology X) : Homeomorphism T T where
+  def Homeomorph.refl {X : Type u} (T : TopologicalSpace X) : Homeomorph T T where
     toFun := id
     invFun := id
     left_inv := fun _ => rfl
     right_inv := fun _ => rfl
-    continuous_toFun := Topology.continuous_id T
-    continuous_invFun := Topology.continuous_id T
+    continuous_toFun := TopologicalSpace.continuous_id T
+    continuous_invFun := TopologicalSpace.continuous_id T
 
-  def Metric.Equivalent {X : Type u} (M N : Metric X) : Prop :=
+  def MetricSpace.Equivalent {X : Type u} (M N : MetricSpace X) : Prop :=
     (∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) ∧
       (∀ x ε, 0 < ε → ∃ δ > 0, M.ball x δ ⊆ N.ball x ε)
 
-  theorem Metric.isOpenSet_of_ball_subset {X : Type u} {M N : Metric X}
+  theorem MetricSpace.isOpenSet_of_ball_subset {X : Type u} {M N : MetricSpace X}
       (h : ∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) {U : Set X}
       (hU : M.IsOpenSet U) : N.IsOpenSet U := by
     intro x hx
@@ -121,16 +125,16 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Metric.Equivalent.isOpenSet_iff`, that equivalent metrics agree on which sets are open, and then define `Metric.Equivalent.toHomeomorphism`, the identity as a homeomorphism between the induced topologies. Both of its maps are `id` and both inverse conditions are `rfl`; each continuity is one direction of the equivalence just proved.
+description: Prove `MetricSpace.Equivalent.isOpenSet_iff`, that equivalent metrics agree on which sets are open, and then define `MetricSpace.Equivalent.toHomeomorph`, the identity as a homeomorphism between the induced topologies. Both of its maps are `id` and both inverse conditions are `rfl`; each continuity is one direction of the equivalence just proved.
 stub_names:
-- Metric.Equivalent.isOpenSet_iff
-- Metric.Equivalent.toHomeomorphism
+- MetricSpace.Equivalent.isOpenSet_iff
+- MetricSpace.Equivalent.toHomeomorph
 namespace: GeneralTopology
 seq: 98
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
-  line: 380
+  line: 392
   closure_rounds: 1
   check_kind: mixed

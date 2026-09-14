@@ -8,17 +8,21 @@ statement: |-
 concepts:
 - plane_is_product
 stub: |-
-  def supNorm_prod_homeomorphism :
-      Homeomorphism supNorm.toMetric.toTopology (line.toTopology.prod line.toTopology) := sorry
+  def supNorm_prod_homeomorph :
+      Homeomorph supNorm.toMetricSpace.toTopologicalSpace
+        (line.toTopologicalSpace.prod line.toTopologicalSpace) := sorry
 
   theorem plane_homeomorphic_product :
-      Homeomorphic supNorm.toMetric.toTopology (line.toTopology.prod line.toTopology) := sorry
+      Homeomorphic supNorm.toMetricSpace.toTopologicalSpace
+        (line.toTopologicalSpace.prod line.toTopologicalSpace) := sorry
 
   theorem taxicab_homeomorphic_product :
-      Homeomorphic taxicab.toMetric.toTopology (line.toTopology.prod line.toTopology) := sorry
+      Homeomorphic taxicab.toMetricSpace.toTopologicalSpace
+        (line.toTopologicalSpace.prod line.toTopologicalSpace) := sorry
 reference: |-
-  def supNorm_prod_homeomorphism :
-      Homeomorphism supNorm.toMetric.toTopology (line.toTopology.prod line.toTopology) where
+  def supNorm_prod_homeomorph :
+      Homeomorph supNorm.toMetricSpace.toTopologicalSpace
+        (line.toTopologicalSpace.prod line.toTopologicalSpace) where
     toFun := id
     invFun := id
     left_inv := fun _ => rfl
@@ -27,60 +31,64 @@ reference: |-
     continuous_invFun := fun _ hW => isOpen_prod_of_isOpenSet_supNorm hW
 
   theorem plane_homeomorphic_product :
-      Homeomorphic supNorm.toMetric.toTopology (line.toTopology.prod line.toTopology) :=
-    ⟨supNorm_prod_homeomorphism⟩
+      Homeomorphic supNorm.toMetricSpace.toTopologicalSpace
+        (line.toTopologicalSpace.prod line.toTopologicalSpace) :=
+    ⟨supNorm_prod_homeomorph⟩
 
   theorem taxicab_homeomorphic_product :
-      Homeomorphic taxicab.toMetric.toTopology (line.toTopology.prod line.toTopology) :=
+      Homeomorphic taxicab.toMetricSpace.toTopologicalSpace
+        (line.toTopologicalSpace.prod line.toTopologicalSpace) :=
     Homeomorphic.trans plane_homeomorphic plane_homeomorphic_product
 spec: |-
-  example : Homeomorphic supNorm.toMetric.toTopology (line.toTopology.prod line.toTopology) := _root_.GeneralTopology.plane_homeomorphic_product
-  example : Homeomorphic taxicab.toMetric.toTopology (line.toTopology.prod line.toTopology) := _root_.GeneralTopology.taxicab_homeomorphic_product
+  example : Homeomorphic supNorm.toMetricSpace.toTopologicalSpace
+        (line.toTopologicalSpace.prod line.toTopologicalSpace) := _root_.GeneralTopology.plane_homeomorphic_product
+  example : Homeomorphic taxicab.toMetricSpace.toTopologicalSpace
+        (line.toTopologicalSpace.prod line.toTopologicalSpace) := _root_.GeneralTopology.taxicab_homeomorphic_product
   example (p : ℝ × ℝ) :
-      _root_.GeneralTopology.supNorm_prod_homeomorphism.toFun p = p ∧ _root_.GeneralTopology.supNorm_prod_homeomorphism.invFun p = p :=
+      _root_.GeneralTopology.supNorm_prod_homeomorph.toFun p = p ∧ _root_.GeneralTopology.supNorm_prod_homeomorph.invFun p = p :=
     ⟨rfl, rfl⟩
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
-    M.eq_zero.mpr rfl
+  theorem MetricSpace.dist_self {X : Type u} (M : MetricSpace X) {x : X} : M.dist x x = 0 :=
+    M.dist_eq_zero.mpr rfl
 
-  def line : Metric ℝ where
+  def line : MetricSpace ℝ where
     dist x y := |x - y|
-    symm {x y} := abs_sub_comm x y
-    triangle x y z := abs_sub_le x y z
-    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+    dist_comm {x y} := abs_sub_comm x y
+    dist_triangle x y z := abs_sub_le x y z
+    dist_eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
 
-  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+  def MetricSpace.ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+  theorem MetricSpace.mem_ball {X : Type u} (M : MetricSpace X) {x y : X} {ε : ℝ} :
       y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
-  theorem Metric.mem_ball_self {X : Type u} (M : Metric X) (x : X) (ε : ℝ) (h : 0 < ε) :
+  theorem MetricSpace.mem_ball_self {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) (h : 0 < ε) :
       x ∈ M.ball x ε := by
     rw [M.mem_ball, M.dist_self]
     exact h
 
-  theorem Metric.ball_mono {X : Type u} (M : Metric X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
+  theorem MetricSpace.ball_mono {X : Type u} (M : MetricSpace X) {x : X} {ε δ : ℝ} (h : ε ≤ δ) :
       M.ball x ε ⊆ M.ball x δ :=
     fun _ hy => lt_of_lt_of_le hy h
 
   structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
     norm : V → ℝ
-    eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
-    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
-    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+    norm_eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
+    norm_smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    norm_add_le : ∀ v w, norm (v + w) ≤ norm v + norm w
 
   theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
       N.norm (-v) = N.norm v := by
-    have h := N.smul (-1) v
+    have h := N.norm_smul (-1) v
     rw [neg_one_smul] at h
     rw [h, abs_neg, abs_one, one_mul]
 
@@ -88,14 +96,14 @@ preamble: |
       N.norm (v - w) = N.norm (w - v) := by
     rw [← N.neg (v - w), neg_sub]
 
-  def Norm.toMetric {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : Metric V where
+  def Norm.toMetricSpace {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : MetricSpace V where
     dist v w := N.norm (v - w)
-    symm {v w} := N.sub_comm v w
-    triangle u v w := by
-      have h := N.triangle (u - v) (v - w)
+    dist_comm {v w} := N.sub_comm v w
+    dist_triangle u v w := by
+      have h := N.norm_add_le (u - v) (v - w)
       rw [sub_add_sub_cancel] at h
       exact h
-    eq_zero {v w} := by rw [N.eq_zero, sub_eq_zero]
+    dist_eq_zero {v w} := by rw [N.norm_eq_zero, sub_eq_zero]
 
   theorem eq_zero_of_abs_le_zero {a : ℝ} (h : |a| ≤ 0) : a = 0 := by
     rw [← abs_eq_zero]
@@ -121,12 +129,12 @@ preamble: |
 
   def taxicab : Norm (ℝ × ℝ) where
     norm v := |v.1| + |v.2|
-    eq_zero {v} := by rw [abs_add_abs_eq_zero, prod_eq_zero]
-    smul c v := by
+    norm_eq_zero {v} := by rw [abs_add_abs_eq_zero, prod_eq_zero]
+    norm_smul c v := by
       show |c * v.1| + |c * v.2| = |c| * (|v.1| + |v.2|)
       rw [abs_mul, abs_mul]
       ring
-    triangle v w := by
+    norm_add_le v w := by
       show |v.1 + w.1| + |v.2 + w.2| ≤ |v.1| + |v.2| + (|w.1| + |w.2|)
       have h1 := abs_add_le v.1 w.1
       have h2 := abs_add_le v.2 w.2
@@ -152,11 +160,11 @@ preamble: |
 
   def supNorm : Norm (ℝ × ℝ) where
     norm v := max |v.1| |v.2|
-    eq_zero {v} := by rw [max_abs_eq_zero, prod_eq_zero]
-    smul c v := by
+    norm_eq_zero {v} := by rw [max_abs_eq_zero, prod_eq_zero]
+    norm_smul c v := by
       show max |c * v.1| |c * v.2| = |c| * max |v.1| |v.2|
       rw [abs_mul, abs_mul, mul_max_of_nonneg _ _ (abs_nonneg c)]
-    triangle v w := by
+    norm_add_le v w := by
       show max |v.1 + w.1| |v.2 + w.2| ≤ max |v.1| |v.2| + max |w.1| |w.2|
       have h1 := max_le_max (abs_add_le v.1 w.1) (abs_add_le v.2 w.2)
       have h2 := max_add_max |v.1| |v.2| |w.1| |w.2|
@@ -176,7 +184,7 @@ preamble: |
     linarith
 
   theorem ball_taxicab_subset_supNorm (x : ℝ × ℝ) (ε : ℝ) :
-      taxicab.toMetric.ball x ε ⊆ supNorm.toMetric.ball x ε := by
+      taxicab.toMetricSpace.ball x ε ⊆ supNorm.toMetricSpace.ball x ε := by
     intro y hy
     have h : taxicab.norm (x - y) < ε := hy
     have h2 := supNorm_le_taxicab (x - y)
@@ -184,30 +192,31 @@ preamble: |
     linarith
 
   theorem ball_supNorm_subset_taxicab (x : ℝ × ℝ) (ε : ℝ) :
-      supNorm.toMetric.ball x (ε / 2) ⊆ taxicab.toMetric.ball x ε := by
+      supNorm.toMetricSpace.ball x (ε / 2) ⊆ taxicab.toMetricSpace.ball x ε := by
     intro y hy
     have h : supNorm.norm (x - y) < ε / 2 := hy
     have h2 := taxicab_le_two_supNorm (x - y)
     show taxicab.norm (x - y) < ε
     linarith
 
-  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+  def MetricSpace.IsOpenSet {X : Type u} (M : MetricSpace X) (U : Set X) : Prop :=
     ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
 
-  theorem Metric.isOpenSet_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+  theorem MetricSpace.isOpenSet_ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) :
       M.IsOpenSet (M.ball x ε) := by
     intro y hy
     rw [M.mem_ball] at hy
     refine ⟨ε - M.dist x y, by linarith, ?_⟩
     intro z hz
     rw [M.mem_ball] at hz ⊢
-    have h := M.triangle x y z
+    have h := M.dist_triangle x y z
     linarith
 
-  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+  theorem MetricSpace.isOpenSet_univ {X : Type u} (M : MetricSpace X) : M.IsOpenSet (Set.univ : Set X)
+      :=
     fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
 
-  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+  theorem MetricSpace.isOpenSet_inter {X : Type u} (M : MetricSpace X) {U V : Set X}
       (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
     intro x hx
     obtain ⟨a, ha, hau⟩ := hU x hx.1
@@ -217,42 +226,46 @@ preamble: |
     rw [M.mem_ball] at hy
     exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
 
-  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+  theorem MetricSpace.isOpenSet_sUnion {X : Type u} (M : MetricSpace X) {F : Set (Set X)}
       (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
     intro x hx
     obtain ⟨U, hUF, hxU⟩ := hx
     obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
     exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
 
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+  def MetricSpace.toTopologicalSpace {X : Type u} (M : MetricSpace X) : TopologicalSpace X where
     IsOpen := M.IsOpenSet
-    univ := M.isOpenSet_univ
-    inter := M.isOpenSet_inter
-    sUnion := M.isOpenSet_sUnion
+    isOpen_univ := M.isOpenSet_univ
+    isOpen_inter := M.isOpenSet_inter
+    isOpen_sUnion := M.isOpenSet_sUnion
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := by
+  theorem TopologicalSpace.continuous_id {X : Type u} (T : TopologicalSpace X) : T.Continuous T id
+      := by
     intro U hU
     rw [Set.preimage_id]
     exact hU
 
-  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+  theorem TopologicalSpace.continuous_comp {X : Type u} {Y : Type v} {Z : Type w}
+      (T : TopologicalSpace X)
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} {f : X → Y} {g : Y → Z}
       (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := by
     intro U hU
     rw [Set.preimage_comp]
     exact hf _ (hg U hU)
 
-  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+  structure Homeomorph {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) where
     toFun : X → Y
     invFun : Y → X
     left_inv : ∀ x, invFun (toFun x) = x
@@ -260,17 +273,18 @@ preamble: |
     continuous_toFun : T.Continuous T' toFun
     continuous_invFun : T'.Continuous T invFun
 
-  def Homeomorphism.refl {X : Type u} (T : Topology X) : Homeomorphism T T where
+  def Homeomorph.refl {X : Type u} (T : TopologicalSpace X) : Homeomorph T T where
     toFun := id
     invFun := id
     left_inv := fun _ => rfl
     right_inv := fun _ => rfl
-    continuous_toFun := Topology.continuous_id T
-    continuous_invFun := Topology.continuous_id T
+    continuous_toFun := TopologicalSpace.continuous_id T
+    continuous_invFun := TopologicalSpace.continuous_id T
 
-  def Homeomorphism.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-      {T' : Topology Y} {T'' : Topology Z} (h : Homeomorphism T T') (h' : Homeomorphism T' T'') :
-      Homeomorphism T T'' where
+  def Homeomorph.trans {X : Type u} {Y : Type v} {Z : Type w} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} (h : Homeomorph T T')
+        (h' : Homeomorph T' T'') :
+      Homeomorph T T'' where
     toFun := h'.toFun ∘ h.toFun
     invFun := h.invFun ∘ h'.invFun
     left_inv := fun x => by
@@ -279,24 +293,26 @@ preamble: |
     right_inv := fun z => by
       show h'.toFun (h.toFun (h.invFun (h'.invFun z))) = z
       rw [h.right_inv, h'.right_inv]
-    continuous_toFun := Topology.continuous_comp T h.continuous_toFun h'.continuous_toFun
-    continuous_invFun := Topology.continuous_comp T'' h'.continuous_invFun h.continuous_invFun
+    continuous_toFun := TopologicalSpace.continuous_comp T h.continuous_toFun h'.continuous_toFun
+    continuous_invFun := TopologicalSpace.continuous_comp T'' h'.continuous_invFun h.continuous_invFun
 
-  def Homeomorphic {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) : Prop :=
-    Nonempty (Homeomorphism T T')
+  def Homeomorphic {X : Type u} {Y : Type v} (T : TopologicalSpace X) (T' : TopologicalSpace Y) : Prop
+      :=
+    Nonempty (Homeomorph T T')
 
-  theorem Homeomorphic.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-      {T' : Topology Y} {T'' : Topology Z} (h : Homeomorphic T T') (h' : Homeomorphic T' T'') :
+  theorem Homeomorphic.trans {X : Type u} {Y : Type v} {Z : Type w} {T : TopologicalSpace X}
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} (h : Homeomorphic T T')
+        (h' : Homeomorphic T' T'') :
       Homeomorphic T T'' := by
     obtain ⟨e⟩ := h
     obtain ⟨e'⟩ := h'
     exact ⟨e.trans e'⟩
 
-  def Metric.Equivalent {X : Type u} (M N : Metric X) : Prop :=
+  def MetricSpace.Equivalent {X : Type u} (M N : MetricSpace X) : Prop :=
     (∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) ∧
       (∀ x ε, 0 < ε → ∃ δ > 0, M.ball x δ ⊆ N.ball x ε)
 
-  theorem Metric.isOpenSet_of_ball_subset {X : Type u} {M N : Metric X}
+  theorem MetricSpace.isOpenSet_of_ball_subset {X : Type u} {M N : MetricSpace X}
       (h : ∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) {U : Set X}
       (hU : M.IsOpenSet U) : N.IsOpenSet U := by
     intro x hx
@@ -304,13 +320,13 @@ preamble: |
     obtain ⟨δ, hδ, hball⟩ := h x ε hε
     exact ⟨δ, hδ, fun y hy => hsub (hball hy)⟩
 
-  theorem Metric.Equivalent.isOpenSet_iff {X : Type u} {M N : Metric X} (h : M.Equivalent N)
+  theorem MetricSpace.Equivalent.isOpenSet_iff {X : Type u} {M N : MetricSpace X} (h : M.Equivalent N)
       (U : Set X) : M.IsOpenSet U ↔ N.IsOpenSet U :=
-    ⟨fun hU => Metric.isOpenSet_of_ball_subset h.1 hU,
-     fun hU => Metric.isOpenSet_of_ball_subset h.2 hU⟩
+    ⟨fun hU => MetricSpace.isOpenSet_of_ball_subset h.1 hU,
+     fun hU => MetricSpace.isOpenSet_of_ball_subset h.2 hU⟩
 
-  def Metric.Equivalent.toHomeomorphism {X : Type u} {M N : Metric X} (h : M.Equivalent N) :
-      Homeomorphism M.toTopology N.toTopology where
+  def MetricSpace.Equivalent.toHomeomorph {X : Type u} {M N : MetricSpace X} (h : M.Equivalent N) :
+      Homeomorph M.toTopologicalSpace N.toTopologicalSpace where
     toFun := id
     invFun := id
     left_inv := fun _ => rfl
@@ -318,7 +334,7 @@ preamble: |
     continuous_toFun := fun U hU => (h.isOpenSet_iff U).mpr hU
     continuous_invFun := fun U hU => (h.isOpenSet_iff U).mp hU
 
-  theorem taxicab_equivalent_supNorm : taxicab.toMetric.Equivalent supNorm.toMetric := by
+  theorem taxicab_equivalent_supNorm : taxicab.toMetricSpace.Equivalent supNorm.toMetricSpace := by
     constructor
     · intro x ε hε
       exact ⟨ε / 2, by linarith, ball_supNorm_subset_taxicab x ε⟩
@@ -326,44 +342,48 @@ preamble: |
       exact ⟨ε, hε, ball_taxicab_subset_supNorm x ε⟩
 
   theorem plane_homeomorphic :
-      Homeomorphic taxicab.toMetric.toTopology supNorm.toMetric.toTopology :=
-    ⟨taxicab_equivalent_supNorm.toHomeomorphism⟩
+      Homeomorphic taxicab.toMetricSpace.toTopologicalSpace supNorm.toMetricSpace.toTopologicalSpace
+        :=
+    ⟨taxicab_equivalent_supNorm.toHomeomorph⟩
 
-  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X × Y) where
+  def TopologicalSpace.prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X × Y) where
     IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
-    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
-    inter := by
+    isOpen_univ := fun _ _ =>
+      ⟨Set.univ, Set.univ, T.isOpen_univ, T'.isOpen_univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    isOpen_inter := by
       rintro W W' hW hW' p hp
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
       obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
-      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+      refine ⟨U ∩ U', V ∩ V', T.isOpen_inter hU hU', T'.isOpen_inter hV hV',
         ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
       rintro q ⟨hq1, hq2⟩
       exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
-    sUnion := by
+    isOpen_sUnion := by
       rintro F h p ⟨W, hWF, hpW⟩
       obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
       exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
 
   theorem ball_supNorm_eq_box (x : ℝ × ℝ) (ε : ℝ) :
-      supNorm.toMetric.ball x ε = line.ball x.1 ε ×ˢ line.ball x.2 ε := by
+      supNorm.toMetricSpace.ball x ε = line.ball x.1 ε ×ˢ line.ball x.2 ε := by
     ext y
     show max |x.1 - y.1| |x.2 - y.2| < ε ↔ |x.1 - y.1| < ε ∧ |x.2 - y.2| < ε
     exact max_lt_iff
 
-  theorem isOpen_prod_of_isOpenSet_supNorm {W : Set (ℝ × ℝ)} (h : supNorm.toMetric.IsOpenSet W) :
-      (line.toTopology.prod line.toTopology).IsOpen W := by
+  theorem isOpen_prod_of_isOpenSet_supNorm {W : Set (ℝ × ℝ)} (h : supNorm.toMetricSpace.IsOpenSet W) :
+      (line.toTopologicalSpace.prod line.toTopologicalSpace).IsOpen W := by
     intro p hp
     obtain ⟨ε, hε, hsub⟩ := h p hp
-    refine ⟨line.ball p.1 ε, line.ball p.2 ε, Metric.isOpenSet_ball line p.1 ε,
-      Metric.isOpenSet_ball line p.2 ε,
-      ⟨Metric.mem_ball_self line p.1 ε hε, Metric.mem_ball_self line p.2 ε hε⟩, ?_⟩
+    refine ⟨line.ball p.1 ε, line.ball p.2 ε, MetricSpace.isOpenSet_ball line p.1 ε,
+      MetricSpace.isOpenSet_ball line p.2 ε,
+      ⟨MetricSpace.mem_ball_self line p.1 ε hε, MetricSpace.mem_ball_self line p.2 ε hε⟩, ?_⟩
     rw [← ball_supNorm_eq_box]
     exact hsub
 
   theorem isOpenSet_supNorm_of_isOpen_prod {W : Set (ℝ × ℝ)}
-      (h : (line.toTopology.prod line.toTopology).IsOpen W) : supNorm.toMetric.IsOpenSet W := by
+      (h : (line.toTopologicalSpace.prod line.toTopologicalSpace).IsOpen W) :
+      supNorm.toMetricSpace.IsOpenSet W := by
     intro p hp
     obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h p hp
     obtain ⟨a, ha, hau⟩ := hU p.1 hpUV.1
@@ -371,22 +391,22 @@ preamble: |
     refine ⟨min a b, lt_min ha hb, ?_⟩
     rw [ball_supNorm_eq_box]
     rintro q ⟨hq1, hq2⟩
-    exact hsub ⟨hau (Metric.ball_mono line (min_le_left a b) hq1),
-      hbv (Metric.ball_mono line (min_le_right a b) hq2)⟩
+    exact hsub ⟨hau (MetricSpace.ball_mono line (min_le_left a b) hq1),
+      hbv (MetricSpace.ball_mono line (min_le_right a b) hq2)⟩
 
   end GeneralTopology
   open GeneralTopology
-description: Build `supNorm_prod_homeomorphism`, the identity as a homeomorphism onto the product, and read off that the supremum plane and then the taxicab plane are homeomorphic to `line.toTopology.prod line.toTopology`. Both maps are `id` and both inverse conditions are `rfl`; the last cites `plane_homeomorphic` and `Homeomorphic.trans`.
+description: Build `supNorm_prod_homeomorph`, the identity as a homeomorphism onto the product, and read off that the supremum plane and then the taxicab plane are homeomorphic to `line.toTopologicalSpace.prod line.toTopologicalSpace`. Both maps are `id` and both inverse conditions are `rfl`; the last cites `plane_homeomorphic` and `Homeomorphic.trans`.
 stub_names:
-- supNorm_prod_homeomorphism
+- supNorm_prod_homeomorph
 - plane_homeomorphic_product
 - taxicab_homeomorphic_product
 namespace: GeneralTopology
 seq: 121
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Products.lean
-  line: 475
+  line: 497
   closure_rounds: 1
   check_kind: mixed

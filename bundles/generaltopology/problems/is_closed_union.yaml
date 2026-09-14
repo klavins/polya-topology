@@ -5,39 +5,40 @@ statement: 'Each condition on the open sets says something about the closed ones
 concepts:
 - closed_sets
 stub: |-
-  theorem Topology.isClosed_union {X : Type u} (T : Topology X) {C D : Set X}
+  theorem TopologicalSpace.isClosed_union {X : Type u} (T : TopologicalSpace X) {C D : Set X}
       (hC : T.IsClosed C) (hD : T.IsClosed D) : T.IsClosed (C ∪ D) := sorry
 reference: |-
-  theorem Topology.isClosed_union {X : Type u} (T : Topology X) {C D : Set X}
+  theorem TopologicalSpace.isClosed_union {X : Type u} (T : TopologicalSpace X) {C D : Set X}
       (hC : T.IsClosed C) (hD : T.IsClosed D) : T.IsClosed (C ∪ D) := by
     show T.IsOpen _
     rw [Set.compl_union]
-    exact T.inter hC hD
+    exact T.isOpen_inter hC hD
 spec: |-
-  example : ∀ {X : Type u} (T : Topology X) {C D : Set X}
-      (hC : T.IsClosed C) (hD : T.IsClosed D), T.IsClosed (C ∪ D) := _root_.GeneralTopology.Topology.isClosed_union
+  example : ∀ {X : Type u} (T : TopologicalSpace X) {C D : Set X}
+      (hC : T.IsClosed C) (hD : T.IsClosed D), T.IsClosed (C ∪ D) := _root_.GeneralTopology.TopologicalSpace.isClosed_union
 preamble: |
   universe u
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
   end GeneralTopology
   open GeneralTopology
 description: Show that `C ∪ D` is closed when `C` and `D` are. `show T.IsOpen _`, rewrite with `Set.compl_union`, and the intersection condition finishes it.
 stub_names:
-- Topology.isClosed_union
+- TopologicalSpace.isClosed_union
 namespace: GeneralTopology
 seq: 40
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/TopologicalSpaces.lean
-  line: 242
+  line: 246
   closure_rounds: 1
   check_kind: theorem

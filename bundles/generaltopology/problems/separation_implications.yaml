@@ -10,15 +10,15 @@ statement: |-
 concepts:
 - separation_axioms
 stub: |-
-  theorem Topology.isT0_of_isT1 {X : Type u} {T : Topology X} (h : T.IsT1) : T.IsT0 := sorry
+  theorem TopologicalSpace.isT0_of_isT1 {X : Type u} {T : TopologicalSpace X} (h : T.IsT1) : T.IsT0 := sorry
 
-  theorem Topology.isT1_of_isHausdorff {X : Type u} {T : Topology X} (h : T.IsHausdorff) :
+  theorem TopologicalSpace.isT1_of_isT2 {X : Type u} {T : TopologicalSpace X} (h : T.IsT2) :
       T.IsT1 := sorry
 reference: |-
-  theorem Topology.isT0_of_isT1 {X : Type u} {T : Topology X} (h : T.IsT1) : T.IsT0 :=
+  theorem TopologicalSpace.isT0_of_isT1 {X : Type u} {T : TopologicalSpace X} (h : T.IsT1) : T.IsT0 :=
     fun x y hxy => Or.inl (h x y hxy)
 
-  theorem Topology.isT1_of_isHausdorff {X : Type u} {T : Topology X} (h : T.IsHausdorff) :
+  theorem TopologicalSpace.isT1_of_isT2 {X : Type u} {T : TopologicalSpace X} (h : T.IsT2) :
       T.IsT1 := by
     intro x y hxy
     obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := h x y hxy
@@ -28,38 +28,38 @@ reference: |-
     rw [hUV] at hy
     exact hy
 spec: |-
-  example : ∀ {X : Type u} {T : Topology X} (h : T.IsT1), T.IsT0 := _root_.GeneralTopology.Topology.isT0_of_isT1
-  example : ∀ {X : Type u} {T : Topology X} (h : T.IsHausdorff), T.IsT1 := _root_.GeneralTopology.Topology.isT1_of_isHausdorff
+  example : ∀ {X : Type u} {T : TopologicalSpace X} (h : T.IsT1), T.IsT0 := _root_.GeneralTopology.TopologicalSpace.isT0_of_isT1
+  example : ∀ {X : Type u} {T : TopologicalSpace X} (h : T.IsT2), T.IsT1 := _root_.GeneralTopology.TopologicalSpace.isT1_of_isT2
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsT0 {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT0 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y →
       (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)
 
-  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT1 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
 
-  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT2 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Topology.isT0_of_isT1` and `Topology.isT1_of_isHausdorff`. For the second, assume `y ∈ U`, put `y` into `U ∩ V` with an anonymous constructor, rewrite by the hypothesis that this set is empty, and a membership in `∅` is absurd.
+description: Prove `TopologicalSpace.isT0_of_isT1` and `TopologicalSpace.isT1_of_isT2`. For the second, assume `y ∈ U`, put `y` into `U ∩ V` with an anonymous constructor, rewrite by the hypothesis that this set is empty, and a membership in `∅` is absurd.
 stub_names:
-- Topology.isT0_of_isT1
-- Topology.isT1_of_isHausdorff
+- TopologicalSpace.isT0_of_isT1
+- TopologicalSpace.isT1_of_isT2
 namespace: GeneralTopology
 seq: 143
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Separation.lean
   line: 60
   closure_rounds: 1

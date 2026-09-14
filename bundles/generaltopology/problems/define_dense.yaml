@@ -7,38 +7,40 @@ statement: |-
   A dense set may be very much smaller than the space it is dense in, which is what makes the notion useful. The space itself is dense in itself, and so is anything the closure drags out to everything.
 concepts:
 - dense_sets
-stub: 'def Topology.Dense {X : Type u} (T : Topology X) (S : Set X) : Prop := sorry'
+stub: 'def TopologicalSpace.Dense {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop := sorry'
 reference: |-
-  def Topology.Dense {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.Dense {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     T.closure S = Set.univ
 spec: |-
-  example {X : Type u} (T : Topology X) (S : Set X) : _root_.GeneralTopology.Topology.Dense T S ↔ (T.closure S = Set.univ) := by unfold _root_.GeneralTopology.Topology.Dense; first | exact Iff.rfl | grind
-  example (X : Type) (T : Topology X) (S : Set X) : T.Dense S ↔ T.closure S = Set.univ := Iff.rfl
+  example {X : Type u} (T : TopologicalSpace X) (S : Set X) : _root_.GeneralTopology.TopologicalSpace.Dense T S ↔ (T.closure S = Set.univ) := by unfold _root_.GeneralTopology.TopologicalSpace.Dense; first | exact Iff.rfl | grind
+  example (X : Type) (T : TopologicalSpace X) (S : Set X) : T.Dense S ↔ T.closure S = Set.univ
+      := Iff.rfl
 preamble: |
   universe u
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
-  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+  def TopologicalSpace.closure {X : Type u} (T : TopologicalSpace X) (S : Set X) : Set X :=
     ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
 
   end GeneralTopology
   open GeneralTopology
-description: Define `Topology.Dense`, which says of a topology `T` and a set `S` that the closure of `S` is `Set.univ`. It returns a `Prop`, since it is a property of `S` and not a set.
+description: Define `TopologicalSpace.Dense`, which says of a topology `T` and a set `S` that the closure of `S` is `Set.univ`. It returns a `Prop`, since it is a property of `S` and not a set.
 stub_names:
-- Topology.Dense
+- TopologicalSpace.Dense
 namespace: GeneralTopology
 seq: 68
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Closure.lean
-  line: 412
+  line: 417
   closure_rounds: 1
   check_kind: definition

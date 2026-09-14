@@ -32,18 +32,20 @@ The order of the quantifiers is the whole content. The tolerance `ε` is given f
 
 `f` is *continuous* when it is continuous at every point.
 @description
-Define `Metric.ContinuousAt`, taking a metric `M` on `X`, a metric `N` on `Y`, a map `f : X → Y` and a point `x`, and then `Metric.Continuous`, which says `f` is continuous at every point. Write the two distances as `M.dist x x'` and `N.dist (f x) (f x')`. `∀ ε > 0, p ε` abbreviates `∀ ε, ε > 0 → p ε`.
+Define `MetricSpace.ContinuousAt`, taking a metric `M` on `X`, a metric `N` on `Y`, a map `f : X → Y` and a point `x`, and then `MetricSpace.Continuous`, which says `f` is continuous at every point. Write the two distances as `M.dist x x'` and `N.dist (f x) (f x')`. `∀ ε > 0, p ε` abbreviates `∀ ε, ε > 0 → p ε`.
 -/
 
-def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+def MetricSpace.ContinuousAt {X : Type u} {Y : Type v} (M : MetricSpace X) (N : MetricSpace Y)
+    (f : X → Y)
     (x : X) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε
 
-def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop :=
+def MetricSpace.Continuous {X : Type u} {Y : Type v} (M : MetricSpace X) (N : MetricSpace Y)
+    (f : X → Y) : Prop :=
   ∀ x, M.ContinuousAt N f x
 
 /-- @spec -/
-example (X Y : Type) (M : Metric X) (N : Metric Y) (f : X → Y) (x : X) :
+example (X Y : Type) (M : MetricSpace X) (N : MetricSpace Y) (f : X → Y) (x : X) :
     (M.ContinuousAt N f x ↔ ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε)
       ∧ (M.Continuous N f ↔ ∀ x, M.ContinuousAt N f x) :=
   ⟨Iff.rfl, Iff.rfl⟩
@@ -65,7 +67,8 @@ The identity moves nothing either, in a different sense: the distance between tw
 Show that a constant map and the identity are continuous. For the first, `M.dist_self` rewrites the distance away and the tolerance is positive by hypothesis; for the second, offering `ε` leaves a goal that is the hypothesis already.
 -/
 
-theorem Metric.continuous_const {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (y : Y) :
+theorem MetricSpace.continuous_const {X : Type u} {Y : Type v} (M : MetricSpace X)
+    (N : MetricSpace Y) (y : Y) :
     M.Continuous N (fun _ => y) := by
   intro x ε hε
   refine ⟨1, one_pos, ?_⟩
@@ -73,7 +76,7 @@ theorem Metric.continuous_const {X : Type u} {Y : Type v} (M : Metric X) (N : Me
   rw [N.dist_self]
   exact hε
 
-theorem Metric.continuous_id {X : Type u} (M : Metric X) : M.Continuous M id := by
+theorem MetricSpace.continuous_id {X : Type u} (M : MetricSpace X) : M.Continuous M id := by
   intro x ε hε
   exact ⟨ε, hε, fun _ h => h⟩
 
@@ -126,15 +129,16 @@ So a map between topological spaces is *continuous* when the preimage of every o
 
 We write `f ⁻¹' U` for the preimage `{x | f x ∈ U}`, and `x ∈ f ⁻¹' U` unfolds to `f x ∈ U`.
 @description
-Define `Topology.Continuous`, taking a topology `T` on `X`, a topology `T'` on `Y` and a map `f : X → Y`: every set `T'` calls open has a preimage `T` calls open.
+Define `TopologicalSpace.Continuous`, taking a topology `T` on `X`, a topology `T'` on `Y` and a map `f : X → Y`: every set `T'` calls open has a preimage `T` calls open.
 -/
 
-def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
     (f : X → Y) : Prop :=
   ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) (f : X → Y) :
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (f : X → Y) :
     T.Continuous T' f ↔ ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U) := Iff.rfl
 
 /-! @end -/
@@ -152,17 +156,18 @@ The identity takes each set to itself, so a preimage is the set it came from and
 Show that the identity and a constant map are continuous. `Set.preimage_id` rewrites the first; for the second, split on `y ∈ U` with `by_cases` and identify the preimage with `Set.eq_univ_of_forall` or `Set.eq_empty_of_forall_notMem`, each taking a proof that ignores the point.
 -/
 
-theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := by
+theorem TopologicalSpace.continuous_id {X : Type u} (T : TopologicalSpace X) : T.Continuous T id
+    := by
   intro U hU
   rw [Set.preimage_id]
   exact hU
 
-theorem Topology.continuous_const {X : Type u} {Y : Type v} (T : Topology X)
-    (T' : Topology Y) (y : Y) : T.Continuous T' (fun _ => y) := by
+theorem TopologicalSpace.continuous_const {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) (y : Y) : T.Continuous T' (fun _ => y) := by
   intro U _
   by_cases hy : y ∈ U
   · rw [show (fun _ => y) ⁻¹' U = (Set.univ : Set X) from Set.eq_univ_of_forall (fun _ => hy)]
-    exact T.univ
+    exact T.isOpen_univ
   · rw [show (fun _ => y) ⁻¹' U = (∅ : Set X) from Set.eq_empty_of_forall_notMem (fun _ => hy)]
     exact T.empty
 
@@ -180,8 +185,9 @@ So an open set upstairs is pulled back to an open set by `g`, and that one is pu
 @description
 Show that `g ∘ f` is continuous when `f` and `g` are. `Set.preimage_comp` is the equation `g ∘ f ⁻¹' U = f ⁻¹' (g ⁻¹' U)`; after it, apply the two hypotheses in turn.
 -/
-theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-    {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+theorem TopologicalSpace.continuous_comp {X : Type u} {Y : Type v} {Z : Type w}
+    (T : TopologicalSpace X)
+    {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} {f : X → Y} {g : Y → Z}
     (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := by
   intro U hU
   rw [Set.preimage_comp]
@@ -207,10 +213,11 @@ Suppose `f` satisfies the ε-δ condition and `U` is open. A point `x` of `f ⁻
 
 Suppose instead that preimages of open sets are open. Given `x` and `ε`, the ball about `f x` of radius `ε` is open, so its preimage is open, and it contains `x`. Openness of the preimage hands back exactly the `δ` that was wanted.
 @description
-Prove that `M.Continuous N f` exactly when `M.toTopology.Continuous N.toTopology f`. In both directions the hypotheses fit together without rewriting: a membership in a ball is the distance inequality it abbreviates, and the topology a metric induces calls open exactly what the metric does.
+Prove that `M.Continuous N f` exactly when `M.toTopologicalSpace.Continuous N.toTopologicalSpace f`. In both directions the hypotheses fit together without rewriting: a membership in a ball is the distance inequality it abbreviates, and the topology a metric induces calls open exactly what the metric does.
 -/
-theorem Metric.continuous_iff {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) :
-    M.Continuous N f ↔ M.toTopology.Continuous N.toTopology f := by
+theorem MetricSpace.continuous_iff {X : Type u} {Y : Type v} (M : MetricSpace X) (N : MetricSpace Y)
+    (f : X → Y) :
+    M.Continuous N f ↔ M.toTopologicalSpace.Continuous N.toTopologicalSpace f := by
   constructor
   · intro hf U hU x hx
     obtain ⟨ε, hε, hball⟩ := hU (f x) hx
@@ -234,7 +241,7 @@ This is how every metric example enters the topological subject from here on. On
 Show that `fun t => a * t + b` is continuous as a map of topological spaces when `a ≠ 0`. Take the left-to-right direction of the bridge and apply it to the problem already proved.
 -/
 theorem line_continuous_affine_top (a b : ℝ) (ha : a ≠ 0) :
-    line.toTopology.Continuous line.toTopology (fun t => a * t + b) :=
+    line.toTopologicalSpace.Continuous line.toTopologicalSpace (fun t => a * t + b) :=
   (line.continuous_iff line _).mp (line_continuous_affine a b ha)
 
 /-!
@@ -257,7 +264,8 @@ That equation, `Set.preimage_compl`, is the whole proof. It is worth noticing wh
 @description
 Prove that `T.Continuous T' f` exactly when `T.IsClosed (f ⁻¹' C)` for every closed `C`. Both directions restate a closedness as the openness of a complement — `show T.IsOpen _` — and then move the complement across the preimage; `compl_compl` cancels the two that appear on the way back.
 -/
-theorem Topology.continuous_iff_closed {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+theorem TopologicalSpace.continuous_iff_closed {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
     (f : X → Y) : T.Continuous T' f ↔ ∀ C, T'.IsClosed C → T.IsClosed (f ⁻¹' C) := by
   constructor
   · intro hf C hC
@@ -286,7 +294,8 @@ Equality can fail, and the containment is the useful direction anyway.
 @description
 Show that `f '' (T.closure S) ⊆ T'.closure (f '' S)` for continuous `f`. `Set.image_subset_iff` trades the image on the left for a preimage on the right, and then `T.closure_min` asks for exactly the two facts above.
 -/
-theorem Topology.continuous_closure {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+theorem TopologicalSpace.continuous_closure {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    {T' : TopologicalSpace Y}
     {f : X → Y} (hf : T.Continuous T' f) (S : Set X) :
     f '' (T.closure S) ⊆ T'.closure (f '' S) := by
   rw [Set.image_subset_iff]
@@ -305,15 +314,16 @@ The ε-δ definition was local: it spoke of one point at a time. The topological
 
 A map is *continuous at* `x` when every neighbourhood of `f x` has a preimage that is a neighbourhood of `x`. Read with balls in a metric space, that is the ε-δ condition at `x` with the quantifiers hidden inside the word "neighbourhood".
 @description
-Define `Topology.ContinuousAt`, taking topologies `T` on `X` and `T'` on `Y`, a map `f`, and a point `x` of `X`: every neighbourhood `N` of `f x` has `f ⁻¹' N` a neighbourhood of `x`.
+Define `TopologicalSpace.ContinuousAt`, taking topologies `T` on `X` and `T'` on `Y`, a map `f`, and a point `x` of `X`: every neighbourhood `N` of `f x` has `f ⁻¹' N` a neighbourhood of `x`.
 -/
 
-def Topology.ContinuousAt {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) (f : X → Y)
+def TopologicalSpace.ContinuousAt {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) (f : X → Y)
     (x : X) : Prop :=
   ∀ N, T'.IsNbhd (f x) N → T.IsNbhd x (f ⁻¹' N)
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) (f : X → Y) (x : X) :
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (f : X → Y) (x : X) :
     T.ContinuousAt T' f x ↔ ∀ N, T'.IsNbhd (f x) N → T.IsNbhd x (f ⁻¹' N) := Iff.rfl
 
 /-! @end -/
@@ -332,8 +342,9 @@ Backwards, take an open `U` and show its preimage is a neighbourhood of each of 
 @description
 Prove that `T.Continuous T' f` exactly when `T.ContinuousAt T' f x` for every `x`. `T.isOpen_iff_nbhd` turns the goal of the second direction into a statement at each point, and `T'.nbhd_of_isOpen` makes an open set into a neighbourhood of a point of it.
 -/
-theorem Topology.continuous_iff_continuousAt {X : Type u} {Y : Type v} (T : Topology X)
-    (T' : Topology Y) (f : X → Y) : T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := by
+theorem TopologicalSpace.continuous_iff_continuousAt {X : Type u} {Y : Type v}
+    (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) (f : X → Y) : T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := by
   constructor
   · rintro hf x N ⟨U, hU, hxU, hUN⟩
     exact ⟨f ⁻¹' U, hf U hU, hxU, fun y hy => hUN hy⟩
@@ -347,35 +358,35 @@ theorem Topology.continuous_iff_continuousAt {X : Type u} {Y : Type v} (T : Topo
 @title What the Definition Admits
 @kind theorem
 
-The definition is tested against the spaces already built. A discrete space admits every map out of it and a codiscrete space every map into it, so neither constrains anything. The two-point space is the opposite: a map into it is nothing more nor less than an open subset of the space it comes from.
+The definition is tested against the spaces already built. A discrete space admits every map out of it and a indiscrete space every map into it, so neither constrains anything. The two-point space is the opposite: a map into it is nothing more nor less than an open subset of the space it comes from.
 -/
 
 /-!
 @problem continuous_extremes
-@title Out of the Discrete, Into the Codiscrete
+@title Out of the Discrete, Into the Indiscrete
 @concept continuity_examples
 
 @preamble
 The two extreme topologies are extreme about maps as well, in opposite directions.
 
-Out of a discrete space every map is continuous, whatever the target: the preimage is open because everything is. Into a codiscrete space every map is continuous, whatever the source: the only sets to pull back are the empty one and the whole space, and their preimages are the empty one and the whole space.
+Out of a discrete space every map is continuous, whatever the target: the preimage is open because everything is. Into a indiscrete space every map is continuous, whatever the source: the only sets to pull back are the empty one and the whole space, and their preimages are the empty one and the whole space.
 
 So neither extreme can tell any two maps apart, which is why both are useless alone and useful as bounds.
 @description
-Show the two. The first needs no case analysis at all. For the second, `rintro U (rfl | rfl)` splits the disjunction that defines an open set of the codiscrete topology, and `Set.preimage_empty` and `Set.preimage_univ` name the two preimages.
+Show the two. The first needs no case analysis at all. For the second, `rintro U (rfl | rfl)` splits the disjunction that defines an open set of the indiscrete topology, and `Set.preimage_empty` and `Set.preimage_univ` name the two preimages.
 -/
 
-theorem continuous_from_discrete {X : Type u} {Y : Type v} (T' : Topology Y) (f : X → Y) :
+theorem continuous_from_discrete {X : Type u} {Y : Type v} (T' : TopologicalSpace Y) (f : X → Y) :
     (discrete X).Continuous T' f :=
   fun _ _ => trivial
 
-theorem continuous_to_codiscrete {X : Type u} {Y : Type v} (T : Topology X) (f : X → Y) :
-    T.Continuous (codiscrete Y) f := by
+theorem continuous_to_indiscrete {X : Type u} {Y : Type v} (T : TopologicalSpace X) (f : X → Y) :
+    T.Continuous (indiscrete Y) f := by
   rintro U (rfl | rfl)
   · rw [Set.preimage_empty]
     exact T.empty
   · rw [Set.preimage_univ]
-    exact T.univ
+    exact T.isOpen_univ
 
 /-! @end -/
 
@@ -415,7 +426,7 @@ One direction is the definition at `{true}`, which is open. The other is the thr
 @description
 Prove that `T.Continuous sierpinski f` exactly when `T.IsOpen (f ⁻¹' {true})`. Forwards, apply the hypothesis to `{true}`, whose openness holds because `false ∈ {true}` is absurd — `simp at h` disposes of it. Backwards, `rcases` the three cases and handle each preimage.
 -/
-theorem sierpinski_continuous_iff {X : Type u} (T : Topology X) (f : X → Bool) :
+theorem sierpinski_continuous_iff {X : Type u} (T : TopologicalSpace X) (f : X → Bool) :
     T.Continuous sierpinski f ↔ T.IsOpen (f ⁻¹' {true}) := by
   constructor
   · intro hf
@@ -428,7 +439,7 @@ theorem sierpinski_continuous_iff {X : Type u} (T : Topology X) (f : X → Bool)
       exact T.empty
     · exact h
     · rw [Set.preimage_univ]
-      exact T.univ
+      exact T.isOpen_univ
 
 /-!
 @problem continuous_subspace
@@ -445,11 +456,12 @@ Composing then restricts any continuous map to a subspace of its source.
 Show that the inclusion of a subspace is continuous, and that a continuous map composed with it is continuous. The first is an anonymous constructor whose third component is `rfl`; the second is the composition law, applied to the two maps in the right order.
 -/
 
-theorem Topology.continuous_subspace_val {X : Type u} (T : Topology X) (A : Set X) :
+theorem TopologicalSpace.continuous_subspace_val {X : Type u} (T : TopologicalSpace X) (A : Set X) :
     (T.subspace A).Continuous T Subtype.val :=
   fun U hU => ⟨U, hU, rfl⟩
 
-theorem Topology.continuous_restrict {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+theorem TopologicalSpace.continuous_restrict {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    {T' : TopologicalSpace Y}
     {f : X → Y} (hf : T.Continuous T' f) (A : Set X) :
     (T.subspace A).Continuous T' (f ∘ Subtype.val) :=
   (T.subspace A).continuous_comp (T.continuous_subspace_val A) hf

@@ -8,30 +8,34 @@ statement: |-
 concepts:
 - continuous_maps
 stub: |-
-  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+  theorem TopologicalSpace.continuous_comp {X : Type u} {Y : Type v} {Z : Type w}
+      (T : TopologicalSpace X)
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} {f : X → Y} {g : Y → Z}
       (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := sorry
 reference: |-
-  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+  theorem TopologicalSpace.continuous_comp {X : Type u} {Y : Type v} {Z : Type w}
+      (T : TopologicalSpace X)
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} {f : X → Y} {g : Y → Z}
       (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := by
     intro U hU
     rw [Set.preimage_comp]
     exact hf _ (hg U hU)
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
-      (hf : T.Continuous T' f) (hg : T'.Continuous T'' g), T.Continuous T'' (g ∘ f) := _root_.GeneralTopology.Topology.continuous_comp
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w}
+      (T : TopologicalSpace X)
+      {T' : TopologicalSpace Y} {T'' : TopologicalSpace Z} {f : X → Y} {g : Y → Z}
+      (hf : T.Continuous T' f) (hg : T'.Continuous T'' g), T.Continuous T'' (g ∘ f) := _root_.GeneralTopology.TopologicalSpace.continuous_comp
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
@@ -39,13 +43,13 @@ preamble: |
   open GeneralTopology
 description: Show that `g ∘ f` is continuous when `f` and `g` are. `Set.preimage_comp` is the equation `g ∘ f ⁻¹' U = f ⁻¹' (g ⁻¹' U)`; after it, apply the two hypotheses in turn.
 stub_names:
-- Topology.continuous_comp
+- TopologicalSpace.continuous_comp
 namespace: GeneralTopology
 seq: 76
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Continuity.lean
-  line: 172
+  line: 177
   closure_rounds: 1
   check_kind: theorem

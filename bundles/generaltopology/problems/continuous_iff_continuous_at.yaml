@@ -10,11 +10,13 @@ statement: |-
 concepts:
 - continuity_closed
 stub: |-
-  theorem Topology.continuous_iff_continuousAt {X : Type u} {Y : Type v} (T : Topology X)
-      (T' : Topology Y) (f : X → Y) : T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := sorry
+  theorem TopologicalSpace.continuous_iff_continuousAt {X : Type u} {Y : Type v}
+      (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (f : X → Y) : T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := sorry
 reference: |-
-  theorem Topology.continuous_iff_continuousAt {X : Type u} {Y : Type v} (T : Topology X)
-      (T' : Topology Y) (f : X → Y) : T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := by
+  theorem TopologicalSpace.continuous_iff_continuousAt {X : Type u} {Y : Type v}
+      (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (f : X → Y) : T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := by
     constructor
     · rintro hf x N ⟨U, hU, hxU, hUN⟩
       exact ⟨f ⁻¹' U, hf U hU, hxU, fun y hy => hUN hy⟩
@@ -23,25 +25,26 @@ reference: |-
       intro x hx
       exact hf x U (T'.nbhd_of_isOpen hU hx)
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X)
-      (T' : Topology Y) (f : X → Y), T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := _root_.GeneralTopology.Topology.continuous_iff_continuousAt
+  example : ∀ {X : Type u} {Y : Type v}
+      (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (f : X → Y), T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := _root_.GeneralTopology.TopologicalSpace.continuous_iff_continuousAt
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+  def TopologicalSpace.IsNbhd {X : Type u} (T : TopologicalSpace X) (x : X) (N : Set X) : Prop :=
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
 
-  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+  theorem TopologicalSpace.nbhd_of_isOpen {X : Type u} (T : TopologicalSpace X) {U : Set X}
       (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
     ⟨U, hU, hx, subset_rfl⟩
 
-  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+  theorem TopologicalSpace.union_of_opens_inside {X : Type u} (T : TopologicalSpace X) (U : Set X)
       (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
     apply Set.Subset.antisymm
     · intro x hx
@@ -50,20 +53,22 @@ preamble: |
     · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
       exact hVU hxV
 
-  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+  theorem TopologicalSpace.isOpen_iff_nbhd {X : Type u} (T : TopologicalSpace X) (U : Set X) :
       T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
     constructor
     · intro hU x hx
       exact T.nbhd_of_isOpen hU hx
     · intro h
       rw [T.union_of_opens_inside U h]
-      exact T.sUnion (fun V hV => hV.1)
+      exact T.isOpen_sUnion (fun V hV => hV.1)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  def Topology.ContinuousAt {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) (f : X → Y)
+  def TopologicalSpace.ContinuousAt {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) (f : X → Y)
       (x : X) : Prop :=
     ∀ N, T'.IsNbhd (f x) N → T.IsNbhd x (f ⁻¹' N)
 
@@ -71,13 +76,13 @@ preamble: |
   open GeneralTopology
 description: Prove that `T.Continuous T' f` exactly when `T.ContinuousAt T' f x` for every `x`. `T.isOpen_iff_nbhd` turns the goal of the second direction into a statement at each point, and `T'.nbhd_of_isOpen` makes an open set into a neighbourhood of a point of it.
 stub_names:
-- Topology.continuous_iff_continuousAt
+- TopologicalSpace.continuous_iff_continuousAt
 namespace: GeneralTopology
 seq: 82
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Continuity.lean
-  line: 322
+  line: 332
   closure_rounds: 1
   check_kind: theorem

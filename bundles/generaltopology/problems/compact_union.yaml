@@ -8,11 +8,11 @@ statement: |-
 concepts:
 - open_cover
 stub: |-
-  theorem Topology.isCompactSet_union {X : Type u} (T : Topology X) {S S' : Set X}
-      (hS : T.IsCompactSet S) (hS' : T.IsCompactSet S') : T.IsCompactSet (S ∪ S') := sorry
+  theorem TopologicalSpace.isCompact_union {X : Type u} (T : TopologicalSpace X) {S S' : Set X}
+      (hS : T.IsCompact S) (hS' : T.IsCompact S') : T.IsCompact (S ∪ S') := sorry
 reference: |-
-  theorem Topology.isCompactSet_union {X : Type u} (T : Topology X) {S S' : Set X}
-      (hS : T.IsCompactSet S) (hS' : T.IsCompactSet S') : T.IsCompactSet (S ∪ S') := by
+  theorem TopologicalSpace.isCompact_union {X : Type u} (T : TopologicalSpace X) {S S' : Set X}
+      (hS : T.IsCompact S) (hS' : T.IsCompact S') : T.IsCompact (S ∪ S') := by
     intro F hFo hcov
     obtain ⟨G, hGF, hGfin, hGcov⟩ := hS F hFo (fun x hx => hcov (Or.inl hx))
     obtain ⟨G', hG'F, hG'fin, hG'cov⟩ := hS' F hFo (fun x hx => hcov (Or.inr hx))
@@ -21,32 +21,32 @@ reference: |-
     · exact Set.sUnion_mono Set.subset_union_left (hGcov hx)
     · exact Set.sUnion_mono Set.subset_union_right (hG'cov hx)
 spec: |-
-  example : ∀ {X : Type u} (T : Topology X) {S S' : Set X}
-      (hS : T.IsCompactSet S) (hS' : T.IsCompactSet S'), T.IsCompactSet (S ∪ S') := _root_.GeneralTopology.Topology.isCompactSet_union
+  example : ∀ {X : Type u} (T : TopologicalSpace X) {S S' : Set X}
+      (hS : T.IsCompact S) (hS' : T.IsCompact S'), T.IsCompact (S ∪ S') := _root_.GeneralTopology.TopologicalSpace.isCompact_union
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
       ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Topology.isCompactSet_union`. Feed each half its own restriction of the cover, then offer the union of the two subcollections; `Set.union_subset` shows it inside `F`, and `Set.Finite.union` that it is finite. `Set.sUnion_mono` carries a point of one subcollection's union into the union of both.
+description: Prove `TopologicalSpace.isCompact_union`. Feed each half its own restriction of the cover, then offer the union of the two subcollections; `Set.union_subset` shows it inside `F`, and `Set.Finite.union` that it is finite. `Set.sUnion_mono` carries a point of one subcollection's union into the union of both.
 stub_names:
-- Topology.isCompactSet_union
+- TopologicalSpace.isCompact_union
 namespace: GeneralTopology
 seq: 200
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Compactness.lean
-  line: 81
+  line: 82
   closure_rounds: 1
   check_kind: theorem

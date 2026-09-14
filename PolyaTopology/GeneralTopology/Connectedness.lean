@@ -24,25 +24,25 @@ A space may fall into pieces that no open set straddles, and a topology says so 
 @concept connected
 
 @preamble
-A set that is both open and closed cuts the space in two: it and its complement are both open, they share no point, and together they are everything. Neither half can be reached from the other, and the topology sees no connection across the cut.
+A set that is both open and closed cuts the space in two: it and its complement are both open, they share no point, and together they are everything.
 
 Every space has two such sets, the empty one and the whole space. A space is *connected* when it has no others.
 
 A subset may be cut in the same way, and we ask the question with the open sets of the space around it rather than with those of the subspace. Two open sets that cover `S` and share no point of `S` divide it between them; `S` is connected when no such pair divides it, which is to say that `S` lies wholly inside one of the two.
 @description
-Define `Topology.IsConnected`, which says of a set that is open and closed — the two taken as separate hypotheses — that it is `∅` or `Set.univ`, the two disjuncts in that order. Then define `Topology.IsConnectedSet T S`: for all `U` and `V` with `T.IsOpen U`, `T.IsOpen V`, no point of `S` in both (written `∀ x ∈ S, x ∈ U → x ∉ V`) and `S ⊆ U ∪ V`, either `S ⊆ U` or `S ⊆ V`.
+Define `TopologicalSpace.IsPreconnectedSpace`, which says of a set that is open and closed — the two taken as separate hypotheses — that it is `∅` or `Set.univ`, the two disjuncts in that order. Then define `TopologicalSpace.IsPreconnected T S`: for all `U` and `V` with `T.IsOpen U`, `T.IsOpen V`, no point of `S` in both (written `∀ x ∈ S, x ∈ U → x ∉ V`) and `S ⊆ U ∪ V`, either `S ⊆ U` or `S ⊆ V`. Mathlib spells both of these the same way, keeping `IsConnected` for a preconnected set that is also nonempty.
 -/
 
-def Topology.IsConnected {X : Type u} (T : Topology X) : Prop :=
+def TopologicalSpace.IsPreconnectedSpace {X : Type u} (T : TopologicalSpace X) : Prop :=
   ∀ S, T.IsOpen S → T.IsClosed S → S = ∅ ∨ S = Set.univ
 
-def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+def TopologicalSpace.IsPreconnected {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
   ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (S : Set X) :
-    (T.IsConnected ↔ ∀ C, T.IsOpen C → T.IsClosed C → C = ∅ ∨ C = Set.univ)
-      ∧ (T.IsConnectedSet S ↔ ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) →
+example (X : Type) (T : TopologicalSpace X) (S : Set X) :
+    (T.IsPreconnectedSpace ↔ ∀ C, T.IsOpen C → T.IsClosed C → C = ∅ ∨ C = Set.univ)
+      ∧ (T.IsPreconnected S ↔ ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) →
           S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V) :=
   ⟨Iff.rfl, Iff.rfl⟩
 
@@ -101,10 +101,10 @@ The two definitions now meet. A set is connected in the ambient sense exactly wh
 
 Let `W` be a set of the subspace that is both open and closed. Being open, `W` is the trace of an open `U`; being closed, its complement is the trace of an open `V`. The facts about traces turn that pair into two open sets covering `A` and sharing none of its points, so `A` lies inside one of them: inside `U`, and `W` is the whole subspace; inside `V`, and the complement of `W` is, so `W` is empty.
 @description
-Show that `T.IsConnectedSet A` makes the subspace `A` a connected space. `rintro W ⟨U, hU, rfl⟩ ⟨V, hV, hVeq⟩` opens both hypotheses at once, naming the equation the closedness supplies, and `Set.compl_univ_iff` turns `Wᶜ = Set.univ` into `W = ∅`.
+Show that `T.IsPreconnected A` makes the subspace `A` a connected space. `rintro W ⟨U, hU, rfl⟩ ⟨V, hV, hVeq⟩` opens both hypotheses at once, naming the equation the closedness supplies, and `Set.compl_univ_iff` turns `Wᶜ = Set.univ` into `W = ∅`.
 -/
-theorem Topology.isConnected_subspace {X : Type u} (T : Topology X) {A : Set X}
-    (h : T.IsConnectedSet A) : (T.subspace A).IsConnected := by
+theorem TopologicalSpace.isPreconnected_subspace {X : Type u} (T : TopologicalSpace X) {A : Set X}
+    (h : T.IsPreconnected A) : (T.subspace A).IsPreconnectedSpace := by
   rintro W ⟨U, hU, rfl⟩ ⟨V, hV, hVeq⟩
   obtain ⟨hno, hcov⟩ := trace_split hVeq
   rcases h U V hU hV hno hcov with h0 | h0
@@ -128,16 +128,16 @@ A definition earns its place by what it admits and what it rules out. At one ext
 @concept connected_examples
 
 @preamble
-The codiscrete topology has two open sets and no others, so a set both open and closed is already one of the two the definition allows. Nothing is left to check: the hypothesis is the conclusion.
+The indiscrete topology has two open sets and no others, so a set both open and closed is already one of the two the definition allows. Nothing is left to check: the hypothesis is the conclusion.
 
 The discrete topology is the other extreme. On the two-point set `Bool` the set `{true}` is open, and so is its complement, so `{true}` is both open and closed while being neither empty nor everything. A discrete space with two distinct points is never connected, and this is the smallest witness.
 @description
-Show `codiscrete_isConnected` and `discrete_bool_not_isConnected`. The first is one of its own hypotheses. For the second, `singleton_true_not_trivial` from the section on homeomorphisms is the fact that `{true}` is neither `∅` nor `Set.univ`, and `trivial` proves whatever the discrete topology asks.
+Show `indiscrete_isPreconnectedSpace` and `discrete_bool_not_isPreconnectedSpace`. The first is one of its own hypotheses. For the second, `singleton_true_not_trivial` from the section on homeomorphisms is the fact that `{true}` is neither `∅` nor `Set.univ`, and `trivial` proves whatever the discrete topology asks.
 -/
-theorem codiscrete_isConnected (X : Type u) : (codiscrete X).IsConnected :=
+theorem indiscrete_isPreconnectedSpace (X : Type u) : (indiscrete X).IsPreconnectedSpace :=
   fun _ hS _ => hS
 
-theorem discrete_bool_not_isConnected : ¬ (discrete Bool).IsConnected := fun h =>
+theorem discrete_bool_not_isPreconnectedSpace : ¬ (discrete Bool).IsPreconnectedSpace := fun h =>
   singleton_true_not_trivial (h {true} trivial trivial)
 
 /-! @end -/
@@ -186,7 +186,7 @@ Leftwards: if `c` lies in an open `V`, then for some positive `ε` every point o
 Prove `line_open_right` and `line_open_left`. `hU c hc` produces the radius and the containment; `lt_min` and `min_le_left` handle the smaller of two candidates, and `show |c - y| < ε` restates the membership in the ball as the inequality `abs_lt` splits.
 -/
 
-theorem line_open_right {U : Set ℝ} (hU : line.toTopology.IsOpen U) {c : ℝ} (hc : c ∈ U)
+theorem line_open_right {U : Set ℝ} (hU : line.toTopologicalSpace.IsOpen U) {c : ℝ} (hc : c ∈ U)
     {b : ℝ} (hcb : c < b) : ∃ x, c < x ∧ x ≤ b ∧ x ∈ U := by
   obtain ⟨ε, hε, hsub⟩ := hU c hc
   have h1 : c < min (c + ε / 2) b := lt_min (by linarith) hcb
@@ -196,7 +196,7 @@ theorem line_open_right {U : Set ℝ} (hU : line.toTopology.IsOpen U) {c : ℝ} 
   rw [abs_lt]
   constructor <;> linarith
 
-theorem line_open_left {V : Set ℝ} (hV : line.toTopology.IsOpen V) {c : ℝ} (hc : c ∈ V) :
+theorem line_open_left {V : Set ℝ} (hV : line.toTopologicalSpace.IsOpen V) {c : ℝ} (hc : c ∈ V) :
     ∃ ε > 0, ∀ y, c - ε < y → y ≤ c → y ∈ V := by
   obtain ⟨ε, hε, hsub⟩ := hV c hc
   refine ⟨ε, hε, fun y h1 h2 => hsub ?_⟩
@@ -220,8 +220,8 @@ Now `c` cannot lie in `U`. It would fall short of `b`, which lies in `V`, and th
 @description
 Prove `line_no_split`: those hypotheses are contradictory. `Real.exists_isLUB` supplies `c` from the nonemptiness and the bound; `hlub.1` is the upper-bound half, `hlub.2` the least half, and `hlub.exists_between` produces a member of the set above `c - ε`.
 -/
-theorem line_no_split {S U V : Set ℝ} (h : IsInterval S) (hU : line.toTopology.IsOpen U)
-    (hV : line.toTopology.IsOpen V) (hno : ∀ x ∈ S, x ∈ U → x ∉ V) (hcov : S ⊆ U ∪ V)
+theorem line_no_split {S U V : Set ℝ} (h : IsInterval S) (hU : line.toTopologicalSpace.IsOpen U)
+    (hV : line.toTopologicalSpace.IsOpen V) (hno : ∀ x ∈ S, x ∈ U → x ∉ V) (hcov : S ⊆ U ∪ V)
     {a b : ℝ} (haS : a ∈ S) (hbS : b ∈ S) (haU : a ∈ U) (hbV : b ∈ V) (hab : a < b) : False := by
   obtain ⟨c, hlub⟩ := Real.exists_isLUB (s := {x | a ≤ x ∧ x ≤ b ∧ x ∈ U})
     ⟨a, le_refl a, hab.le, haU⟩ ⟨b, fun x hx => hx.2.1⟩
@@ -246,11 +246,11 @@ Suppose two open sets divide an interval `S`. Then some point of `S` escapes the
 
 Two consequences follow at once. Every set `{x | a ≤ x ∧ x ≤ b}` is an interval, so every closed interval is connected; and `unitInterval` is such a set.
 @description
-Prove `line_isConnectedSet_of_isInterval`, then `line_isConnectedSet_segment` and `unitInterval_isConnectedSet`. `by_contra` and `push Not` turn the goal into the two escaping points, `Set.not_subset` names them, and `Or.resolve_left` puts each into the set the other escaped.
+Prove `line_isPreconnected_of_isInterval`, then `line_isPreconnected_segment` and `unitInterval_isPreconnected`. `by_contra` and `push Not` turn the goal into the two escaping points, `Set.not_subset` names them, and `Or.resolve_left` puts each into the set the other escaped.
 -/
 
-theorem line_isConnectedSet_of_isInterval {S : Set ℝ} (h : IsInterval S) :
-    line.toTopology.IsConnectedSet S := by
+theorem line_isPreconnected_of_isInterval {S : Set ℝ} (h : IsInterval S) :
+    line.toTopologicalSpace.IsPreconnected S := by
   intro U V hU hV hno hcov
   by_contra hcon
   push Not at hcon
@@ -263,13 +263,13 @@ theorem line_isConnectedSet_of_isInterval {S : Set ℝ} (h : IsInterval S) :
       (fun x hx => (hcov hx).symm) haS hbS haV hbU hlt
   · exact line_no_split h hU hV hno hcov hbS haS hbU haV hgt
 
-theorem line_isConnectedSet_segment (a b : ℝ) :
-    line.toTopology.IsConnectedSet {x | a ≤ x ∧ x ≤ b} :=
-  line_isConnectedSet_of_isInterval
+theorem line_isPreconnected_segment (a b : ℝ) :
+    line.toTopologicalSpace.IsPreconnected {x | a ≤ x ∧ x ≤ b} :=
+  line_isPreconnected_of_isInterval
     (fun _ hx _ hy _ h1 h2 => ⟨le_trans hx.1 h1.le, le_trans h2.le hy.2⟩)
 
-theorem unitInterval_isConnectedSet : line.toTopology.IsConnectedSet unitInterval :=
-  line_isConnectedSet_segment 0 1
+theorem unitInterval_isPreconnected : line.toTopologicalSpace.IsPreconnected unitInterval :=
+  line_isPreconnected_segment 0 1
 
 /-! @end -/
 
@@ -291,11 +291,11 @@ Let `f` be continuous and let `S` be connected. Suppose two open sets cover `f '
 
 So `S` lies inside one of the preimages, and its image lies inside the corresponding set.
 @description
-Prove `Topology.isConnectedSet_image`. Each hypothesis for the preimages is one line, since a point of `f '' S` is `⟨x, hx, rfl⟩`; `Set.image_subset_iff` trades the image on the left of a containment for a preimage on the right.
+Prove `TopologicalSpace.isPreconnected_image`. Each hypothesis for the preimages is one line, since a point of `f '' S` is `⟨x, hx, rfl⟩`; `Set.image_subset_iff` trades the image on the left of a containment for a preimage on the right.
 -/
-theorem Topology.isConnectedSet_image {X : Type u} {Y : Type v} (T : Topology X)
-    {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) {S : Set X}
-    (hS : T.IsConnectedSet S) : T'.IsConnectedSet (f '' S) := by
+theorem TopologicalSpace.isPreconnected_image {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    {T' : TopologicalSpace Y} {f : X → Y} (hf : T.Continuous T' f) {S : Set X}
+    (hS : T.IsPreconnected S) : T'.IsPreconnected (f '' S) := by
   intro U V hU hV hno hcov
   rcases hS (f ⁻¹' U) (f ⁻¹' V) (hf U hU) (hf V hV)
       (fun x hx => hno (f x) ⟨x, hx, rfl⟩) (fun x hx => hcov ⟨x, hx, rfl⟩) with h0 | h0
@@ -312,21 +312,22 @@ Homeomorphic spaces are the same space as far as a topology can tell, so a prope
 
 Let `e` carry `T` to `T'`, and let `V` be open and closed in `T'`. Its preimage along `e.toFun` is open and closed in `T`, since `e.isOpen_iff` reads openness on either side of the map and taking preimages commutes with complements. So the preimage is empty or everything — and `V` is the preimage of its preimage, which settles which.
 @description
-Show `Homeomorphic.isConnected`. `obtain ⟨e⟩` opens the existence of a homeomorphism; `Set.preimage_compl` moves a complement across a preimage, and `rw [← e.preimage_preimage V, h0]` rewrites `V` as a preimage of what has just been identified.
+Show `Homeomorphic.isPreconnectedSpace`. `obtain ⟨e⟩` opens the existence of a homeomorphism; `Set.preimage_compl` moves a complement across a preimage, and `rw [← e.preimage_preimage V, h0]` rewrites `V` as a preimage of what has just been identified.
 -/
-theorem Homeomorphic.isConnected {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
-    (h : Homeomorphic T T') (hT : T.IsConnected) : T'.IsConnected := by
+theorem Homeomorphic.isPreconnectedSpace {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y}
+    (h : Homeomorphic T T') (hT : T.IsPreconnectedSpace) : T'.IsPreconnectedSpace := by
   obtain ⟨e⟩ := h
   intro V hVo hVc
   have hc : T.IsClosed (e.toFun ⁻¹' V) := by
     show T.IsOpen _
     rw [← Set.preimage_compl]
-    exact (Homeomorphism.isOpen_iff e Vᶜ).mp hVc
-  rcases hT (e.toFun ⁻¹' V) ((Homeomorphism.isOpen_iff e V).mp hVo) hc with h0 | h0
+    exact (Homeomorph.isOpen_iff e Vᶜ).mp hVc
+  rcases hT (e.toFun ⁻¹' V) ((Homeomorph.isOpen_iff e V).mp hVo) hc with h0 | h0
   · left
-    rw [← Homeomorphism.preimage_preimage e V, h0, Set.preimage_empty]
+    rw [← Homeomorph.preimage_preimage e V, h0, Set.preimage_empty]
   · right
-    rw [← Homeomorphism.preimage_preimage e V, h0, Set.preimage_univ]
+    rw [← Homeomorph.preimage_preimage e V, h0, Set.preimage_univ]
 
 /-!
 @problem line_open_rays
@@ -339,7 +340,7 @@ The sets `{y | y < c}` and `{y | c < y}` are open in the line. A point `x` below
 Prove `line_isOpen_lt` and `line_isOpen_gt`. Restate the hypothesis with `have hx' : x < c := hx`, offer the radius, and turn the membership in the ball into `|x - y| < c - x`, which `abs_lt` splits and `linarith` finishes.
 -/
 
-theorem line_isOpen_lt (c : ℝ) : line.toTopology.IsOpen {y | y < c} := by
+theorem line_isOpen_lt (c : ℝ) : line.toTopologicalSpace.IsOpen {y | y < c} := by
   intro x hx
   have hx' : x < c := hx
   refine ⟨c - x, by linarith, fun y hy => ?_⟩
@@ -348,7 +349,7 @@ theorem line_isOpen_lt (c : ℝ) : line.toTopology.IsOpen {y | y < c} := by
   show y < c
   linarith [h.1]
 
-theorem line_isOpen_gt (c : ℝ) : line.toTopology.IsOpen {y | c < y} := by
+theorem line_isOpen_gt (c : ℝ) : line.toTopologicalSpace.IsOpen {y | c < y} := by
   intro x hx
   have hx' : c < x := hx
   refine ⟨x - c, by linarith, fun y hy => ?_⟩
@@ -371,7 +372,8 @@ Suppose `c` lies between the two values and is never taken. The preimages of the
 @description
 Prove `line_intermediate_value`. `by_contra` and `push Not` give the assumption that the value is never taken, `lt_trichotomy` splits a value against `c`, and `exacts` closes the three cases in one line.
 -/
-theorem line_intermediate_value {f : ℝ → ℝ} (hf : line.toTopology.Continuous line.toTopology f)
+theorem line_intermediate_value {f : ℝ → ℝ}
+    (hf : line.toTopologicalSpace.Continuous line.toTopologicalSpace f)
     {a b c : ℝ} (hab : a ≤ b) (h1 : f a < c) (h2 : c < f b) :
     ∃ x, a ≤ x ∧ x ≤ b ∧ f x = c := by
   by_contra hcon
@@ -383,7 +385,7 @@ theorem line_intermediate_value {f : ℝ → ℝ} (hf : line.toTopology.Continuo
   have hno : ∀ x ∈ {x | a ≤ x ∧ x ≤ b}, x ∈ f ⁻¹' {y | y < c} → x ∉ f ⁻¹' {y | c < y} := by
     intro x _ hlt hgt
     exact absurd (show f x < c from hlt) (not_lt.mpr (le_of_lt (show c < f x from hgt)))
-  rcases line_isConnectedSet_segment a b _ _ (hf _ (line_isOpen_lt c)) (hf _ (line_isOpen_gt c))
+  rcases line_isPreconnected_segment a b _ _ (hf _ (line_isOpen_lt c)) (hf _ (line_isOpen_gt c))
       hno hcov with h0 | h0
   · exact absurd (h0 ⟨hab, le_refl b⟩) (not_lt.mpr h2.le)
   · exact absurd (h0 ⟨le_refl a, hab⟩) (not_lt.mpr h1.le)
@@ -406,11 +408,11 @@ A single point is connected: whichever of the two sets catches it catches the wh
 
 Now take a family of connected sets, every one of them containing a point `p`, and let two open sets cover the union and share none of its points. Each member of the family is covered by the two as well and shares none of its points with them, so each member lies inside one of the two. Say `p` lies in the first. A member lying inside the second would put `p` in both, so every member lies inside the first, and so does the union. If `p` lies in the second instead, the same argument runs with the sides exchanged.
 @description
-Prove `Topology.isConnectedSet_singleton` and `Topology.isConnectedSet_sUnion`, the second for a family `F` all of whose members contain `p`. A membership `y ∈ {x}` is the equation `y = x` and must be restated as one before rewriting; `by_cases hpU : p ∈ U` chooses the side, and `rintro x ⟨S, hSF, hxS⟩` opens a point of `⋃₀ F`.
+Prove `TopologicalSpace.isPreconnected_singleton` and `TopologicalSpace.isPreconnected_sUnion`, the second for a family `F` all of whose members contain `p`. A membership `y ∈ {x}` is the equation `y = x` and must be restated as one before rewriting; `by_cases hpU : p ∈ U` chooses the side, and `rintro x ⟨S, hSF, hxS⟩` opens a point of `⋃₀ F`.
 -/
 
-theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
-    T.IsConnectedSet {x} := by
+theorem TopologicalSpace.isPreconnected_singleton {X : Type u} (T : TopologicalSpace X) (x : X) :
+    T.IsPreconnected {x} := by
   intro U V _ _ _ hcov
   have hx : x ∈ ({x} : Set X) := rfl
   rcases hcov hx with h | h
@@ -423,8 +425,9 @@ theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) 
     rw [e]
     exact h
 
-theorem Topology.isConnectedSet_sUnion {X : Type u} (T : Topology X) {F : Set (Set X)} {p : X}
-    (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsConnectedSet S) : T.IsConnectedSet (⋃₀ F) := by
+theorem TopologicalSpace.isPreconnected_sUnion {X : Type u} (T : TopologicalSpace X)
+    {F : Set (Set X)} {p : X}
+    (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsPreconnected S) : T.IsPreconnected (⋃₀ F) := by
   intro U V hU hV hno hcov
   have key : ∀ S ∈ F, S ⊆ U ∨ S ⊆ V := fun S hSF => h S hSF U V hU hV
     (fun x hx => hno x ⟨S, hSF, hx⟩) (fun x hx => hcov ⟨S, hSF, hx⟩)
@@ -452,18 +455,19 @@ The *connected component* of `x` is the union of every connected set that contai
 
 The point itself belongs to it, since `{x}` is one of the sets united.
 @description
-Define `Topology.component`, the union `⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S}`, and prove `Topology.mem_component`. The witness for the second is the singleton, whose connectedness is the previous problem and whose two memberships are `rfl`.
+Define `TopologicalSpace.connectedComponent`, the union `⋃₀ {S | T.IsPreconnected S ∧ x ∈ S}`, and prove `TopologicalSpace.mem_component`. The witness for the second is the singleton, whose connectedness is the previous problem and whose two memberships are `rfl`.
 -/
 
-def Topology.component {X : Type u} (T : Topology X) (x : X) : Set X :=
-  ⋃₀ {S | T.IsConnectedSet S ∧ x ∈ S}
+def TopologicalSpace.connectedComponent {X : Type u} (T : TopologicalSpace X) (x : X) : Set X :=
+  ⋃₀ {S | T.IsPreconnected S ∧ x ∈ S}
 
-theorem Topology.mem_component {X : Type u} (T : Topology X) (x : X) : x ∈ T.component x :=
-  ⟨{x}, ⟨Topology.isConnectedSet_singleton T x, rfl⟩, rfl⟩
+theorem TopologicalSpace.mem_component {X : Type u} (T : TopologicalSpace X) (x : X)
+    : x ∈ T.connectedComponent x :=
+  ⟨{x}, ⟨TopologicalSpace.isPreconnected_singleton T x, rfl⟩, rfl⟩
 
 /-- @spec -/
-example (X : Type) (T : Topology X) (x y : X) :
-    y ∈ T.component x ↔ ∃ S, (T.IsConnectedSet S ∧ x ∈ S) ∧ y ∈ S := Iff.rfl
+example (X : Type) (T : TopologicalSpace X) (x y : X) :
+    y ∈ T.connectedComponent x ↔ ∃ S, (T.IsPreconnected S ∧ x ∈ S) ∧ y ∈ S := Iff.rfl
 
 /-! @end -/
 
@@ -479,24 +483,24 @@ It is connected, being a union of connected sets through `x`. It contains every 
 
 So the components partition the space. Every point has one, and two of them are equal or share no point at all.
 @description
-Prove `Topology.isConnectedSet_component`, `Topology.subset_component` and `Topology.component_eq_of_mem`. The first two are the union lemma and the definition read back; the third is `Set.Subset.antisymm` on the two containments the second supplies.
+Prove `TopologicalSpace.isPreconnected_component`, `TopologicalSpace.subset_component` and `TopologicalSpace.component_eq_of_mem`. The first two are the union lemma and the definition read back; the third is `Set.Subset.antisymm` on the two containments the second supplies.
 -/
 
-theorem Topology.isConnectedSet_component {X : Type u} (T : Topology X) (x : X) :
-    T.IsConnectedSet (T.component x) :=
-  Topology.isConnectedSet_sUnion T (fun _ hS => hS.2) (fun _ hS => hS.1)
+theorem TopologicalSpace.isPreconnected_component {X : Type u} (T : TopologicalSpace X) (x : X) :
+    T.IsPreconnected (T.connectedComponent x) :=
+  TopologicalSpace.isPreconnected_sUnion T (fun _ hS => hS.2) (fun _ hS => hS.1)
 
-theorem Topology.subset_component {X : Type u} (T : Topology X) {S : Set X} {x : X}
-    (hS : T.IsConnectedSet S) (hx : x ∈ S) : S ⊆ T.component x :=
+theorem TopologicalSpace.subset_component {X : Type u} (T : TopologicalSpace X) {S : Set X} {x : X}
+    (hS : T.IsPreconnected S) (hx : x ∈ S) : S ⊆ T.connectedComponent x :=
   fun _ hy => ⟨S, ⟨hS, hx⟩, hy⟩
 
-theorem Topology.component_eq_of_mem {X : Type u} (T : Topology X) {x y : X}
-    (h : y ∈ T.component x) : T.component y = T.component x := by
-  have h1 : T.component x ⊆ T.component y :=
-    Topology.subset_component T (Topology.isConnectedSet_component T x) h
-  have hx : x ∈ T.component y := h1 (Topology.mem_component T x)
+theorem TopologicalSpace.component_eq_of_mem {X : Type u} (T : TopologicalSpace X) {x y : X}
+    (h : y ∈ T.connectedComponent x) : T.connectedComponent y = T.connectedComponent x := by
+  have h1 : T.connectedComponent x ⊆ T.connectedComponent y :=
+    TopologicalSpace.subset_component T (TopologicalSpace.isPreconnected_component T x) h
+  have hx : x ∈ T.connectedComponent y := h1 (TopologicalSpace.mem_component T x)
   exact Set.Subset.antisymm
-    (Topology.subset_component T (Topology.isConnectedSet_component T y) hx) h1
+    (TopologicalSpace.subset_component T (TopologicalSpace.isPreconnected_component T y) hx) h1
 
 /-! @end -/
 
@@ -510,30 +514,30 @@ The closure of a connected set is connected. Let two open sets cover `T.closure 
 
 A component is then closed. Its closure is a connected set containing the point, so the closure lies back inside the component, and a set containing its own closure is closed.
 @description
-Prove `Topology.isConnectedSet_closure` and `Topology.isClosed_component`. `T.closure_min` wants the complement's closedness, which is `show T.IsOpen _` and then `rwa [compl_compl]`; `Or.resolve_right` turns the cover into a membership, and `T.isClosed_iff_closure_eq` reduces the second claim to two containments.
+Prove `TopologicalSpace.isPreconnected_closure` and `TopologicalSpace.isClosed_component`. `T.closure_min` wants the complement's closedness, which is `show T.IsOpen _` and then `rwa [compl_compl]`; `Or.resolve_right` turns the cover into a membership, and `T.isClosed_iff_closure_eq` reduces the second claim to two containments.
 -/
 
-theorem Topology.isConnectedSet_closure {X : Type u} (T : Topology X) {S : Set X}
-    (hS : T.IsConnectedSet S) : T.IsConnectedSet (T.closure S) := by
+theorem TopologicalSpace.isPreconnected_closure {X : Type u} (T : TopologicalSpace X) {S : Set X}
+    (hS : T.IsPreconnected S) : T.IsPreconnected (T.closure S) := by
   intro U V hU hV hno hcov
-  have hsub := Topology.subset_closure T S
+  have hsub := TopologicalSpace.subset_closure T S
   have hVc : T.IsClosed Vᶜ := by show T.IsOpen _; rwa [compl_compl]
   have hUc : T.IsClosed Uᶜ := by show T.IsOpen _; rwa [compl_compl]
   rcases hS U V hU hV (fun x hx => hno x (hsub hx)) (fun x hx => hcov (hsub hx)) with hs | hs
   · have hc : T.closure S ⊆ Vᶜ :=
-      Topology.closure_min T hVc (fun z hz => hno z (hsub hz) (hs hz))
+      TopologicalSpace.closure_min T hVc (fun z hz => hno z (hsub hz) (hs hz))
     exact Or.inl fun x hx => (hcov hx).resolve_right (hc hx)
   · have hc : T.closure S ⊆ Uᶜ :=
-      Topology.closure_min T hUc (fun z hz hzU => hno z (hsub hz) hzU (hs hz))
+      TopologicalSpace.closure_min T hUc (fun z hz hzU => hno z (hsub hz) hzU (hs hz))
     exact Or.inr fun x hx => (hcov hx).resolve_left (hc hx)
 
-theorem Topology.isClosed_component {X : Type u} (T : Topology X) (x : X) :
-    T.IsClosed (T.component x) := by
-  rw [Topology.isClosed_iff_closure_eq T]
-  refine Set.Subset.antisymm ?_ (Topology.subset_closure T _)
-  exact Topology.subset_component T
-    (Topology.isConnectedSet_closure T (Topology.isConnectedSet_component T x))
-    (Topology.subset_closure T _ (Topology.mem_component T x))
+theorem TopologicalSpace.isClosed_component {X : Type u} (T : TopologicalSpace X) (x : X) :
+    T.IsClosed (T.connectedComponent x) := by
+  rw [TopologicalSpace.isClosed_iff_closure_eq T]
+  refine Set.Subset.antisymm ?_ (TopologicalSpace.subset_closure T _)
+  exact TopologicalSpace.subset_component T
+    (TopologicalSpace.isPreconnected_closure T (TopologicalSpace.isPreconnected_component T x))
+    (TopologicalSpace.subset_closure T _ (TopologicalSpace.mem_component T x))
 
 /-! @end -/
 
@@ -547,11 +551,11 @@ A space whose components are as small as they can be — every component a singl
 
 In a discrete space let `S` be connected and contain `x`. The sets `{x}` and its complement are open, they cover `S` and they share no point of it, so `S` lies inside one of them; not inside the second, which leaves `x` out. So `S ⊆ {x}`, every connected set through `x` is `{x}` or empty, and the component of `x` is `{x}`.
 @description
-Define `Topology.IsTotallyDisconnected`, which says that `T.component x = {x}` for every `x`, and prove `discrete_isTotallyDisconnected`. `Set.Subset.antisymm` splits the equality of sets; `trivial` proves openness in a discrete space, and `Set.union_compl_self` rewrites the cover to `Set.univ`.
+Define `TopologicalSpace.IsTotallyDisconnected`, which says that `T.connectedComponent x = {x}` for every `x`, and prove `discrete_isTotallyDisconnected`. `Set.Subset.antisymm` splits the equality of sets; `trivial` proves openness in a discrete space, and `Set.union_compl_self` rewrites the cover to `Set.univ`.
 -/
 
-def Topology.IsTotallyDisconnected {X : Type u} (T : Topology X) : Prop :=
-  ∀ x, T.component x = {x}
+def TopologicalSpace.IsTotallyDisconnected {X : Type u} (T : TopologicalSpace X) : Prop :=
+  ∀ x, T.connectedComponent x = {x}
 
 theorem discrete_isTotallyDisconnected (X : Type u) : (discrete X).IsTotallyDisconnected := by
   intro x
@@ -564,11 +568,11 @@ theorem discrete_isTotallyDisconnected (X : Type u) : (discrete X).IsTotallyDisc
   · intro y hy
     have e : y = x := hy
     rw [e]
-    exact Topology.mem_component _ x
+    exact TopologicalSpace.mem_component _ x
 
 /-- @spec -/
-example (X : Type) (T : Topology X) :
-    T.IsTotallyDisconnected ↔ ∀ x, T.component x = {x} := Iff.rfl
+example (X : Type) (T : TopologicalSpace X) :
+    T.IsTotallyDisconnected ↔ ∀ x, T.connectedComponent x = {x} := Iff.rfl
 
 /-! @end -/
 
@@ -590,7 +594,7 @@ The unit interval carries the topology it inherits from the line, and a *path* i
 
 A space is *path-connected* when any two of its points are the endpoints of a path, the first point at the start.
 @description
-Define `Topology.IsPathConnected`: for all `x y : X` there is a `γ : unitInterval → X` which is continuous from `line.toTopology.subspace unitInterval` to `T`, with `γ unitInterval.zero = x` and `γ unitInterval.one = y`, the three conditions in that order.
+Define `TopologicalSpace.IsPathConnectedSpace`: for all `x y : X` there is a `γ : unitInterval → X` which is continuous from `line.toTopologicalSpace.subspace unitInterval` to `T`, with `γ unitInterval.zero = x` and `γ unitInterval.one = y`, the three conditions in that order.
 -/
 
 /-- @given -/
@@ -599,15 +603,15 @@ def unitInterval.zero : unitInterval := ⟨0, le_refl 0, by norm_num⟩
 /-- @given -/
 def unitInterval.one : unitInterval := ⟨1, by norm_num, le_refl 1⟩
 
-def Topology.IsPathConnected {X : Type u} (T : Topology X) : Prop :=
+def TopologicalSpace.IsPathConnectedSpace {X : Type u} (T : TopologicalSpace X) : Prop :=
   ∀ x y : X, ∃ γ : unitInterval → X,
-    (line.toTopology.subspace unitInterval).Continuous T γ ∧
+    (line.toTopologicalSpace.subspace unitInterval).Continuous T γ ∧
       γ unitInterval.zero = x ∧ γ unitInterval.one = y
 
 /-- @spec -/
-example (X : Type) (T : Topology X) :
-    T.IsPathConnected ↔ ∀ x y : X, ∃ γ : unitInterval → X,
-      (line.toTopology.subspace unitInterval).Continuous T γ ∧
+example (X : Type) (T : TopologicalSpace X) :
+    T.IsPathConnectedSpace ↔ ∀ x y : X, ∃ γ : unitInterval → X,
+      (line.toTopologicalSpace.subspace unitInterval).Continuous T γ ∧
         γ unitInterval.zero = x ∧ γ unitInterval.one = y := Iff.rfl
 
 /-! @end -/
@@ -622,18 +626,18 @@ Between two reals runs the straight path `t ↦ (y - x) t + x`, which is at `x` 
 
 Its continuity is the affine map's, composed with the inclusion of the subspace in the line. One case has to be taken apart: the affine map's continuity was proved for a nonzero slope, so when `x` and `y` are the same point the path is a constant map and is continuous for that reason instead.
 @description
-Prove `line_isPathConnected`. Offer `fun p => (y - x) * p.val + x`; `by_cases h : y - x = 0` splits the two cases, `funext` and `ring` identify the map with a constant in the first, and `show` restates each endpoint as the arithmetic that `ring` closes.
+Prove `line_isPathConnectedSpace`. Offer `fun p => (y - x) * p.val + x`; `by_cases h : y - x = 0` splits the two cases, `funext` and `ring` identify the map with a constant in the first, and `show` restates each endpoint as the arithmetic that `ring` closes.
 -/
-theorem line_isPathConnected : line.toTopology.IsPathConnected := by
+theorem line_isPathConnectedSpace : line.toTopologicalSpace.IsPathConnectedSpace := by
   intro x y
   refine ⟨fun p => (y - x) * p.val + x, ?_, ?_, ?_⟩
   · by_cases h : y - x = 0
     · have he : (fun p : unitInterval => (y - x) * p.val + x) = fun _ => x := by
         funext p; rw [h]; ring
       rw [he]
-      exact Topology.continuous_const _ line.toTopology x
-    · exact Topology.continuous_comp _
-        (Topology.continuous_subspace_val line.toTopology unitInterval)
+      exact TopologicalSpace.continuous_const _ line.toTopologicalSpace x
+    · exact TopologicalSpace.continuous_comp _
+        (TopologicalSpace.continuous_subspace_val line.toTopologicalSpace unitInterval)
         (line_continuous_affine_top (y - x) x h)
   · show (y - x) * 0 + x = x
     ring
@@ -650,18 +654,20 @@ Suppose a space is path-connected and yet has a set `S` both open and closed whi
 
 The preimage of `S` along the path is open and closed in the unit interval, which is a connected space: the interval is a connected set, and a connected set is a connected space. So the preimage is empty or the whole interval. It is not empty, since the path starts inside `S`; and it is not everything, since the path ends outside `S`. The space has no such `S`, and is connected.
 @description
-Prove `Topology.isConnected_of_isPathConnected`. `push Not` turns the denial of the disjunction into a nonempty `S` and, with `Set.ne_univ_iff_exists_notMem`, a point outside it; `Topology.continuous_iff_closed` gives the closedness of the preimage, and `Set.mem_preimage` with the endpoint equations places the two ends of the path.
+Prove `TopologicalSpace.isPreconnected_of_path`. `push Not` turns the denial of the disjunction into a nonempty `S` and, with `Set.ne_univ_iff_exists_notMem`, a point outside it; `TopologicalSpace.continuous_iff_closed` gives the closedness of the preimage, and `Set.mem_preimage` with the endpoint equations places the two ends of the path.
 -/
-theorem Topology.isConnected_of_isPathConnected {X : Type u} {T : Topology X}
-    (h : T.IsPathConnected) : T.IsConnected := by
+theorem TopologicalSpace.isPreconnected_of_path {X : Type u} {T : TopologicalSpace X}
+    (h : T.IsPathConnectedSpace) : T.IsPreconnectedSpace := by
   intro S hSo hSc
   by_contra hcon
   push Not at hcon
   obtain ⟨x, hx⟩ := hcon.1
   obtain ⟨y, hy⟩ := (Set.ne_univ_iff_exists_notMem S).mp hcon.2
   obtain ⟨γ, hγ, hγ0, hγ1⟩ := h x y
-  have hI := Topology.isConnected_subspace line.toTopology unitInterval_isConnectedSet
-  rcases hI (γ ⁻¹' S) (hγ S hSo) ((Topology.continuous_iff_closed _ T γ).mp hγ S hSc) with h0 | h0
+  have hI
+    := TopologicalSpace.isPreconnected_subspace line.toTopologicalSpace unitInterval_isPreconnected
+  rcases hI (γ ⁻¹' S) (hγ S hSo)
+    ((TopologicalSpace.continuous_iff_closed _ T γ).mp hγ S hSc) with h0 | h0
   · have hm : unitInterval.zero ∈ γ ⁻¹' S := by rw [Set.mem_preimage, hγ0]; exact hx
     rw [h0] at hm
     exact hm

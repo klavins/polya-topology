@@ -8,41 +8,42 @@ statement: |-
 concepts:
 - closed_families
 stub: |-
-  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+  theorem TopologicalSpace.isClosed_sInter {X : Type u} (T : TopologicalSpace X) {F : Set (Set X)}
       (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := sorry
 reference: |-
-  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+  theorem TopologicalSpace.isClosed_sInter {X : Type u} (T : TopologicalSpace X) {F : Set (Set X)}
       (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
     show T.IsOpen _
     rw [Set.compl_sInter]
-    apply T.sUnion
+    apply T.isOpen_sUnion
     rintro U ⟨C, hCF, rfl⟩
     exact h C hCF
 spec: |-
-  example : ∀ {X : Type u} (T : Topology X) {F : Set (Set X)}
-      (h : ∀ C ∈ F, T.IsClosed C), T.IsClosed (⋂₀ F) := _root_.GeneralTopology.Topology.isClosed_sInter
+  example : ∀ {X : Type u} (T : TopologicalSpace X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C), T.IsClosed (⋂₀ F) := _root_.GeneralTopology.TopologicalSpace.isClosed_sInter
 preamble: |
   universe u
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
   end GeneralTopology
   open GeneralTopology
 description: Show that `⋂₀ F` is closed when every member of `F` is. `show T.IsOpen _`, rewrite with `Set.compl_sInter`, and apply the union condition; its hypothesis takes a member of the image, which `rintro U ⟨C, hCF, rfl⟩` breaks into the set `C` it came from.
 stub_names:
-- Topology.isClosed_sInter
+- TopologicalSpace.isClosed_sInter
 namespace: GeneralTopology
 seq: 54
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Closure.lean
-  line: 38
+  line: 39
   closure_rounds: 1
   check_kind: theorem

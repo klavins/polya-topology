@@ -40,8 +40,8 @@ namespace: GeneralTopology
 seq: 131
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 260
+  line: 264
   closure_rounds: 1
   check_kind: mixed

@@ -5,32 +5,39 @@ statement: '`Sum.inl` puts `X` into the sum and `Sum.inr` puts `Y` in. Each is c
 concepts:
 - sum_space
 stub: |-
-  theorem Topology.continuous_inl {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.continuous_inl {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       T.Continuous (T.sum T') Sum.inl := sorry
 
-  theorem Topology.continuous_inr {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.continuous_inr {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       T'.Continuous (T.sum T') Sum.inr := sorry
 reference: |-
-  theorem Topology.continuous_inl {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.continuous_inl {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       T.Continuous (T.sum T') Sum.inl :=
     fun _ hW => hW.1
 
-  theorem Topology.continuous_inr {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+  theorem TopologicalSpace.continuous_inr {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
       T'.Continuous (T.sum T') Sum.inr :=
     fun _ hW => hW.2
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), T.Continuous (T.sum T') Sum.inl := _root_.GeneralTopology.Topology.continuous_inl
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), T'.Continuous (T.sum T') Sum.inr := _root_.GeneralTopology.Topology.continuous_inr
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y), T.Continuous (T.sum T') Sum.inl := _root_.GeneralTopology.TopologicalSpace.continuous_inl
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y), T'.Continuous (T.sum T') Sum.inr := _root_.GeneralTopology.TopologicalSpace.continuous_inr
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
@@ -42,35 +49,36 @@ preamble: |
     · rintro x ⟨W, ⟨V, hVF, rfl⟩, hxW⟩
       exact ⟨V, hVF, hxW⟩
 
-  def Topology.sum {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-      Topology (X ⊕ Y) where
+  def TopologicalSpace.sum {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y) :
+      TopologicalSpace (X ⊕ Y) where
     IsOpen := fun W => T.IsOpen (Sum.inl ⁻¹' W) ∧ T'.IsOpen (Sum.inr ⁻¹' W)
-    univ := by
+    isOpen_univ := by
       rw [Set.preimage_univ, Set.preimage_univ]
-      exact ⟨T.univ, T'.univ⟩
-    inter := by
+      exact ⟨T.isOpen_univ, T'.isOpen_univ⟩
+    isOpen_inter := by
       intro V W hV hW
       rw [Set.preimage_inter, Set.preimage_inter]
-      exact ⟨T.inter hV.1 hW.1, T'.inter hV.2 hW.2⟩
-    sUnion := by
+      exact ⟨T.isOpen_inter hV.1 hW.1, T'.isOpen_inter hV.2 hW.2⟩
+    isOpen_sUnion := by
       intro F h
       rw [preimage_sUnion_image, preimage_sUnion_image]
       constructor
-      · exact T.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
-      · exact T'.sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
+      · exact T.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).1)
+      · exact T'.isOpen_sUnion (by rintro W ⟨V, hVF, rfl⟩; exact (h V hVF).2)
 
   end GeneralTopology
   open GeneralTopology
 description: Show that `Sum.inl` and `Sum.inr` are continuous into `T.sum T'`. Each is one half of the hypothesis, taken with `.1` or `.2`.
 stub_names:
-- Topology.continuous_inl
-- Topology.continuous_inr
+- TopologicalSpace.continuous_inl
+- TopologicalSpace.continuous_inr
 namespace: GeneralTopology
 seq: 135
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 375
+  line: 381
   closure_rounds: 1
   check_kind: theorem

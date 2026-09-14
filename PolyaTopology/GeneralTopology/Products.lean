@@ -29,14 +29,15 @@ A subset `A` of a space `X` is a space in its own right, and `Subtype.val` puts 
 
 Nothing beyond `X` need be looked at. Following `g` by the inclusion gives a map `Z → X`, and `g` is continuous exactly when that composite is. One direction is the composition law. The other is the definition read backwards: an open set of `A` is `Subtype.val ⁻¹' U` for an open `U` of `X`, and its preimage under `g` is the preimage of `U` under the composite.
 @description
-Prove that `S.Continuous (T.subspace A) g` exactly when `S.Continuous T (Subtype.val ∘ g)`. Forwards, compose with `Topology.continuous_subspace_val`. Backwards, take the open set apart with `obtain ⟨U, hU, rfl⟩` and fold the two preimages into one with `Set.preimage_comp`.
+Prove that `S.Continuous (T.subspace A) g` exactly when `S.Continuous T (Subtype.val ∘ g)`. Forwards, compose with `TopologicalSpace.continuous_subspace_val`. Backwards, take the open set apart with `obtain ⟨U, hU, rfl⟩` and fold the two preimages into one with `Set.preimage_comp`.
 -/
-theorem Topology.continuous_into_subspace {X : Type u} {Z : Type v} (T : Topology X) (A : Set X)
-    (S : Topology Z) (g : Z → A) :
+theorem TopologicalSpace.continuous_into_subspace {X : Type u} {Z : Type v} (T : TopologicalSpace X)
+    (A : Set X)
+    (S : TopologicalSpace Z) (g : Z → A) :
     S.Continuous (T.subspace A) g ↔ S.Continuous T (Subtype.val ∘ g) := by
   constructor
   · intro hg
-    exact Topology.continuous_comp S hg (Topology.continuous_subspace_val T A)
+    exact TopologicalSpace.continuous_comp S hg (TopologicalSpace.continuous_subspace_val T A)
   · intro hg U hU
     obtain ⟨V, hV, rfl⟩ := hU
     rw [← Set.preimage_comp]
@@ -54,8 +55,8 @@ Continuity survives the change, for the reason the last problem gave. An open se
 @description
 Show that `fun x => (⟨f x, h x⟩ : A)` is continuous into `T'.subspace A` when `f` is continuous and every `f x` lies in `A`. Take the open set apart with `obtain ⟨U, hU, rfl⟩`; what is left is the hypothesis at `U`, with no rewriting needed.
 -/
-theorem Topology.continuous_toSubspace {X : Type u} {Y : Type v} {T : Topology X}
-    {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A) :
+theorem TopologicalSpace.continuous_toSubspace {X : Type u} {Y : Type v} {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A) :
     T.Continuous (T'.subspace A) (fun x => (⟨f x, h x⟩ : A)) := by
   intro V hV
   obtain ⟨U, hU, rfl⟩ := hV
@@ -73,7 +74,8 @@ If `V` is closed in `A` then `Vᶜ` is the trace of an open `U`, and `V` is then
 @description
 Prove that `V` is closed in `T.subspace A` exactly when `V = Subtype.val ⁻¹' C` for some closed `C` of `X`. `Set.preimage_compl` moves a complement across a preimage, and `compl_compl` cancels the pair that appears on each side.
 -/
-theorem Topology.isClosed_subspace_iff {X : Type u} (T : Topology X) (A : Set X) (V : Set A) :
+theorem TopologicalSpace.isClosed_subspace_iff {X : Type u} (T : TopologicalSpace X) (A : Set X)
+    (V : Set A) :
     (T.subspace A).IsClosed V ↔ ∃ C, T.IsClosed C ∧ V = Subtype.val ⁻¹' C := by
   constructor
   · rintro ⟨U, hU, hVU⟩
@@ -104,18 +106,19 @@ Let `f` carry a set `X` to a space `Y`. Call a subset of `X` open when it is the
 
 The subspace topology is this construction with `f` the inclusion. The two are then not merely equivalent but the same term, so `rfl` proves it.
 @description
-Define `Topology.induced`, the topology on `X` whose open sets are the preimages under `f` of the open sets of `T`, and show that `T.subspace A` is `T.induced Subtype.val`. Follow the fields of `Topology.subspace`: the last offers the union of those open sets of `Y` whose preimage belongs to the given collection.
+Define `TopologicalSpace.induced`, the topology on `X` whose open sets are the preimages under `f` of the open sets of `T`, and show that `T.subspace A` is `T.induced Subtype.val`. Follow the fields of `TopologicalSpace.subspace`: the last offers the union of those open sets of `Y` whose preimage belongs to the given collection.
 -/
 
-def Topology.induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) : Topology X where
+def TopologicalSpace.induced {X : Type u} {Y : Type v} (T : TopologicalSpace Y) (f : X → Y)
+    : TopologicalSpace X where
   IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = f ⁻¹' U
-  univ := ⟨Set.univ, T.univ, rfl⟩
-  inter := by
+  isOpen_univ := ⟨Set.univ, T.isOpen_univ, rfl⟩
+  isOpen_inter := by
     rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
-    exact ⟨U ∩ U', T.inter hU hU', rfl⟩
-  sUnion := by
+    exact ⟨U ∩ U', T.isOpen_inter hU hU', rfl⟩
+  isOpen_sUnion := by
     intro F h
-    refine ⟨⋃₀ {U | T.IsOpen U ∧ (f ⁻¹' U : Set X) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+    refine ⟨⋃₀ {U | T.IsOpen U ∧ (f ⁻¹' U : Set X) ∈ F}, T.isOpen_sUnion (fun U hU => hU.1), ?_⟩
     apply Set.Subset.antisymm
     · rintro x ⟨V, hVF, hxV⟩
       obtain ⟨U, hU, rfl⟩ := h V hVF
@@ -123,11 +126,11 @@ def Topology.induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) : 
     · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
       exact ⟨_, hUF, hxU⟩
 
-theorem Topology.subspace_eq_induced {X : Type u} (T : Topology X) (A : Set X) :
+theorem TopologicalSpace.subspace_eq_induced {X : Type u} (T : TopologicalSpace X) (A : Set X) :
     T.subspace A = T.induced (Subtype.val : A → X) := rfl
 
 /-- @spec -/
-example (X Y : Type) (T : Topology Y) (f : X → Y) (V : Set X) :
+example (X Y : Type) (T : TopologicalSpace Y) (f : X → Y) (V : Set X) :
     (T.induced f).IsOpen V ↔ ∃ U, T.IsOpen U ∧ V = f ⁻¹' U := Iff.rfl
 
 /-! @end -/
@@ -145,11 +148,13 @@ It is the smallest topology that does. If `S` is any topology on `X` for which `
 Show that `f` is continuous from `T.induced f` to `T`, and that any topology `S` making `f` continuous calls open every set that `T.induced f` calls open. Each is one line once the open set has been taken apart.
 -/
 
-theorem Topology.continuous_induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) :
+theorem TopologicalSpace.continuous_induced {X : Type u} {Y : Type v} (T : TopologicalSpace Y)
+    (f : X → Y) :
     (T.induced f).Continuous T f :=
   fun U hU => ⟨U, hU, rfl⟩
 
-theorem Topology.induced_coarsest {X : Type u} {Y : Type v} {T : Topology Y} {S : Topology X}
+theorem TopologicalSpace.induced_coarsest {X : Type u} {Y : Type v} {T : TopologicalSpace Y}
+    {S : TopologicalSpace X}
     {f : X → Y} (hf : S.Continuous T f) {V : Set X} (hV : (T.induced f).IsOpen V) : S.IsOpen V := by
   obtain ⟨U, hU, rfl⟩ := hV
   exact hf U hU
@@ -168,7 +173,7 @@ Taking a structure apart with `obtain` leaves its four fields as separate hypoth
 @description
 Prove that `T = T'` whenever `T.IsOpen U ↔ T'.IsOpen U` for every `U`. Take both topologies apart with `obtain ⟨o, hu, hi, hs⟩ := T`, prove the two families equal with `funext` and `propext`, substitute with `subst`, and close with `rfl`.
 -/
-theorem Topology.eq_of_isOpen_iff {X : Type u} {T T' : Topology X}
+theorem TopologicalSpace.eq_of_isOpen_iff {X : Type u} {T T' : TopologicalSpace X}
     (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U) : T = T' := by
   obtain ⟨o, hu, hi, hs⟩ := T
   obtain ⟨o', hu', hi', hs'⟩ := T'
@@ -188,9 +193,10 @@ Each side calls a set open when it is a preimage of an open set of `Z` — on th
 @description
 Prove `(T.induced f).induced g = T.induced (f ∘ g)`. The previous problem reduces it to an equivalence at each set; `Set.preimage_comp` closes one direction and its symmetric form the other.
 -/
-theorem Topology.induced_induced {X : Type u} {Y : Type v} {Z : Type w} (T : Topology Z)
+theorem TopologicalSpace.induced_induced {X : Type u} {Y : Type v} {Z : Type w}
+    (T : TopologicalSpace Z)
     (f : Y → Z) (g : X → Y) : (T.induced f).induced g = T.induced (f ∘ g) := by
-  apply Topology.eq_of_isOpen_iff
+  apply TopologicalSpace.eq_of_isOpen_iff
   intro V
   constructor
   · rintro ⟨W, ⟨U, hU, rfl⟩, rfl⟩
@@ -216,28 +222,30 @@ Let `T` be a topology on `X` and `T'` one on `Y`. A *box* is a set `U ×ˢ V` wi
 
 Call a subset `W` of `X × Y` open when every point of it has an open box around it inside `W`. This is the definition of an open set of a metric space with a box in place of a ball, and the three conditions come out as they did there: the whole space is a box, two boxes meet in a box, and a box inside one member of a union is inside the union.
 @description
-Define `Topology.prod`, the product topology on `X × Y`. Its `IsOpen W` says that for every `p ∈ W` there are `U` and `V` with four properties in this order: `U` is open, `V` is open, `p ∈ U ×ˢ V`, and `U ×ˢ V ⊆ W`. For the intersection field the box wanted is the two boxes intersected a side at a time, `U ∩ U'` against `V ∩ V'`.
+Define `TopologicalSpace.prod`, the product topology on `X × Y`. Its `IsOpen W` says that for every `p ∈ W` there are `U` and `V` with four properties in this order: `U` is open, `V` is open, `p ∈ U ×ˢ V`, and `U ×ˢ V ⊆ W`. For the intersection field the box wanted is the two boxes intersected a side at a time, `U ∩ U'` against `V ∩ V'`.
 -/
 
-def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
-    Topology (X × Y) where
+def TopologicalSpace.prod {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
+    TopologicalSpace (X × Y) where
   IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
-  univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
-  inter := by
+  isOpen_univ := fun _ _ =>
+    ⟨Set.univ, Set.univ, T.isOpen_univ, T'.isOpen_univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+  isOpen_inter := by
     rintro W W' hW hW' p hp
     obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
     obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
-    refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+    refine ⟨U ∩ U', V ∩ V', T.isOpen_inter hU hU', T'.isOpen_inter hV hV',
       ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
     rintro q ⟨hq1, hq2⟩
     exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
-  sUnion := by
+  isOpen_sUnion := by
     rintro F h p ⟨W, hWF, hpW⟩
     obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
     exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
 
 /-- @spec -/
-example (X Y : Type) (T : Topology X) (T' : Topology Y) (W : Set (X × Y)) :
+example (X Y : Type) (T : TopologicalSpace X) (T' : TopologicalSpace Y) (W : Set (X × Y)) :
     (T.prod T').IsOpen W ↔
       ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W := Iff.rfl
 
@@ -255,7 +263,8 @@ That is a difference from the metric case. There a point near the edge of a ball
 @description
 Show that `U ×ˢ V` is open in `T.prod T'` when `U` and `V` are open. The two witnesses are `U` and `V` themselves, the membership is the hypothesis at the point, and the containment is `subset_rfl`.
 -/
-theorem Topology.isOpen_prod_box {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+theorem TopologicalSpace.isOpen_prod_box {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
     {U : Set X} {V : Set Y} (hU : T.IsOpen U) (hV : T'.IsOpen V) :
     (T.prod T').IsOpen (U ×ˢ V) :=
   fun _ hp => ⟨U, V, hU, hV, hp, subset_rfl⟩
@@ -272,7 +281,8 @@ Collect the open boxes lying inside a set `W` that is open in the product. Each 
 @description
 Show that an open `W` of `T.prod T'` equals `⋃₀ {B | B ⊆ W ∧ ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ B = U ×ˢ V}`. `Set.Subset.antisymm` splits it in two; one direction offers the box the definition supplies at the point, and the other applies the containment the member carries.
 -/
-theorem Topology.prod_eq_sUnion_boxes {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+theorem TopologicalSpace.prod_eq_sUnion_boxes {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
     {W : Set (X × Y)} (hW : (T.prod T').IsOpen W) :
     W = ⋃₀ {B | B ⊆ W ∧ ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ B = U ×ˢ V} := by
   apply Set.Subset.antisymm
@@ -300,20 +310,22 @@ The projections out of a product are continuous, and they are open maps as well,
 
 That a preimage is that box is `Set.prod_univ`, or `Set.univ_prod`, read backwards.
 @description
-Show that `Prod.fst` and `Prod.snd` are continuous from `T.prod T'`. Rewrite the preimage as a box with `← Set.prod_univ` or `← Set.univ_prod`, and apply the previous problem, with `T'.univ` or `T.univ` for the side that is everything.
+Show that `Prod.fst` and `Prod.snd` are continuous from `T.prod T'`. Rewrite the preimage as a box with `← Set.prod_univ` or `← Set.univ_prod`, and apply the previous problem, with `T'.isOpen_univ` or `T.isOpen_univ` for the side that is everything.
 -/
 
-theorem Topology.continuous_fst {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+theorem TopologicalSpace.continuous_fst {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
     (T.prod T').Continuous T Prod.fst := by
   intro U hU
   rw [← Set.prod_univ]
-  exact Topology.isOpen_prod_box T T' hU T'.univ
+  exact TopologicalSpace.isOpen_prod_box T T' hU T'.isOpen_univ
 
-theorem Topology.continuous_snd {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+theorem TopologicalSpace.continuous_snd {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
     (T.prod T').Continuous T' Prod.snd := by
   intro V hV
   rw [← Set.univ_prod]
-  exact Topology.isOpen_prod_box T T' T.univ hV
+  exact TopologicalSpace.isOpen_prod_box T T' T.isOpen_univ hV
 
 /-! @end -/
 
@@ -327,21 +339,23 @@ A continuous map need not carry open sets to open sets. The projections do.
 
 Let `W` be open in the product and let `p` be a point of it. Some open box `U ×ˢ V` around `p` lies inside `W`. Then `U` lies inside the image of `W` under the first projection, because a point `u` of `U` is the first coordinate of `(u, p.2)`, which is in the box and so in `W`. So the image has an open set around each of its points, which is openness.
 @description
-Show that `Prod.fst` and `Prod.snd` are open maps from `T.prod T'`. `Topology.isOpen_iff_nbhd` turns the goal into a statement at each point of the image; take that point apart with `rintro x ⟨p, hpW, rfl⟩`, offer the box's side, and name `(u, p.2)` as the point a given `u` comes from.
+Show that `Prod.fst` and `Prod.snd` are open maps from `T.prod T'`. `TopologicalSpace.isOpen_iff_nbhd` turns the goal into a statement at each point of the image; take that point apart with `rintro x ⟨p, hpW, rfl⟩`, offer the box's side, and name `(u, p.2)` as the point a given `u` comes from.
 -/
 
-theorem Topology.isOpenMap_fst {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+theorem TopologicalSpace.isOpenMap_fst {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
     (T.prod T').IsOpenMap T Prod.fst := by
   intro W hW
-  rw [Topology.isOpen_iff_nbhd]
+  rw [TopologicalSpace.isOpen_iff_nbhd]
   rintro x ⟨p, hpW, rfl⟩
   obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hpW
   exact ⟨U, hU, hpUV.1, fun u hu => ⟨(u, p.2), hsub ⟨hu, hpUV.2⟩, rfl⟩⟩
 
-theorem Topology.isOpenMap_snd {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+theorem TopologicalSpace.isOpenMap_snd {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) :
     (T.prod T').IsOpenMap T' Prod.snd := by
   intro W hW
-  rw [Topology.isOpen_iff_nbhd]
+  rw [TopologicalSpace.isOpen_iff_nbhd]
   rintro y ⟨p, hpW, rfl⟩
   obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hpW
   exact ⟨V, hV, hpUV.2, fun v hv => ⟨(p.1, v), hsub ⟨hpUV.1, hv⟩, rfl⟩⟩
@@ -361,27 +375,30 @@ One direction is composition with the projections. For the other, let `W` be ope
 Prove that `fun z => (f z, g z)` is continuous when `f` and `g` are, and then that a map `h : Z → X × Y` is continuous exactly when its two components are. For the second, compose with the projections in one direction; in the other, `h` and the pair of its components are the same map, so the first applies as it stands.
 -/
 
-theorem Topology.continuous_prod_mk {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
-    {T' : Topology Y} (S : Topology Z) {f : Z → X} {g : Z → Y} (hf : S.Continuous T f)
+theorem TopologicalSpace.continuous_prod_mk {X : Type u} {Y : Type v} {Z : Type w}
+    {T : TopologicalSpace X}
+    {T' : TopologicalSpace Y} (S : TopologicalSpace Z) {f : Z → X} {g : Z → Y}
+    (hf : S.Continuous T f)
     (hg : S.Continuous T' g) : S.Continuous (T.prod T') (fun z => (f z, g z)) := by
   intro W hW
-  rw [Topology.isOpen_iff_nbhd]
+  rw [TopologicalSpace.isOpen_iff_nbhd]
   intro z hz
   obtain ⟨U, V, hU, hV, hzUV, hsub⟩ := hW (f z, g z) hz
-  refine ⟨f ⁻¹' U ∩ g ⁻¹' V, S.inter (hf U hU) (hg V hV), ⟨hzUV.1, hzUV.2⟩, ?_⟩
+  refine ⟨f ⁻¹' U ∩ g ⁻¹' V, S.isOpen_inter (hf U hU) (hg V hV), ⟨hzUV.1, hzUV.2⟩, ?_⟩
   intro w hw
   exact hsub ⟨hw.1, hw.2⟩
 
-theorem Topology.continuous_prod_iff {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
-    (T' : Topology Y) (S : Topology Z) (h : Z → X × Y) :
+theorem TopologicalSpace.continuous_prod_iff {X : Type u} {Y : Type v} {Z : Type w}
+    (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y) (S : TopologicalSpace Z) (h : Z → X × Y) :
     S.Continuous (T.prod T') h ↔
       S.Continuous T (fun z => (h z).1) ∧ S.Continuous T' (fun z => (h z).2) := by
   constructor
   · intro hh
-    exact ⟨Topology.continuous_comp S hh (Topology.continuous_fst T T'),
-      Topology.continuous_comp S hh (Topology.continuous_snd T T')⟩
+    exact ⟨TopologicalSpace.continuous_comp S hh (TopologicalSpace.continuous_fst T T'),
+      TopologicalSpace.continuous_comp S hh (TopologicalSpace.continuous_snd T T')⟩
   · rintro ⟨hf, hg⟩
-    exact Topology.continuous_prod_mk S hf hg
+    exact TopologicalSpace.continuous_prod_mk S hf hg
 
 /-! @end -/
 
@@ -393,16 +410,20 @@ theorem Topology.continuous_prod_iff {X : Type u} {Y : Type v} {Z : Type w} (T :
 @preamble
 Fixing one coordinate lays a factor along the product: `fun x => (x, y)` puts `X` at the level `y`. Such a map is continuous, and the universal property proves it without the definition of the product topology being touched at all — the two components are the identity and a constant, and both were shown continuous in an earlier section.
 @description
-Show that `fun x => (x, y)` and `fun y => (x, y)` are continuous into `T.prod T'`. Each is the previous problem applied to `Topology.continuous_id` and `Topology.continuous_const`, in the order the coordinates come.
+Show that `fun x => (x, y)` and `fun y => (x, y)` are continuous into `T.prod T'`. Each is the previous problem applied to `TopologicalSpace.continuous_id` and `TopologicalSpace.continuous_const`, in the order the coordinates come.
 -/
 
-theorem Topology.continuous_mk_left {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+theorem TopologicalSpace.continuous_mk_left {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
     (y : Y) : T.Continuous (T.prod T') (fun x => (x, y)) :=
-  Topology.continuous_prod_mk T (Topology.continuous_id T) (Topology.continuous_const T T' y)
+  TopologicalSpace.continuous_prod_mk T (TopologicalSpace.continuous_id T)
+    (TopologicalSpace.continuous_const T T' y)
 
-theorem Topology.continuous_mk_right {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+theorem TopologicalSpace.continuous_mk_right {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+    (T' : TopologicalSpace Y)
     (x : X) : T'.Continuous (T.prod T') (fun y => (x, y)) :=
-  Topology.continuous_prod_mk T' (Topology.continuous_const T' T x) (Topology.continuous_id T')
+  TopologicalSpace.continuous_prod_mk T' (TopologicalSpace.continuous_const T' T x)
+    (TopologicalSpace.continuous_id T')
 
 /-! @end -/
 
@@ -424,10 +445,10 @@ The supremum length of a vector is the larger of the magnitudes of its coordinat
 
 So a ball of the supremum metric is the box whose sides are the two coordinate balls of the same radius: the square of side `2 * ε` centred at `x`, which is the picture the first section drew of it.
 @description
-Show that `supNorm.toMetric.ball x ε = line.ball x.1 ε ×ˢ line.ball x.2 ε`. `ext y` reduces the equality to a membership at each point, `show` restates both sides as the inequalities they abbreviate, and `max_lt_iff` is the equivalence that remains.
+Show that `supNorm.toMetricSpace.ball x ε = line.ball x.1 ε ×ˢ line.ball x.2 ε`. `ext y` reduces the equality to a membership at each point, `show` restates both sides as the inequalities they abbreviate, and `max_lt_iff` is the equivalence that remains.
 -/
 theorem ball_supNorm_eq_box (x : ℝ × ℝ) (ε : ℝ) :
-    supNorm.toMetric.ball x ε = line.ball x.1 ε ×ˢ line.ball x.2 ε := by
+    supNorm.toMetricSpace.ball x ε = line.ball x.1 ε ×ˢ line.ball x.2 ε := by
   ext y
   show max |x.1 - y.1| |x.2 - y.2| < ε ↔ |x.1 - y.1| < ε ∧ |x.2 - y.2| < ε
   exact max_lt_iff
@@ -444,21 +465,22 @@ A set open for the supremum metric has a ball inside it around each of its point
 
 A set open in the product has a box `U ×ˢ V` inside it around each point `p`. Now `U` contains a ball of the line about `p.1` and `V` one about `p.2`; the smaller of those two radii gives a box that is a single supremum ball, and it lies inside the original box.
 @description
-Prove both directions between `supNorm.toMetric.IsOpenSet W` and `(line.toTopology.prod line.toTopology).IsOpen W`. The previous problem rewrites a ball as a box in each. For the second, `min a b` is the radius, and `Metric.ball_mono` carries a point of the smaller ball into each of the two.
+Prove both directions between `supNorm.toMetricSpace.IsOpenSet W` and `(line.toTopologicalSpace.prod line.toTopologicalSpace).IsOpen W`. The previous problem rewrites a ball as a box in each. For the second, `min a b` is the radius, and `MetricSpace.ball_mono` carries a point of the smaller ball into each of the two.
 -/
 
-theorem isOpen_prod_of_isOpenSet_supNorm {W : Set (ℝ × ℝ)} (h : supNorm.toMetric.IsOpenSet W) :
-    (line.toTopology.prod line.toTopology).IsOpen W := by
+theorem isOpen_prod_of_isOpenSet_supNorm {W : Set (ℝ × ℝ)} (h : supNorm.toMetricSpace.IsOpenSet W) :
+    (line.toTopologicalSpace.prod line.toTopologicalSpace).IsOpen W := by
   intro p hp
   obtain ⟨ε, hε, hsub⟩ := h p hp
-  refine ⟨line.ball p.1 ε, line.ball p.2 ε, Metric.isOpenSet_ball line p.1 ε,
-    Metric.isOpenSet_ball line p.2 ε,
-    ⟨Metric.mem_ball_self line p.1 ε hε, Metric.mem_ball_self line p.2 ε hε⟩, ?_⟩
+  refine ⟨line.ball p.1 ε, line.ball p.2 ε, MetricSpace.isOpenSet_ball line p.1 ε,
+    MetricSpace.isOpenSet_ball line p.2 ε,
+    ⟨MetricSpace.mem_ball_self line p.1 ε hε, MetricSpace.mem_ball_self line p.2 ε hε⟩, ?_⟩
   rw [← ball_supNorm_eq_box]
   exact hsub
 
 theorem isOpenSet_supNorm_of_isOpen_prod {W : Set (ℝ × ℝ)}
-    (h : (line.toTopology.prod line.toTopology).IsOpen W) : supNorm.toMetric.IsOpenSet W := by
+    (h : (line.toTopologicalSpace.prod line.toTopologicalSpace).IsOpen W) :
+    supNorm.toMetricSpace.IsOpenSet W := by
   intro p hp
   obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h p hp
   obtain ⟨a, ha, hau⟩ := hU p.1 hpUV.1
@@ -466,8 +488,8 @@ theorem isOpenSet_supNorm_of_isOpen_prod {W : Set (ℝ × ℝ)}
   refine ⟨min a b, lt_min ha hb, ?_⟩
   rw [ball_supNorm_eq_box]
   rintro q ⟨hq1, hq2⟩
-  exact hsub ⟨hau (Metric.ball_mono line (min_le_left a b) hq1),
-    hbv (Metric.ball_mono line (min_le_right a b) hq2)⟩
+  exact hsub ⟨hau (MetricSpace.ball_mono line (min_le_left a b) hq1),
+    hbv (MetricSpace.ball_mono line (min_le_right a b) hq2)⟩
 
 /-! @end -/
 
@@ -481,11 +503,12 @@ The two topologies have the same open sets, so the identity map is continuous in
 
 The taxicab plane follows with no further work. It was shown homeomorphic to the supremum plane, and being homeomorphic is transitive. So the plane, measured either way, is the product of two copies of the line.
 @description
-Build `supNorm_prod_homeomorphism`, the identity as a homeomorphism onto the product, and read off that the supremum plane and then the taxicab plane are homeomorphic to `line.toTopology.prod line.toTopology`. Both maps are `id` and both inverse conditions are `rfl`; the last cites `plane_homeomorphic` and `Homeomorphic.trans`.
+Build `supNorm_prod_homeomorph`, the identity as a homeomorphism onto the product, and read off that the supremum plane and then the taxicab plane are homeomorphic to `line.toTopologicalSpace.prod line.toTopologicalSpace`. Both maps are `id` and both inverse conditions are `rfl`; the last cites `plane_homeomorphic` and `Homeomorphic.trans`.
 -/
 
-def supNorm_prod_homeomorphism :
-    Homeomorphism supNorm.toMetric.toTopology (line.toTopology.prod line.toTopology) where
+def supNorm_prod_homeomorph :
+    Homeomorph supNorm.toMetricSpace.toTopologicalSpace
+      (line.toTopologicalSpace.prod line.toTopologicalSpace) where
   toFun := id
   invFun := id
   left_inv := fun _ => rfl
@@ -494,16 +517,18 @@ def supNorm_prod_homeomorphism :
   continuous_invFun := fun _ hW => isOpen_prod_of_isOpenSet_supNorm hW
 
 theorem plane_homeomorphic_product :
-    Homeomorphic supNorm.toMetric.toTopology (line.toTopology.prod line.toTopology) :=
-  ⟨supNorm_prod_homeomorphism⟩
+    Homeomorphic supNorm.toMetricSpace.toTopologicalSpace
+      (line.toTopologicalSpace.prod line.toTopologicalSpace) :=
+  ⟨supNorm_prod_homeomorph⟩
 
 theorem taxicab_homeomorphic_product :
-    Homeomorphic taxicab.toMetric.toTopology (line.toTopology.prod line.toTopology) :=
+    Homeomorphic taxicab.toMetricSpace.toTopologicalSpace
+      (line.toTopologicalSpace.prod line.toTopologicalSpace) :=
   Homeomorphic.trans plane_homeomorphic plane_homeomorphic_product
 
 /-- @spec -/
 example (p : ℝ × ℝ) :
-    supNorm_prod_homeomorphism.toFun p = p ∧ supNorm_prod_homeomorphism.invFun p = p :=
+    supNorm_prod_homeomorph.toFun p = p ∧ supNorm_prod_homeomorph.invFun p = p :=
   ⟨rfl, rfl⟩
 
 /-! @end -/

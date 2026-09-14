@@ -18,9 +18,9 @@ preamble: |
   namespace GeneralTopology
   structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
     norm : V → ℝ
-    eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
-    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
-    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+    norm_eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
+    norm_smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    norm_add_le : ∀ v w, norm (v + w) ≤ norm v + norm w
 
   theorem eq_zero_of_abs_le_zero {a : ℝ} (h : |a| ≤ 0) : a = 0 := by
     rw [← abs_eq_zero]
@@ -46,12 +46,12 @@ preamble: |
 
   def taxicab : Norm (ℝ × ℝ) where
     norm v := |v.1| + |v.2|
-    eq_zero {v} := by rw [abs_add_abs_eq_zero, prod_eq_zero]
-    smul c v := by
+    norm_eq_zero {v} := by rw [abs_add_abs_eq_zero, prod_eq_zero]
+    norm_smul c v := by
       show |c * v.1| + |c * v.2| = |c| * (|v.1| + |v.2|)
       rw [abs_mul, abs_mul]
       ring
-    triangle v w := by
+    norm_add_le v w := by
       show |v.1 + w.1| + |v.2 + w.2| ≤ |v.1| + |v.2| + (|w.1| + |w.2|)
       have h1 := abs_add_le v.1 w.1
       have h2 := abs_add_le v.2 w.2
@@ -77,11 +77,11 @@ preamble: |
 
   def supNorm : Norm (ℝ × ℝ) where
     norm v := max |v.1| |v.2|
-    eq_zero {v} := by rw [max_abs_eq_zero, prod_eq_zero]
-    smul c v := by
+    norm_eq_zero {v} := by rw [max_abs_eq_zero, prod_eq_zero]
+    norm_smul c v := by
       show max |c * v.1| |c * v.2| = |c| * max |v.1| |v.2|
       rw [abs_mul, abs_mul, mul_max_of_nonneg _ _ (abs_nonneg c)]
-    triangle v w := by
+    norm_add_le v w := by
       show max |v.1 + w.1| |v.2 + w.2| ≤ max |v.1| |v.2| + max |w.1| |w.2|
       have h1 := max_le_max (abs_add_le v.1 w.1) (abs_add_le v.2 w.2)
       have h2 := max_add_max |v.1| |v.2| |w.1| |w.2|
@@ -96,7 +96,7 @@ namespace: GeneralTopology
 seq: 27
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 690
   closure_rounds: 1

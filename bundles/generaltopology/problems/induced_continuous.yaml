@@ -8,46 +8,54 @@ statement: |-
 concepts:
 - induced_topology
 stub: |-
-  theorem Topology.continuous_induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) :
+  theorem TopologicalSpace.continuous_induced {X : Type u} {Y : Type v} (T : TopologicalSpace Y)
+      (f : X → Y) :
       (T.induced f).Continuous T f := sorry
 
-  theorem Topology.induced_coarsest {X : Type u} {Y : Type v} {T : Topology Y} {S : Topology X}
+  theorem TopologicalSpace.induced_coarsest {X : Type u} {Y : Type v} {T : TopologicalSpace Y}
+      {S : TopologicalSpace X}
       {f : X → Y} (hf : S.Continuous T f) {V : Set X} (hV : (T.induced f).IsOpen V) : S.IsOpen V := sorry
 reference: |-
-  theorem Topology.continuous_induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) :
+  theorem TopologicalSpace.continuous_induced {X : Type u} {Y : Type v} (T : TopologicalSpace Y)
+      (f : X → Y) :
       (T.induced f).Continuous T f :=
     fun U hU => ⟨U, hU, rfl⟩
 
-  theorem Topology.induced_coarsest {X : Type u} {Y : Type v} {T : Topology Y} {S : Topology X}
+  theorem TopologicalSpace.induced_coarsest {X : Type u} {Y : Type v} {T : TopologicalSpace Y}
+      {S : TopologicalSpace X}
       {f : X → Y} (hf : S.Continuous T f) {V : Set X} (hV : (T.induced f).IsOpen V) : S.IsOpen V := by
     obtain ⟨U, hU, rfl⟩ := hV
     exact hf U hU
 spec: |-
-  example : ∀ {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y), (T.induced f).Continuous T f := _root_.GeneralTopology.Topology.continuous_induced
-  example : ∀ {X : Type u} {Y : Type v} {T : Topology Y} {S : Topology X}
-      {f : X → Y} (hf : S.Continuous T f) {V : Set X} (hV : (T.induced f).IsOpen V), S.IsOpen V := _root_.GeneralTopology.Topology.induced_coarsest
+  example : ∀ {X : Type u} {Y : Type v} (T : TopologicalSpace Y)
+      (f : X → Y), (T.induced f).Continuous T f := _root_.GeneralTopology.TopologicalSpace.continuous_induced
+  example : ∀ {X : Type u} {Y : Type v} {T : TopologicalSpace Y}
+      {S : TopologicalSpace X}
+      {f : X → Y} (hf : S.Continuous T f) {V : Set X} (hV : (T.induced f).IsOpen V), S.IsOpen V := _root_.GeneralTopology.TopologicalSpace.induced_coarsest
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  def Topology.induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) : Topology X where
+  def TopologicalSpace.induced {X : Type u} {Y : Type v} (T : TopologicalSpace Y) (f : X → Y)
+      : TopologicalSpace X where
     IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = f ⁻¹' U
-    univ := ⟨Set.univ, T.univ, rfl⟩
-    inter := by
+    isOpen_univ := ⟨Set.univ, T.isOpen_univ, rfl⟩
+    isOpen_inter := by
       rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
-      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
-    sUnion := by
+      exact ⟨U ∩ U', T.isOpen_inter hU hU', rfl⟩
+    isOpen_sUnion := by
       intro F h
-      refine ⟨⋃₀ {U | T.IsOpen U ∧ (f ⁻¹' U : Set X) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (f ⁻¹' U : Set X) ∈ F}, T.isOpen_sUnion (fun U hU => hU.1), ?_⟩
       apply Set.Subset.antisymm
       · rintro x ⟨V, hVF, hxV⟩
         obtain ⟨U, hU, rfl⟩ := h V hVF
@@ -59,14 +67,14 @@ preamble: |
   open GeneralTopology
 description: Show that `f` is continuous from `T.induced f` to `T`, and that any topology `S` making `f` continuous calls open every set that `T.induced f` calls open. Each is one line once the open set has been taken apart.
 stub_names:
-- Topology.continuous_induced
-- Topology.induced_coarsest
+- TopologicalSpace.continuous_induced
+- TopologicalSpace.induced_coarsest
 namespace: GeneralTopology
 seq: 109
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Products.lean
-  line: 136
+  line: 139
   closure_rounds: 1
   check_kind: theorem

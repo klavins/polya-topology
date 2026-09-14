@@ -16,11 +16,11 @@ stub: |-
       N.norm (-v) = N.norm v := sorry
 reference: |-
   theorem Norm.zero {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) : N.norm 0 = 0 :=
-    N.eq_zero.mpr rfl
+    N.norm_eq_zero.mpr rfl
 
   theorem Norm.neg {V : Type u} [AddCommGroup V] [Module ℝ V] (N : Norm V) (v : V) :
       N.norm (-v) = N.norm v := by
-    have h := N.smul (-1) v
+    have h := N.norm_smul (-1) v
     rw [neg_one_smul] at h
     rw [h, abs_neg, abs_one, one_mul]
 spec: |-
@@ -31,13 +31,13 @@ preamble: |
   namespace GeneralTopology
   structure Norm (V : Type u) [AddCommGroup V] [Module ℝ V] where
     norm : V → ℝ
-    eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
-    smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
-    triangle : ∀ v w, norm (v + w) ≤ norm v + norm w
+    norm_eq_zero : ∀ {v}, norm v = 0 ↔ v = 0
+    norm_smul : ∀ (c : ℝ) (v : V), norm (c • v) = |c| * norm v
+    norm_add_le : ∀ v w, norm (v + w) ≤ norm v + norm w
 
   end GeneralTopology
   open GeneralTopology
-description: Prove both. For the first, apply the right-to-left direction of `N.eq_zero` at `0`. For the second, start from the instance `N.smul (-1) v` of homogeneity, rewrite `(-1) • v` as `-v` with `neg_one_smul`, and then clear the factor with `abs_neg`, `abs_one` and `one_mul`.
+description: Prove both. For the first, apply the right-to-left direction of `N.norm_eq_zero` at `0`. For the second, start from the instance `N.norm_smul (-1) v` of homogeneity, rewrite `(-1) • v` as `-v` with `neg_one_smul`, and then clear the factor with `abs_neg`, `abs_one` and `one_mul`.
 stub_names:
 - Norm.zero
 - Norm.neg
@@ -45,7 +45,7 @@ namespace: GeneralTopology
 seq: 14
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/MetricSpaces.lean
   line: 381
   closure_rounds: 1

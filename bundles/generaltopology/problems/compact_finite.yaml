@@ -8,49 +8,50 @@ statement: |-
 concepts:
 - compact_basics
 stub: |-
-  theorem Topology.isCompactSet_of_finite {X : Type u} (T : Topology X) {S : Set X}
-      (hS : S.Finite) : T.IsCompactSet S := sorry
+  theorem TopologicalSpace.isCompact_of_finite {X : Type u} (T : TopologicalSpace X) {S : Set X}
+      (hS : S.Finite) : T.IsCompact S := sorry
 
-  theorem Topology.isCompact_of_finite {X : Type u} (T : Topology X)
-      (h : (Set.univ : Set X).Finite) : T.IsCompact := sorry
+  theorem TopologicalSpace.isCompactSpace_of_finite {X : Type u} (T : TopologicalSpace X)
+      (h : (Set.univ : Set X).Finite) : T.IsCompactSpace := sorry
 reference: |-
-  theorem Topology.isCompactSet_of_finite {X : Type u} (T : Topology X) {S : Set X}
-      (hS : S.Finite) : T.IsCompactSet S := by
+  theorem TopologicalSpace.isCompact_of_finite {X : Type u} (T : TopologicalSpace X) {S : Set X}
+      (hS : S.Finite) : T.IsCompact S := by
     induction S, hS using Set.Finite.induction_on with
-    | empty => exact Topology.isCompactSet_empty T
+    | empty => exact TopologicalSpace.isCompact_empty T
     | insert _ _ ih =>
       rw [Set.insert_eq]
-      exact Topology.isCompactSet_union T (Topology.isCompactSet_singleton T _) ih
+      exact TopologicalSpace.isCompact_union T (TopologicalSpace.isCompact_singleton T _) ih
 
-  theorem Topology.isCompact_of_finite {X : Type u} (T : Topology X)
-      (h : (Set.univ : Set X).Finite) : T.IsCompact :=
-    Topology.isCompactSet_of_finite T h
+  theorem TopologicalSpace.isCompactSpace_of_finite {X : Type u} (T : TopologicalSpace X)
+      (h : (Set.univ : Set X).Finite) : T.IsCompactSpace :=
+    TopologicalSpace.isCompact_of_finite T h
 spec: |-
-  example : ∀ {X : Type u} (T : Topology X) {S : Set X}
-      (hS : S.Finite), T.IsCompactSet S := _root_.GeneralTopology.Topology.isCompactSet_of_finite
-  example : ∀ {X : Type u} (T : Topology X)
-      (h : (Set.univ : Set X).Finite), T.IsCompact := _root_.GeneralTopology.Topology.isCompact_of_finite
+  example : ∀ {X : Type u} (T : TopologicalSpace X) {S : Set X}
+      (hS : S.Finite), T.IsCompact S := _root_.GeneralTopology.TopologicalSpace.isCompact_of_finite
+  example : ∀ {X : Type u} (T : TopologicalSpace X)
+      (h : (Set.univ : Set X).Finite), T.IsCompactSpace := _root_.GeneralTopology.TopologicalSpace.isCompactSpace_of_finite
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsCompactSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsCompact {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ F : Set (Set X), (∀ U ∈ F, T.IsOpen U) → S ⊆ ⋃₀ F →
       ∃ G ⊆ F, G.Finite ∧ S ⊆ ⋃₀ G
 
-  def Topology.IsCompact {X : Type u} (T : Topology X) : Prop := T.IsCompactSet Set.univ
+  def TopologicalSpace.IsCompactSpace {X : Type u} (T : TopologicalSpace X) : Prop
+      := T.IsCompact Set.univ
 
-  theorem Topology.isCompactSet_empty {X : Type u} (T : Topology X) :
-      T.IsCompactSet (∅ : Set X) :=
+  theorem TopologicalSpace.isCompact_empty {X : Type u} (T : TopologicalSpace X) :
+      T.IsCompact (∅ : Set X) :=
     fun _ _ _ => ⟨∅, Set.empty_subset _, Set.finite_empty, Set.empty_subset _⟩
 
-  theorem Topology.isCompactSet_singleton {X : Type u} (T : Topology X) (x : X) :
-      T.IsCompactSet {x} := by
+  theorem TopologicalSpace.isCompact_singleton {X : Type u} (T : TopologicalSpace X) (x : X) :
+      T.IsCompact {x} := by
     intro F _ hcov
     obtain ⟨U, hUF, hxU⟩ := hcov rfl
     refine ⟨{U}, Set.singleton_subset_iff.mpr hUF, Set.finite_singleton U, ?_⟩
@@ -58,8 +59,8 @@ preamble: |
     have e : y = x := hy
     exact ⟨U, rfl, e ▸ hxU⟩
 
-  theorem Topology.isCompactSet_union {X : Type u} (T : Topology X) {S S' : Set X}
-      (hS : T.IsCompactSet S) (hS' : T.IsCompactSet S') : T.IsCompactSet (S ∪ S') := by
+  theorem TopologicalSpace.isCompact_union {X : Type u} (T : TopologicalSpace X) {S S' : Set X}
+      (hS : T.IsCompact S) (hS' : T.IsCompact S') : T.IsCompact (S ∪ S') := by
     intro F hFo hcov
     obtain ⟨G, hGF, hGfin, hGcov⟩ := hS F hFo (fun x hx => hcov (Or.inl hx))
     obtain ⟨G', hG'F, hG'fin, hG'cov⟩ := hS' F hFo (fun x hx => hcov (Or.inr hx))
@@ -70,16 +71,16 @@ preamble: |
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Topology.isCompactSet_of_finite` and then `Topology.isCompact_of_finite`, which is the first at `Set.univ`. `induction S, hS using Set.Finite.induction_on` splits the finiteness into its two cases, named `empty` and `insert`; `Set.insert_eq` rewrites `insert x S` as `{x} ∪ S`.
+description: Prove `TopologicalSpace.isCompact_of_finite` and then `TopologicalSpace.isCompactSpace_of_finite`, which is the first at `Set.univ`. `induction S, hS using Set.Finite.induction_on` splits the finiteness into its two cases, named `empty` and `insert`; `Set.insert_eq` rewrites `insert x S` as `{x} ∪ S`.
 stub_names:
-- Topology.isCompactSet_of_finite
-- Topology.isCompact_of_finite
+- TopologicalSpace.isCompact_of_finite
+- TopologicalSpace.isCompactSpace_of_finite
 namespace: GeneralTopology
 seq: 201
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Compactness.lean
-  line: 111
+  line: 112
   closure_rounds: 1
   check_kind: theorem

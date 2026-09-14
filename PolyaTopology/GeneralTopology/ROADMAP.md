@@ -14,6 +14,43 @@ in metric spaces *before* abstracting to topological spaces, whereas §2 abstrac
 treats continuity in both settings at once, with the theorem that the two agree. Everything else
 follows the source.
 
+## The names were realigned to Mathlib on 2026-09-14
+
+The subject is a student's on-ramp to Mathlib's topology, which a later subject will import, and
+nothing but names and shapes can carry across — `polya` refuses cross-subject imports, so there is
+no code path from here to there. The declarations were therefore respelled as Mathlib spells them.
+The structures stay structures (see `STYLE.md`, "Bundling, not classes"); only the names moved.
+
+| was | is | why |
+|---|---|---|
+| `Topology` | `TopologicalSpace` | Mathlib's class name; frees `Topology`, which is a *namespace* there |
+| `Metric` | `MetricSpace` | Mathlib's class name |
+| `Homeomorphism` | `Homeomorph` | Mathlib's structure name |
+| `Topology.IsCompactSet` | `TopologicalSpace.IsCompact` | Mathlib's `IsCompact` takes a **set** |
+| `Topology.IsCompact` | `TopologicalSpace.IsCompactSpace` | Mathlib's space-level name is `CompactSpace` |
+| `Topology.IsConnectedSet` | `TopologicalSpace.IsPreconnected` | ours omits nonemptiness, so it is Mathlib's `IsPreconnected` exactly |
+| `Topology.IsConnected` | `TopologicalSpace.IsPreconnectedSpace` | matches `PreconnectedSpace` |
+| `Metric.IsComplete` | `MetricSpace.IsCompleteSpace` | Mathlib's `IsComplete` takes a set; `CompleteSpace` is the space |
+| `Topology.boundary` | `TopologicalSpace.frontier` | Mathlib keeps "boundary" for manifolds |
+| `Topology.IsHausdorff` | `TopologicalSpace.IsT2` | Mathlib has no `HausdorffSpace`, only `T2Space` |
+| `Topology.IsRegular` / `IsNormal` | `IsT3` / `IsT4` | ours bundle T₁, so they are Mathlib's `T3Space`/`T4Space`, not its `RegularSpace`/`NormalSpace` |
+| `Topology.component` | `TopologicalSpace.connectedComponent` | matches, definition included |
+| `Metric.IsCauchy` | `MetricSpace.CauchySeq` | Mathlib's name |
+| `codiscrete` | `indiscrete` | Mathlib's word (`IndiscreteTopology`) |
+| `Topology.IsPathConnected` | `IsPathConnectedSpace` | Mathlib's `IsPathConnected` takes a set |
+| fields `univ`/`inter`/`sUnion` | `isOpen_univ`/`isOpen_inter`/`isOpen_sUnion` | Mathlib's field names |
+| fields `symm`/`triangle`/`eq_zero` | `dist_comm`/`dist_triangle`/`dist_eq_zero` | Mathlib's names |
+| `Norm` fields `eq_zero`/`smul`/`triangle` | `norm_eq_zero`/`norm_smul`/`norm_add_le` | Mathlib's names |
+
+Nine declarations had to be shortened at the same time: the `TopologicalSpace.` prefix costs
+eight characters more than `Topology.` did, and pushed them past the 43-character limit below,
+where extraction fails with a bare `could not verify axioms`. Slugs were not touched and none
+changed — a slug is a URL and a student's record — so `@problem define_codiscrete` still reads
+`codiscrete` while the declaration it owns is `indiscrete`.
+
+**Passages below this line were written before that change and use the old spellings.** The
+inventory under "Names already taken" is regenerated from the source and is the current list.
+
 ## How a section is sized
 
 The eleven built sections measure 4 to 7 concepts and 9 to 31 problems, in 280 to 780 lines. That
@@ -1023,105 +1060,143 @@ Nothing below is to be defined a second time. Where a later section generalizes 
 generalization is an identification — a `theorem` or an `example` saying the old thing is the new
 one — never a redefinition.
 
-- `Metric`, `Metric.ball`, `Metric.closedBall`, `Metric.sphere`, `Metric.IsBounded`,
-  `Metric.IsOpenSet`, `Metric.toTopology`, `line`
-- `Norm`, `Norm.toMetric`, `absNorm`, `taxicab`, `supNorm`
-- `Topology`, `Topology.IsClosed`, `Topology.IsNbhd`, `Topology.subspace`
-- `discrete`, `codiscrete`, `cofinite`, `sierpinski`
-- `Topology.closure`, `Topology.interior`, `Topology.boundary`, `Topology.Dense`,
-  `Topology.closure_min`, `Topology.interior_max`, `Topology.mem_closure_iff`,
-  `Metric.mem_closure_iff`, `Topology.dense_iff`, `Topology.compl_closure`, `rationals`
-- `Metric.ContinuousAt`, `Metric.Continuous`, `Topology.Continuous`, `Topology.ContinuousAt`,
-  `Topology.continuous_id`, `Topology.continuous_const`, `Topology.continuous_comp`,
-  `Metric.continuous_iff`, `Topology.continuous_iff_closed`, `Topology.continuous_closure`,
-  `Topology.continuous_iff_continuousAt`, `Topology.continuous_subspace_val`,
-  `Topology.continuous_restrict`, `continuous_from_discrete`, `continuous_to_codiscrete`,
-  `sierpinski_open_cases`, `sierpinski_continuous_iff`, `line_continuous_affine`
-- `Homeomorphism` (with `toFun`, `invFun`, `left_inv`, `right_inv`, `continuous_toFun`,
-  `continuous_invFun`), `Homeomorphism.refl`, `.symm`, `.trans`, `.injective`, `.surjective`,
-  `.image_eq_preimage`, `.isOpenMap`, `.isClosedMap`, `.ofOpenMap`, `.preimage_preimage`,
-  `.isOpen_iff`; `Homeomorphic` and `Homeomorphic.refl`, `.symm`, `.trans`, `.isDiscrete`,
-  `.isCodiscrete`; `image_eq_preimage_of_inverse`
-- `Topology.IsOpenMap`, `Topology.IsClosedMap`, `Topology.IsDiscrete`, `Topology.IsCodiscrete`,
-  `discrete_isDiscrete`, `codiscrete_isCodiscrete`, `singleton_true_not_trivial`,
-  `sierpinski_not_discrete`, `sierpinski_not_codiscrete`
-- `Metric.Equivalent`, `Metric.isOpenSet_of_ball_subset`, `Metric.Equivalent.isOpenSet_iff`,
-  `Metric.Equivalent.toHomeomorphism`, `taxicab_equivalent_supNorm`, `plane_homeomorphic`
-- `Topology.continuous_into_subspace`, `Topology.continuous_toSubspace`,
-  `Topology.isClosed_subspace_iff`
-- `Topology.induced`, `Topology.subspace_eq_induced`, `Topology.continuous_induced`,
-  `Topology.induced_coarsest`, `Topology.eq_of_isOpen_iff`, `Topology.induced_induced`
-- `Topology.prod`, `Topology.isOpen_prod_box`, `Topology.prod_eq_sUnion_boxes`,
-  `Topology.continuous_fst`, `Topology.continuous_snd`, `Topology.isOpenMap_fst`,
-  `Topology.isOpenMap_snd`, `Topology.continuous_prod_mk`, `Topology.continuous_prod_iff`,
-  `Topology.continuous_mk_left`, `Topology.continuous_mk_right`
-- `ball_supNorm_eq_box`, `isOpen_prod_of_isOpenSet_supNorm`, `isOpenSet_supNorm_of_isOpen_prod`,
-  `supNorm_prod_homeomorphism`, `plane_homeomorphic_product`, `taxicab_homeomorphic_product`
-- `preimage_sUnion_image`, `Topology.coinduced`, `Topology.continuous_coinduced`,
-  `Topology.coinduced_finest`, `Topology.continuous_out_of_coinduced`, `coinduced_discrete`
-- `kernelSetoid`, `quotient_mk_surjective`, `quotient_mk_eq_iff`, `kernelLift`,
-  `kernelLift_injective`
-- `Topology.quotient`, `Topology.continuous_mk`, `Topology.continuous_quotient_lift`,
-  `IsSaturated`, `isSaturated_preimage`, `Topology.isOpen_image_of_saturated`, `quotient_discrete`
-- `Topology.sum`, `Topology.continuous_inl`, `Topology.continuous_inr`, `Topology.isOpenMap_inl`,
-  `Topology.isOpenMap_inr`, `Topology.continuous_sum_elim`, `Topology.continuous_sum_iff`
-- `collapse`, `collapse_preimage_class`, `unitInterval`, `unitInterval_closed`,
-  `collapse_point_isClosed`, `line_collapse_interval`
-- `Topology.IsT0`, `Topology.IsT1`, `Topology.IsHausdorff`, `Topology.IsRegular`,
-  `Topology.IsNormal`, `Topology.isT0_of_isT1`, `Topology.isT1_of_isHausdorff`,
-  `Topology.isRegular_of_isNormal`, `Topology.isHausdorff_of_isRegular`
-- `Metric.dist_pos`, `Metric.isHausdorff`, `Metric.isRegular`, `codiscrete_not_isT0`,
-  `sierpinski_isT0`, `sierpinski_not_isT1`, `cofinite_isT1`, `cofinite_not_isHausdorff`,
-  `discrete_isNormal`
-- `Topology.mem_closure_singleton`, `Topology.closure_singleton_subset_iff`,
-  `Topology.isT1_iff_isClosed_singleton`, `Topology.isT0_iff_closure_injective`, `diagonal`,
-  `Topology.isClosed_diagonal_of_isHausdorff`, `Topology.isHausdorff_of_isClosed_diagonal`
-- `Topology.isT0_subspace`, `Topology.isT1_subspace`, `Topology.isHausdorff_subspace`,
-  `Topology.isHausdorff_prod`, `Homeomorphic.isHausdorff`
-- `Topology.IsConnected`, `Topology.IsConnectedSet`, `trace_eq_univ_iff`, `trace_split`,
-  `Topology.isConnected_subspace`, `codiscrete_isConnected`, `discrete_bool_not_isConnected`
-- `IsInterval`, `IsInterval.mem_of_le`, `line_open_right`, `line_open_left`, `line_no_split`,
-  `line_isConnectedSet_of_isInterval`, `line_isConnectedSet_segment`, `unitInterval_isConnectedSet`
-- `Topology.isConnectedSet_image`, `Homeomorphic.isConnected`, `line_isOpen_lt`, `line_isOpen_gt`,
-  `line_intermediate_value`
-- `Topology.isConnectedSet_singleton`, `Topology.isConnectedSet_sUnion`, `Topology.component`,
-  `Topology.mem_component`, `Topology.isConnectedSet_component`, `Topology.subset_component`,
-  `Topology.component_eq_of_mem`, `Topology.isConnectedSet_closure`, `Topology.isClosed_component`,
-  `Topology.IsTotallyDisconnected`, `discrete_isTotallyDisconnected`
-- `unitInterval.zero`, `unitInterval.one`, `Topology.IsPathConnected`, `line_isPathConnected`,
-  `Topology.isConnected_of_isPathConnected`
-- `Metric.ConvergesTo`, `one_div_succ_pos`, `exists_one_div_succ_lt`, `Metric.convergesTo_const`,
-  `line_convergesTo_zero`, `Metric.convergesTo_unique`
-- `Topology.ConvergesTo`, `Topology.convergesTo_const`, `Metric.convergesTo_iff`,
-  `codiscrete_convergesTo`, `Topology.convergesTo_unique`, `Topology.isT1_of_convergesTo_unique`
-- `Metric.mem_closure_iff_seq`, `Metric.isClosed_iff_seq`, `Topology.convergesTo_comp`,
-  `Metric.convergesTo_comp`, `Metric.continuous_of_seq`
-- `Metric.IsCauchy`, `Metric.isCauchy_of_convergesTo`, `Metric.IsComplete`, `discreteMetric`,
-  `discreteMetric_eq_of_dist_lt_one`, `discreteMetric_toTopology`, `discreteMetric_isComplete`
-- `Topology.IsCompactSet`, `Topology.IsCompact`, `Topology.isCompactSet_empty`,
-  `Topology.isCompactSet_singleton`, `Topology.isCompactSet_union`,
-  `Topology.isCompactSet_of_finite`, `Topology.isCompact_of_finite`, `codiscrete_isCompact`,
-  `discrete_not_isCompact`, `Topology.isCompactSet_of_isClosed`
-- `Metric.isBounded_sUnion`, `Metric.isBounded_of_isCompactSet`, `line_not_isCompact`,
-  `Metric.half_dist_pos`, `Metric.le_dist_of_mem_ball_half`, `Metric.exists_dist_ge_sUnion`,
-  `Metric.isClosed_of_isCompactSet`
-- `Topology.isCompactSet_image`, `Homeomorphic.isCompact`, `line_bddAbove_bddBelow`,
-  `line_exists_max`, `line_exists_min`, `Topology.exists_max_of_isCompactSet`,
-  `Topology.exists_min_of_isCompactSet`
-- `CoveredUpTo`, `coveredUpTo_zero`, `coveredUpTo_insert`, `exists_coveredUpTo_of_isLUB`,
-  `unitInterval_isCompactSet`, `unitInterval_exists_max`
-- `Topology.exists_nbhd_disjoint_sUnion`, `Topology.exists_separating_of_isCompactSet`,
-  `Topology.exists_separating_point`, `Topology.isClosed_of_isCompactSet`,
-  `Topology.isCompactSet_iff_isClosed`
-- `Topology.isClosedMap_of_isCompact`, `Homeomorphism.ofClosedMap`,
-  `Homeomorphism.ofCompactToHausdorff`, `Topology.eq_coinduced_of_isCompact`,
-  `Topology.isRegular_of_isCompact`, `Topology.isNormal_of_isCompact`
-- `Topology.exists_box_sUnion`, `Topology.tube_lemma`, `Topology.isCompactSet_slice`,
-  `Topology.exists_finite_subcover_sUnion`, `Topology.isCompactSet_prod`,
-  `Topology.isCompact_prod`
-- `Topology.isCompactSet_of_isClosed_subset`, `line_image_unitInterval`,
-  `line_isCompactSet_segment`, `line_isCompactSet_iff`, `supNorm_toTopology_eq_prod`,
-  `supNorm_ball_subset_box`, `supNorm_isCompactSet_box`, `supNorm_isCompactSet_iff`
+- **§1 Metric Spaces** — `MetricSpace`, `MetricSpace.dist_self`, `MetricSpace.nonneg`, `line`, `MetricSpace.ball`,
+  `MetricSpace.mem_ball`, `MetricSpace.mem_ball_self`, `MetricSpace.closedBall`,
+  `MetricSpace.sphere`, `MetricSpace.ball_subset_closedBall`, `MetricSpace.ball_mono`,
+  `line_ball`, `MetricSpace.ball_subset_ball`, `MetricSpace.IsBounded`,
+  `MetricSpace.isBounded_ball`, `MetricSpace.isBounded_subset`, `MetricSpace.isBounded_union`,
+  `Norm`, `Norm.zero`, `Norm.neg`, `Norm.nonneg`, `Norm.sub_comm`, `Norm.toMetricSpace`,
+  `Norm.mem_ball_zero`, `absNorm`, `absNorm_toMetricSpace`, `eq_zero_of_abs_le_zero`,
+  `abs_add_abs_eq_zero`, `prod_eq_zero`, `taxicab`, `max_abs_eq_zero`, `max_add_max`, `supNorm`,
+  `supNorm_le_taxicab`, `taxicab_le_two_supNorm`, `unit_balls_differ`,
+  `ball_taxicab_subset_supNorm`, `ball_supNorm_subset_taxicab`
+- **§2 Topological Spaces** — `MetricSpace.IsOpenSet`, `MetricSpace.isOpenSet_ball`, `MetricSpace.isOpenSet_univ`,
+  `MetricSpace.isOpenSet_inter`, `MetricSpace.isOpenSet_sUnion`, `TopologicalSpace`,
+  `TopologicalSpace.empty`, `MetricSpace.toTopologicalSpace`, `TopologicalSpace.IsClosed`,
+  `TopologicalSpace.isClosed_univ`, `TopologicalSpace.isClosed_union`,
+  `TopologicalSpace.IsNbhd`, `TopologicalSpace.nbhd_of_isOpen`,
+  `TopologicalSpace.union_of_opens_inside`, `TopologicalSpace.isOpen_iff_nbhd`
+- **§3 Basic Examples** — `discrete`, `trivial_inter`, `trivial_sUnion`, `indiscrete`, `indiscrete_le_le_discrete`,
+  `sierpinski`, `sierpinski_singleton_false_not_open`, `cofinite_inter`, `cofinite_sUnion`,
+  `cofinite`, `TopologicalSpace.subspace`
+- **§4 Closure, Interior and Boundary** — `TopologicalSpace.isClosed_empty`, `TopologicalSpace.isClosed_sInter`,
+  `TopologicalSpace.closure`, `TopologicalSpace.subset_closure`,
+  `TopologicalSpace.isClosed_closure`, `TopologicalSpace.closure_min`,
+  `TopologicalSpace.isClosed_iff_closure_eq`, `TopologicalSpace.closure_mono`,
+  `TopologicalSpace.closure_closure`, `TopologicalSpace.closure_union`,
+  `TopologicalSpace.mem_closure_iff`, `MetricSpace.mem_closure_iff`,
+  `TopologicalSpace.interior`, `TopologicalSpace.isOpen_interior`,
+  `TopologicalSpace.interior_subset`, `TopologicalSpace.interior_max`,
+  `TopologicalSpace.isOpen_iff_interior_eq`, `TopologicalSpace.compl_closure`,
+  `TopologicalSpace.frontier`, `TopologicalSpace.frontier_eq_empty_iff`,
+  `TopologicalSpace.Dense`, `TopologicalSpace.dense_iff`, `rationals`, `rationals_dense`
+- **§5 Continuous Functions** — `MetricSpace.ContinuousAt`, `MetricSpace.Continuous`, `MetricSpace.continuous_const`,
+  `MetricSpace.continuous_id`, `line_continuous_affine`, `TopologicalSpace.Continuous`,
+  `TopologicalSpace.continuous_id`, `TopologicalSpace.continuous_const`,
+  `TopologicalSpace.continuous_comp`, `MetricSpace.continuous_iff`,
+  `line_continuous_affine_top`, `TopologicalSpace.continuous_iff_closed`,
+  `TopologicalSpace.continuous_closure`, `TopologicalSpace.ContinuousAt`,
+  `TopologicalSpace.continuous_iff_continuousAt`, `continuous_from_discrete`,
+  `continuous_to_indiscrete`, `sierpinski_open_cases`, `sierpinski_continuous_iff`,
+  `TopologicalSpace.continuous_subspace_val`, `TopologicalSpace.continuous_restrict`
+- **§6 Homeomorphisms** — `Homeomorph`, `Homeomorph.injective`, `Homeomorph.surjective`, `Homeomorph.refl`,
+  `Homeomorph.symm`, `Homeomorph.trans`, `Homeomorphic`, `Homeomorphic.refl`,
+  `Homeomorphic.symm`, `Homeomorphic.trans`, `TopologicalSpace.IsOpenMap`,
+  `TopologicalSpace.IsClosedMap`, `image_eq_preimage_of_inverse`,
+  `Homeomorph.image_eq_preimage`, `Homeomorph.isOpenMap`, `Homeomorph.isClosedMap`,
+  `Homeomorph.ofOpenMap`, `MetricSpace.Equivalent`, `MetricSpace.isOpenSet_of_ball_subset`,
+  `MetricSpace.Equivalent.isOpenSet_iff`, `MetricSpace.Equivalent.toHomeomorph`,
+  `taxicab_equivalent_supNorm`, `plane_homeomorphic`, `Homeomorph.preimage_preimage`,
+  `Homeomorph.isOpen_iff`, `TopologicalSpace.IsDiscrete`, `TopologicalSpace.IsIndiscrete`,
+  `discrete_isDiscrete`, `indiscrete_isIndiscrete`, `Homeomorphic.isDiscrete`,
+  `Homeomorphic.isIndiscrete`, `singleton_true_not_trivial`, `sierpinski_not_discrete`,
+  `sierpinski_not_indiscrete`, `discrete_not_homeomorphic_indiscrete`,
+  `discrete_not_homeomorphic_sierpinski`, `indiscrete_not_homeomorphic_sierpinski`
+- **§7 Subspaces and Products** — `TopologicalSpace.continuous_into_subspace`, `TopologicalSpace.continuous_toSubspace`,
+  `TopologicalSpace.isClosed_subspace_iff`, `TopologicalSpace.induced`,
+  `TopologicalSpace.subspace_eq_induced`, `TopologicalSpace.continuous_induced`,
+  `TopologicalSpace.induced_coarsest`, `TopologicalSpace.eq_of_isOpen_iff`,
+  `TopologicalSpace.induced_induced`, `TopologicalSpace.prod`,
+  `TopologicalSpace.isOpen_prod_box`, `TopologicalSpace.prod_eq_sUnion_boxes`,
+  `TopologicalSpace.continuous_fst`, `TopologicalSpace.continuous_snd`,
+  `TopologicalSpace.isOpenMap_fst`, `TopologicalSpace.isOpenMap_snd`,
+  `TopologicalSpace.continuous_prod_mk`, `TopologicalSpace.continuous_prod_iff`,
+  `TopologicalSpace.continuous_mk_left`, `TopologicalSpace.continuous_mk_right`,
+  `ball_supNorm_eq_box`, `isOpen_prod_of_isOpenSet_supNorm`, `isOpenSet_supNorm_of_isOpen_prod`,
+  `supNorm_prod_homeomorph`, `plane_homeomorphic_product`, `taxicab_homeomorphic_product`
+- **§8 Quotients and Sums** — `preimage_sUnion_image`, `TopologicalSpace.coinduced`,
+  `TopologicalSpace.continuous_coinduced`, `TopologicalSpace.coinduced_finest`,
+  `TopologicalSpace.continuous_out_of_coinduced`, `kernelSetoid`, `quotient_mk_surjective`,
+  `quotient_mk_eq_iff`, `kernelLift`, `kernelLift_injective`, `TopologicalSpace.quotient`,
+  `TopologicalSpace.continuous_mk`, `TopologicalSpace.continuous_quotient_lift`, `IsSaturated`,
+  `isSaturated_preimage`, `TopologicalSpace.isOpen_image_of_saturated`, `coinduced_discrete`,
+  `quotient_discrete`, `TopologicalSpace.sum`, `TopologicalSpace.continuous_inl`,
+  `TopologicalSpace.continuous_inr`, `TopologicalSpace.isOpenMap_inl`,
+  `TopologicalSpace.isOpenMap_inr`, `TopologicalSpace.continuous_sum_elim`,
+  `TopologicalSpace.continuous_sum_iff`, `collapse`, `collapse_preimage_class`, `unitInterval`,
+  `unitInterval_closed`, `collapse_point_isClosed`, `line_collapse_interval`
+- **§9 Separation Axioms** — `TopologicalSpace.IsT0`, `TopologicalSpace.IsT1`, `TopologicalSpace.IsT2`,
+  `TopologicalSpace.isT0_of_isT1`, `TopologicalSpace.isT1_of_isT2`, `MetricSpace.dist_pos`,
+  `MetricSpace.isT2`, `indiscrete_not_isT0`, `sierpinski_isT0`, `sierpinski_not_isT1`,
+  `cofinite_isT1`, `cofinite_not_isT2`, `TopologicalSpace.mem_closure_singleton`,
+  `TopologicalSpace.closure_singleton_iff`, `TopologicalSpace.isT1_iff_isClosed_singleton`,
+  `TopologicalSpace.isT0_iff_closure_injective`, `diagonal`,
+  `TopologicalSpace.isClosed_diagonal_of_isT2`, `TopologicalSpace.isT2_of_isClosed_diagonal`,
+  `TopologicalSpace.isT0_subspace`, `TopologicalSpace.isT1_subspace`,
+  `TopologicalSpace.isT2_subspace`, `TopologicalSpace.isT2_prod`, `Homeomorphic.isT2`,
+  `TopologicalSpace.IsT3`, `TopologicalSpace.IsT4`, `TopologicalSpace.isT3_of_isT4`,
+  `TopologicalSpace.isT2_of_isT3`, `discrete_isT4`, `MetricSpace.isT3`
+- **§10 Connectedness** — `TopologicalSpace.IsPreconnectedSpace`, `TopologicalSpace.IsPreconnected`,
+  `trace_eq_univ_iff`, `trace_split`, `TopologicalSpace.isPreconnected_subspace`,
+  `indiscrete_isPreconnectedSpace`, `discrete_bool_not_isPreconnectedSpace`, `IsInterval`,
+  `IsInterval.mem_of_le`, `line_open_right`, `line_open_left`, `line_no_split`,
+  `line_isPreconnected_of_isInterval`, `line_isPreconnected_segment`,
+  `unitInterval_isPreconnected`, `TopologicalSpace.isPreconnected_image`,
+  `Homeomorphic.isPreconnectedSpace`, `line_isOpen_lt`, `line_isOpen_gt`,
+  `line_intermediate_value`, `TopologicalSpace.isPreconnected_singleton`,
+  `TopologicalSpace.isPreconnected_sUnion`, `TopologicalSpace.connectedComponent`,
+  `TopologicalSpace.mem_component`, `TopologicalSpace.isPreconnected_component`,
+  `TopologicalSpace.subset_component`, `TopologicalSpace.component_eq_of_mem`,
+  `TopologicalSpace.isPreconnected_closure`, `TopologicalSpace.isClosed_component`,
+  `TopologicalSpace.IsTotallyDisconnected`, `discrete_isTotallyDisconnected`,
+  `unitInterval.zero`, `unitInterval.one`, `TopologicalSpace.IsPathConnectedSpace`,
+  `line_isPathConnectedSpace`, `TopologicalSpace.isPreconnected_of_path`
+- **§11 Sequences and Convergence** — `MetricSpace.ConvergesTo`, `one_div_succ_pos`, `exists_one_div_succ_lt`,
+  `MetricSpace.convergesTo_const`, `line_convergesTo_zero`, `MetricSpace.convergesTo_unique`,
+  `TopologicalSpace.ConvergesTo`, `TopologicalSpace.convergesTo_const`,
+  `MetricSpace.convergesTo_iff`, `indiscrete_convergesTo`,
+  `TopologicalSpace.convergesTo_unique`, `TopologicalSpace.isT1_of_convergesTo_unique`,
+  `MetricSpace.mem_closure_iff_seq`, `MetricSpace.isClosed_iff_seq`,
+  `TopologicalSpace.convergesTo_comp`, `MetricSpace.convergesTo_comp`,
+  `MetricSpace.continuous_of_seq`, `MetricSpace.CauchySeq`,
+  `MetricSpace.cauchySeq_of_convergesTo`, `MetricSpace.IsCompleteSpace`, `discreteMetric`,
+  `discreteMetric_eq_of_dist_lt_one`, `discreteMetric_toTopologicalSpace`,
+  `discreteMetric_isCompleteSpace`
+- **§12 Compactness** — `TopologicalSpace.IsCompact`, `TopologicalSpace.IsCompactSpace`,
+  `TopologicalSpace.isCompact_empty`, `TopologicalSpace.isCompact_singleton`,
+  `TopologicalSpace.isCompact_union`, `TopologicalSpace.isCompact_of_finite`,
+  `TopologicalSpace.isCompactSpace_of_finite`, `indiscrete_isCompactSpace`,
+  `discrete_not_isCompactSpace`, `TopologicalSpace.isCompact_of_isClosed`,
+  `MetricSpace.isBounded_sUnion`, `MetricSpace.isBounded_of_isCompact`,
+  `line_not_isCompactSpace`, `MetricSpace.half_dist_pos`,
+  `MetricSpace.le_dist_of_mem_ball_half`, `MetricSpace.exists_dist_ge_sUnion`,
+  `MetricSpace.isClosed_of_isCompact`, `TopologicalSpace.isCompact_image`,
+  `Homeomorphic.isCompactSpace`, `line_bddAbove_bddBelow`, `line_exists_max`, `line_exists_min`,
+  `TopologicalSpace.exists_max_of_isCompact`, `TopologicalSpace.exists_min_of_isCompact`,
+  `CoveredUpTo`, `coveredUpTo_zero`, `coveredUpTo_insert`, `exists_coveredUpTo_of_isLUB`,
+  `unitInterval_isCompact`, `unitInterval_exists_max`
+- **§13 Compact Hausdorff Spaces** — `TopologicalSpace.exists_nbhd_disjoint`, `TopologicalSpace.separating_of_compact`,
+  `TopologicalSpace.exists_separating_point`, `TopologicalSpace.isClosed_of_isCompact`,
+  `TopologicalSpace.isCompact_iff_isClosed`, `TopologicalSpace.isClosedMap_of_compact`,
+  `Homeomorph.ofClosedMap`, `Homeomorph.ofCompactToHausdorff`,
+  `TopologicalSpace.eq_coinduced_of_compact`, `TopologicalSpace.isT3_of_isCompactSpace`,
+  `TopologicalSpace.isT4_of_isCompactSpace`, `TopologicalSpace.exists_box_sUnion`,
+  `TopologicalSpace.tube_lemma`, `TopologicalSpace.isCompact_slice`,
+  `TopologicalSpace.exists_finite_subcover`, `TopologicalSpace.isCompact_prod`,
+  `TopologicalSpace.isCompactSpace_prod`, `TopologicalSpace.isCompact_closed_subset`,
+  `line_image_unitInterval`, `line_isCompact_segment`, `line_isCompact_iff`,
+  `supNorm_toTopologicalSpace_eq_prod`, `supNorm_ball_subset_box`, `supNorm_isCompact_box`,
+  `supNorm_isCompact_iff`
 
 Two in particular: §7's `Topology.induced` is the shape `Topology.subspace` already had
 (`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it and

@@ -22,8 +22,11 @@ import Mathlib.Tactic.Ring
 import Mathlib.Tactic.NormNum
 ```
 
-Before adding an import, compile a file that imports it and asks for `MetricSpace`, `IsOpen`,
-`TopologicalSpace` and `Continuous`. All four must be unknown identifiers. Several innocuous
+Before adding an import, compile a file that imports it — **and nothing of this subject** — and
+asks for `MetricSpace`, `IsOpen`, `TopologicalSpace` and `Continuous`. All four must be unknown
+identifiers. (Inside the subject those names do resolve, to the definitions built here; the test
+is about what the *fence* brings in, so run it in a scratch file that imports only the fence.)
+Several innocuous
 modules fail this: anything under `Mathlib.Analysis.*`, and in particular **`Real.sqrt`**, whose
 home module imports `Mathlib.Topology.Instances.NNReal.Lemmas`, since the square root is built
 as the inverse of a monotone map and needs order-topology machinery to exist.
@@ -47,15 +50,49 @@ act coordinatewise by definition, and `Prod.ext` proves two pairs equal. `Finset
 
 ## Bundling, not classes
 
-A metric is a `structure Metric (X : Type u)` and a norm a `structure Norm (V : Type u)`, each
-carried as an ordinary argument: `M.dist x y`, `N.norm v`. They are not classes and there are no
-instances. A student reads `M.triangle x y z` as the hypothesis it is, and an exercise can never
-be closed by an instance the student did not know was in scope.
+A metric is a `structure MetricSpace (X : Type u)` and a norm a `structure Norm (V : Type u)`,
+each carried as an ordinary argument: `M.dist x y`, `N.norm v`. They are not classes and there are
+no instances. A student reads `M.dist_triangle x y z` as the hypothesis it is, and an exercise can
+never be closed by an instance the student did not know was in scope.
+
+This is the one place the subject departs from Mathlib on purpose, and there is a second reason
+beyond the first. Mathlib makes `TopologicalSpace` and `MetricSpace` classes, which fixes one
+canonical structure per type; this subject needs several at once and compares them — `taxicab` and
+`supNorm` are both norms on `ℝ × ℝ`, `discrete`, `indiscrete` and `sierpinski` are three
+topologies on `Bool`, `line` and `discreteMetric` are two metrics on `ℝ`. Mathlib reaches for
+`WithLp` type synonyms when it wants the same thing. Say so in the prose where a student would
+otherwise be surprised, and let the names carry the rest of the resemblance.
 
 Because a structure's generated shape check is nearly vacuous — any structure of the right arity
 passes — **every structure definition problem carries a `/-- @spec -/` naming its fields**, and
 so does every `where`-bodied `def`, which has no single body to compare and is an extraction
 ERROR without one.
+
+## Names follow Mathlib
+
+Where the fence allows it, a declaration is spelled as Mathlib spells it, so that what a student
+builds here is recognised when Mathlib's topology is imported in a later subject. `IsOpen`,
+`IsClosed`, `closure`, `interior`, `frontier`, `Dense`, `Continuous`, `ContinuousAt`, `IsOpenMap`,
+`IsClosedMap`, `induced`, `coinduced`, `connectedComponent`, `ball`, `closedBall`, `sphere`,
+`CauchySeq`, `dist_comm`, `dist_triangle`, `norm_add_le`, `isOpen_univ`, `isOpen_inter` and
+`isOpen_sUnion` are all Mathlib's own names.
+
+Two rules follow from that.
+
+**A property of a set and a property of a space are different names, split the way Mathlib splits
+them.** `IsCompact` and `IsPreconnected` take a set; `IsCompactSpace` and `IsPreconnectedSpace`
+take only the topology. Getting this backwards is worse than an unfamiliar name, because it
+transfers silently and wrongly.
+
+**Where a name cannot match, say so in the prose once.** Filters are outside the fence, so
+`IsNbhd` stands for `N ∈ 𝓝 x` and `ConvergesTo` for `Tendsto x atTop (𝓝 a)`, and compactness is
+defined by covers where Mathlib defines it by filters. `IsT3` and `IsT4` carry the T₁ that
+Mathlib's `RegularSpace` and `NormalSpace` leave off. A divergence is deliberate and recorded, in
+the problem that introduces it and in the subject description.
+
+Declaration names have a hard ceiling: see the ROADMAP's note on the 43-character limit, which
+the `TopologicalSpace.` prefix eats seventeen of. A name past it extracts as a bare
+`could not verify axioms`, with nothing in the message about length.
 
 ## Binders
 

@@ -9,33 +9,33 @@ statement: |-
   A point `a` for which this holds is a *limit* of the sequence.
 concepts:
 - convergence
-stub: 'def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop := sorry'
+stub: 'def MetricSpace.ConvergesTo {X : Type u} (M : MetricSpace X) (x : ℕ → X) (a : X) : Prop := sorry'
 reference: |-
-  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+  def MetricSpace.ConvergesTo {X : Type u} (M : MetricSpace X) (x : ℕ → X) (a : X) : Prop :=
     ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
 spec: |-
-  example {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : _root_.GeneralTopology.Metric.ConvergesTo M x a ↔ (∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε) := by unfold _root_.GeneralTopology.Metric.ConvergesTo; first | exact Iff.rfl | grind
-  example (X : Type) (M : Metric X) (x : ℕ → X) (a : X) :
+  example {X : Type u} (M : MetricSpace X) (x : ℕ → X) (a : X) : _root_.GeneralTopology.MetricSpace.ConvergesTo M x a ↔ (∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε) := by unfold _root_.GeneralTopology.MetricSpace.ConvergesTo; first | exact Iff.rfl | grind
+  example (X : Type) (M : MetricSpace X) (x : ℕ → X) (a : X) :
       M.ConvergesTo x a ↔ ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε := Iff.rfl
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
   end GeneralTopology
   open GeneralTopology
-description: 'Define `Metric.ConvergesTo`, taking a metric `M` on `X`, a sequence `x : ℕ → X` and a point `a`: for every `ε > 0` there is a `k : ℕ` with `M.dist a (x n) < ε` for every `n ≥ k`. Write the distance in that order, the limit first. Here `∀ n ≥ k, p n` abbreviates `∀ n, n ≥ k → p n`.'
+description: 'Define `MetricSpace.ConvergesTo`, taking a metric `M` on `X`, a sequence `x : ℕ → X` and a point `a`: for every `ε > 0` there is a `k : ℕ` with `M.dist a (x n) < ε` for every `n ≥ k`. Write the distance in that order, the limit first. Here `∀ n ≥ k, p n` abbreviates `∀ n, n ≥ k → p n`.'
 stub_names:
-- Metric.ConvergesTo
+- MetricSpace.ConvergesTo
 namespace: GeneralTopology
 seq: 180
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Sequences.lean
   line: 23
   closure_rounds: 1

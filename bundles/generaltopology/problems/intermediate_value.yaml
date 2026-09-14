@@ -8,11 +8,13 @@ statement: |-
 concepts:
 - connected_images
 stub: |-
-  theorem line_intermediate_value {f : ℝ → ℝ} (hf : line.toTopology.Continuous line.toTopology f)
+  theorem line_intermediate_value {f : ℝ → ℝ}
+      (hf : line.toTopologicalSpace.Continuous line.toTopologicalSpace f)
       {a b c : ℝ} (hab : a ≤ b) (h1 : f a < c) (h2 : c < f b) :
       ∃ x, a ≤ x ∧ x ≤ b ∧ f x = c := sorry
 reference: |-
-  theorem line_intermediate_value {f : ℝ → ℝ} (hf : line.toTopology.Continuous line.toTopology f)
+  theorem line_intermediate_value {f : ℝ → ℝ}
+      (hf : line.toTopologicalSpace.Continuous line.toTopologicalSpace f)
       {a b c : ℝ} (hab : a ≤ b) (h1 : f a < c) (h2 : c < f b) :
       ∃ x, a ≤ x ∧ x ≤ b ∧ f x = c := by
     by_contra hcon
@@ -24,41 +26,43 @@ reference: |-
     have hno : ∀ x ∈ {x | a ≤ x ∧ x ≤ b}, x ∈ f ⁻¹' {y | y < c} → x ∉ f ⁻¹' {y | c < y} := by
       intro x _ hlt hgt
       exact absurd (show f x < c from hlt) (not_lt.mpr (le_of_lt (show c < f x from hgt)))
-    rcases line_isConnectedSet_segment a b _ _ (hf _ (line_isOpen_lt c)) (hf _ (line_isOpen_gt c))
+    rcases line_isPreconnected_segment a b _ _ (hf _ (line_isOpen_lt c)) (hf _ (line_isOpen_gt c))
         hno hcov with h0 | h0
     · exact absurd (h0 ⟨hab, le_refl b⟩) (not_lt.mpr h2.le)
     · exact absurd (h0 ⟨le_refl a, hab⟩) (not_lt.mpr h1.le)
 spec: |-
-  example : ∀ {f : ℝ → ℝ} (hf : line.toTopology.Continuous line.toTopology f)
+  example : ∀ {f : ℝ → ℝ}
+      (hf : line.toTopologicalSpace.Continuous line.toTopologicalSpace f)
       {a b c : ℝ} (hab : a ≤ b) (h1 : f a < c) (h2 : c < f b), ∃ x, a ≤ x ∧ x ≤ b ∧ f x = c := _root_.GeneralTopology.line_intermediate_value
 preamble: |
   universe u v w
   namespace GeneralTopology
-  structure Metric (X : Type u) where
+  structure MetricSpace (X : Type u) where
     dist : X → X → ℝ
-    symm : ∀ {x y}, dist x y = dist y x
-    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
-    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+    dist_comm : ∀ {x y}, dist x y = dist y x
+    dist_triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    dist_eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
 
-  def line : Metric ℝ where
+  def line : MetricSpace ℝ where
     dist x y := |x - y|
-    symm {x y} := abs_sub_comm x y
-    triangle x y z := abs_sub_le x y z
-    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+    dist_comm {x y} := abs_sub_comm x y
+    dist_triangle x y z := abs_sub_le x y z
+    dist_eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
 
-  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+  def MetricSpace.ball {X : Type u} (M : MetricSpace X) (x : X) (ε : ℝ) : Set X :=
     {y | M.dist x y < ε}
 
-  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+  theorem MetricSpace.mem_ball {X : Type u} (M : MetricSpace X) {x y : X} {ε : ℝ} :
       y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
 
-  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+  def MetricSpace.IsOpenSet {X : Type u} (M : MetricSpace X) (U : Set X) : Prop :=
     ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
 
-  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+  theorem MetricSpace.isOpenSet_univ {X : Type u} (M : MetricSpace X) : M.IsOpenSet (Set.univ : Set X)
+      :=
     fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
 
-  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+  theorem MetricSpace.isOpenSet_inter {X : Type u} (M : MetricSpace X) {U V : Set X}
       (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
     intro x hx
     obtain ⟨a, ha, hau⟩ := hU x hx.1
@@ -68,30 +72,31 @@ preamble: |
     rw [M.mem_ball] at hy
     exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
 
-  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+  theorem MetricSpace.isOpenSet_sUnion {X : Type u} (M : MetricSpace X) {F : Set (Set X)}
       (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
     intro x hx
     obtain ⟨U, hUF, hxU⟩ := hx
     obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
     exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
 
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+  def MetricSpace.toTopologicalSpace {X : Type u} (M : MetricSpace X) : TopologicalSpace X where
     IsOpen := M.IsOpenSet
-    univ := M.isOpenSet_univ
-    inter := M.isOpenSet_inter
-    sUnion := M.isOpenSet_sUnion
+    isOpen_univ := M.isOpenSet_univ
+    isOpen_inter := M.isOpenSet_inter
+    isOpen_sUnion := M.isOpenSet_sUnion
 
-  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+  def TopologicalSpace.Continuous {X : Type u} {Y : Type v} (T : TopologicalSpace X)
+      (T' : TopologicalSpace Y)
       (f : X → Y) : Prop :=
     ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
 
-  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsPreconnected {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
 
   def IsInterval (S : Set ℝ) : Prop :=
@@ -105,7 +110,7 @@ preamble: |
     · exact hb
     exact h a ha b hb x hlt hlt2
 
-  theorem line_open_right {U : Set ℝ} (hU : line.toTopology.IsOpen U) {c : ℝ} (hc : c ∈ U)
+  theorem line_open_right {U : Set ℝ} (hU : line.toTopologicalSpace.IsOpen U) {c : ℝ} (hc : c ∈ U)
       {b : ℝ} (hcb : c < b) : ∃ x, c < x ∧ x ≤ b ∧ x ∈ U := by
     obtain ⟨ε, hε, hsub⟩ := hU c hc
     have h1 : c < min (c + ε / 2) b := lt_min (by linarith) hcb
@@ -115,7 +120,7 @@ preamble: |
     rw [abs_lt]
     constructor <;> linarith
 
-  theorem line_open_left {V : Set ℝ} (hV : line.toTopology.IsOpen V) {c : ℝ} (hc : c ∈ V) :
+  theorem line_open_left {V : Set ℝ} (hV : line.toTopologicalSpace.IsOpen V) {c : ℝ} (hc : c ∈ V) :
       ∃ ε > 0, ∀ y, c - ε < y → y ≤ c → y ∈ V := by
     obtain ⟨ε, hε, hsub⟩ := hV c hc
     refine ⟨ε, hε, fun y h1 h2 => hsub ?_⟩
@@ -123,8 +128,8 @@ preamble: |
     rw [abs_lt]
     constructor <;> linarith
 
-  theorem line_no_split {S U V : Set ℝ} (h : IsInterval S) (hU : line.toTopology.IsOpen U)
-      (hV : line.toTopology.IsOpen V) (hno : ∀ x ∈ S, x ∈ U → x ∉ V) (hcov : S ⊆ U ∪ V)
+  theorem line_no_split {S U V : Set ℝ} (h : IsInterval S) (hU : line.toTopologicalSpace.IsOpen U)
+      (hV : line.toTopologicalSpace.IsOpen V) (hno : ∀ x ∈ S, x ∈ U → x ∉ V) (hcov : S ⊆ U ∪ V)
       {a b : ℝ} (haS : a ∈ S) (hbS : b ∈ S) (haU : a ∈ U) (hbV : b ∈ V) (hab : a < b) : False := by
     obtain ⟨c, hlub⟩ := Real.exists_isLUB (s := {x | a ≤ x ∧ x ≤ b ∧ x ∈ U})
       ⟨a, le_refl a, hab.le, haU⟩ ⟨b, fun x hx => hx.2.1⟩
@@ -139,8 +144,8 @@ preamble: |
     obtain ⟨x, hxA, hxgt, hxle⟩ := hlub.exists_between (show c - ε < c by linarith)
     exact hno x (IsInterval.mem_of_le h haS hbS hxA.1 hxA.2.1) hxA.2.2 (hball x hxgt hxle)
 
-  theorem line_isConnectedSet_of_isInterval {S : Set ℝ} (h : IsInterval S) :
-      line.toTopology.IsConnectedSet S := by
+  theorem line_isPreconnected_of_isInterval {S : Set ℝ} (h : IsInterval S) :
+      line.toTopologicalSpace.IsPreconnected S := by
     intro U V hU hV hno hcov
     by_contra hcon
     push Not at hcon
@@ -153,12 +158,12 @@ preamble: |
         (fun x hx => (hcov hx).symm) haS hbS haV hbU hlt
     · exact line_no_split h hU hV hno hcov hbS haS hbU haV hgt
 
-  theorem line_isConnectedSet_segment (a b : ℝ) :
-      line.toTopology.IsConnectedSet {x | a ≤ x ∧ x ≤ b} :=
-    line_isConnectedSet_of_isInterval
+  theorem line_isPreconnected_segment (a b : ℝ) :
+      line.toTopologicalSpace.IsPreconnected {x | a ≤ x ∧ x ≤ b} :=
+    line_isPreconnected_of_isInterval
       (fun _ hx _ hy _ h1 h2 => ⟨le_trans hx.1 h1.le, le_trans h2.le hy.2⟩)
 
-  theorem line_isOpen_lt (c : ℝ) : line.toTopology.IsOpen {y | y < c} := by
+  theorem line_isOpen_lt (c : ℝ) : line.toTopologicalSpace.IsOpen {y | y < c} := by
     intro x hx
     have hx' : x < c := hx
     refine ⟨c - x, by linarith, fun y hy => ?_⟩
@@ -167,7 +172,7 @@ preamble: |
     show y < c
     linarith [h.1]
 
-  theorem line_isOpen_gt (c : ℝ) : line.toTopology.IsOpen {y | c < y} := by
+  theorem line_isOpen_gt (c : ℝ) : line.toTopologicalSpace.IsOpen {y | c < y} := by
     intro x hx
     have hx' : c < x := hx
     refine ⟨x - c, by linarith, fun y hy => ?_⟩
@@ -185,8 +190,8 @@ namespace: GeneralTopology
 seq: 171
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Connectedness.lean
-  line: 363
+  line: 364
   closure_rounds: 1
   check_kind: theorem

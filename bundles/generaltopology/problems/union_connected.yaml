@@ -8,14 +8,15 @@ statement: |-
 concepts:
 - components
 stub: |-
-  theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
-      T.IsConnectedSet {x} := sorry
+  theorem TopologicalSpace.isPreconnected_singleton {X : Type u} (T : TopologicalSpace X) (x : X) :
+      T.IsPreconnected {x} := sorry
 
-  theorem Topology.isConnectedSet_sUnion {X : Type u} (T : Topology X) {F : Set (Set X)} {p : X}
-      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsConnectedSet S) : T.IsConnectedSet (⋃₀ F) := sorry
+  theorem TopologicalSpace.isPreconnected_sUnion {X : Type u} (T : TopologicalSpace X)
+      {F : Set (Set X)} {p : X}
+      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsPreconnected S) : T.IsPreconnected (⋃₀ F) := sorry
 reference: |-
-  theorem Topology.isConnectedSet_singleton {X : Type u} (T : Topology X) (x : X) :
-      T.IsConnectedSet {x} := by
+  theorem TopologicalSpace.isPreconnected_singleton {X : Type u} (T : TopologicalSpace X) (x : X) :
+      T.IsPreconnected {x} := by
     intro U V _ _ _ hcov
     have hx : x ∈ ({x} : Set X) := rfl
     rcases hcov hx with h | h
@@ -28,8 +29,9 @@ reference: |-
       rw [e]
       exact h
 
-  theorem Topology.isConnectedSet_sUnion {X : Type u} (T : Topology X) {F : Set (Set X)} {p : X}
-      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsConnectedSet S) : T.IsConnectedSet (⋃₀ F) := by
+  theorem TopologicalSpace.isPreconnected_sUnion {X : Type u} (T : TopologicalSpace X)
+      {F : Set (Set X)} {p : X}
+      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsPreconnected S) : T.IsPreconnected (⋃₀ F) := by
     intro U V hU hV hno hcov
     have key : ∀ S ∈ F, S ⊆ U ∨ S ⊆ V := fun S hSF => h S hSF U V hU hV
       (fun x hx => hno x ⟨S, hSF, hx⟩) (fun x hx => hcov ⟨S, hSF, hx⟩)
@@ -45,33 +47,34 @@ reference: |-
       · exact absurd (hs (hp S hSF)) hpU
       · exact hs hxS
 spec: |-
-  example : ∀ {X : Type u} (T : Topology X) (x : X), T.IsConnectedSet {x} := _root_.GeneralTopology.Topology.isConnectedSet_singleton
-  example : ∀ {X : Type u} (T : Topology X) {F : Set (Set X)} {p : X}
-      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsConnectedSet S), T.IsConnectedSet (⋃₀ F) := _root_.GeneralTopology.Topology.isConnectedSet_sUnion
+  example : ∀ {X : Type u} (T : TopologicalSpace X) (x : X), T.IsPreconnected {x} := _root_.GeneralTopology.TopologicalSpace.isPreconnected_singleton
+  example : ∀ {X : Type u} (T : TopologicalSpace X)
+      {F : Set (Set X)} {p : X}
+      (hp : ∀ S ∈ F, p ∈ S) (h : ∀ S ∈ F, T.IsPreconnected S), T.IsPreconnected (⋃₀ F) := _root_.GeneralTopology.TopologicalSpace.isPreconnected_sUnion
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsConnectedSet {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+  def TopologicalSpace.IsPreconnected {X : Type u} (T : TopologicalSpace X) (S : Set X) : Prop :=
     ∀ U V, T.IsOpen U → T.IsOpen V → (∀ x ∈ S, x ∈ U → x ∉ V) → S ⊆ U ∪ V → S ⊆ U ∨ S ⊆ V
 
   end GeneralTopology
   open GeneralTopology
-description: 'Prove `Topology.isConnectedSet_singleton` and `Topology.isConnectedSet_sUnion`, the second for a family `F` all of whose members contain `p`. A membership `y ∈ {x}` is the equation `y = x` and must be restated as one before rewriting; `by_cases hpU : p ∈ U` chooses the side, and `rintro x ⟨S, hSF, hxS⟩` opens a point of `⋃₀ F`.'
+description: 'Prove `TopologicalSpace.isPreconnected_singleton` and `TopologicalSpace.isPreconnected_sUnion`, the second for a family `F` all of whose members contain `p`. A membership `y ∈ {x}` is the equation `y = x` and must be restated as one before rewriting; `by_cases hpU : p ∈ U` chooses the side, and `rintro x ⟨S, hSF, hxS⟩` opens a point of `⋃₀ F`.'
 stub_names:
-- Topology.isConnectedSet_singleton
-- Topology.isConnectedSet_sUnion
+- TopologicalSpace.isPreconnected_singleton
+- TopologicalSpace.isPreconnected_sUnion
 namespace: GeneralTopology
 seq: 172
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Connectedness.lean
-  line: 400
+  line: 402
   closure_rounds: 1
   check_kind: theorem

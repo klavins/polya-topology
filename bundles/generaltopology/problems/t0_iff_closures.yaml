@@ -8,16 +8,16 @@ statement: |-
 concepts:
 - separation_closures
 stub: |-
-  theorem Topology.isT0_iff_closure_injective {X : Type u} (T : Topology X) :
+  theorem TopologicalSpace.isT0_iff_closure_injective {X : Type u} (T : TopologicalSpace X) :
       T.IsT0 ↔ ∀ x y : X, T.closure {x} = T.closure {y} → x = y := sorry
 reference: |-
-  theorem Topology.isT0_iff_closure_injective {X : Type u} (T : Topology X) :
+  theorem TopologicalSpace.isT0_iff_closure_injective {X : Type u} (T : TopologicalSpace X) :
       T.IsT0 ↔ ∀ x y : X, T.closure {x} = T.closure {y} → x = y := by
     constructor
     · intro h x y he
       by_contra hxy
-      have h1 := (Topology.closure_singleton_subset_iff T).mp he.subset
-      have h2 := (Topology.closure_singleton_subset_iff T).mp he.symm.subset
+      have h1 := (TopologicalSpace.closure_singleton_iff T).mp he.subset
+      have h2 := (TopologicalSpace.closure_singleton_iff T).mp he.symm.subset
       rcases h x y hxy with ⟨U, hU, hxU, hyU⟩ | ⟨U, hU, hyU, hxU⟩
       · exact hyU (h1 U hU hxU)
       · exact hxU (h2 U hU hyU)
@@ -25,52 +25,54 @@ reference: |-
       by_contra hc
       push Not at hc
       exact hxy (h x y (Set.Subset.antisymm
-        ((Topology.closure_singleton_subset_iff T).mpr hc.1)
-        ((Topology.closure_singleton_subset_iff T).mpr hc.2)))
-spec: 'example : ∀ {X : Type u} (T : Topology X), T.IsT0 ↔ ∀ x y : X, T.closure {x} = T.closure {y} → x = y := _root_.GeneralTopology.Topology.isT0_iff_closure_injective'
+        ((TopologicalSpace.closure_singleton_iff T).mpr hc.1)
+        ((TopologicalSpace.closure_singleton_iff T).mpr hc.2)))
+spec: 'example : ∀ {X : Type u} (T : TopologicalSpace X), T.IsT0 ↔ ∀ x y : X, T.closure {x} = T.closure {y} → x = y := _root_.GeneralTopology.TopologicalSpace.isT0_iff_closure_injective'
 preamble: |
   universe u v
   namespace GeneralTopology
-  structure Topology (X : Type u) where
+  structure TopologicalSpace (X : Type u) where
     IsOpen : Set X → Prop
-    univ : IsOpen Set.univ
-    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
-    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+    isOpen_univ : IsOpen Set.univ
+    isOpen_inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    isOpen_sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
 
-  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+  def TopologicalSpace.IsClosed {X : Type u} (T : TopologicalSpace X) (C : Set X) : Prop
+      := T.IsOpen Cᶜ
 
-  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+  def TopologicalSpace.IsNbhd {X : Type u} (T : TopologicalSpace X) (x : X) (N : Set X) : Prop :=
     ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
 
-  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+  theorem TopologicalSpace.nbhd_of_isOpen {X : Type u} (T : TopologicalSpace X) {U : Set X}
       (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
     ⟨U, hU, hx, subset_rfl⟩
 
-  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+  theorem TopologicalSpace.isClosed_sInter {X : Type u} (T : TopologicalSpace X) {F : Set (Set X)}
       (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
     show T.IsOpen _
     rw [Set.compl_sInter]
-    apply T.sUnion
+    apply T.isOpen_sUnion
     rintro U ⟨C, hCF, rfl⟩
     exact h C hCF
 
-  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+  def TopologicalSpace.closure {X : Type u} (T : TopologicalSpace X) (S : Set X) : Set X :=
     ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
 
-  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+  theorem TopologicalSpace.subset_closure {X : Type u} (T : TopologicalSpace X) (S : Set X)
+      : S ⊆ T.closure S := by
     intro x hx C hC
     exact hC.2 hx
 
-  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+  theorem TopologicalSpace.isClosed_closure {X : Type u} (T : TopologicalSpace X) (S : Set X) :
       T.IsClosed (T.closure S) :=
     T.isClosed_sInter (fun _ hC => hC.1)
 
-  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+  theorem TopologicalSpace.closure_min {X : Type u} (T : TopologicalSpace X) {S C : Set X}
       (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
     intro x hx
     exact hx C ⟨hC, hSC⟩
 
-  theorem Topology.mem_closure_iff {X : Type u} (T : Topology X) {S : Set X} {x : X} :
+  theorem TopologicalSpace.mem_closure_iff {X : Type u} (T : TopologicalSpace X) {S : Set X} {x : X} :
       x ∈ T.closure S ↔ ∀ N, T.IsNbhd x N → (N ∩ S).Nonempty := by
     constructor
     · rintro hx N ⟨U, hU, hxU, hUN⟩
@@ -87,45 +89,46 @@ preamble: |
       obtain ⟨y, hyC, hyS⟩ := h Cᶜ ⟨Cᶜ, hC.1, hxC, subset_rfl⟩
       exact hyC (hC.2 hyS)
 
-  def Topology.IsT0 {X : Type u} (T : Topology X) : Prop :=
+  def TopologicalSpace.IsT0 {X : Type u} (T : TopologicalSpace X) : Prop :=
     ∀ x y : X, x ≠ y →
       (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)
 
-  theorem Topology.mem_closure_singleton {X : Type u} (T : Topology X) {x y : X} :
+  theorem TopologicalSpace.mem_closure_singleton {X : Type u} (T : TopologicalSpace X) {x y : X} :
       x ∈ T.closure {y} ↔ ∀ U, T.IsOpen U → x ∈ U → y ∈ U := by
     constructor
     · intro hx U hU hxU
       obtain ⟨z, hzU, hzy⟩ :=
-        (Topology.mem_closure_iff T).mp hx U (Topology.nbhd_of_isOpen T hU hxU)
+        (TopologicalSpace.mem_closure_iff T).mp hx U (TopologicalSpace.nbhd_of_isOpen T hU hxU)
       rw [show z = y from hzy] at hzU
       exact hzU
     · intro h
-      apply (Topology.mem_closure_iff T).mpr
+      apply (TopologicalSpace.mem_closure_iff T).mpr
       rintro N ⟨U, hU, hxU, hUN⟩
       exact ⟨y, hUN (h U hU hxU), rfl⟩
 
-  theorem Topology.closure_singleton_subset_iff {X : Type u} (T : Topology X) {x y : X} :
+  theorem TopologicalSpace.closure_singleton_iff {X : Type u} (T : TopologicalSpace X) {x y : X} :
       T.closure {x} ⊆ T.closure {y} ↔ ∀ U, T.IsOpen U → x ∈ U → y ∈ U := by
     constructor
     · intro h
-      exact (Topology.mem_closure_singleton T).mp (h (Topology.subset_closure T {x} rfl))
+      exact (TopologicalSpace.mem_closure_singleton T).mp
+        (h (TopologicalSpace.subset_closure T {x} rfl))
     · intro h
-      refine Topology.closure_min T (Topology.isClosed_closure T {y}) ?_
+      refine TopologicalSpace.closure_min T (TopologicalSpace.isClosed_closure T {y}) ?_
       intro z hz
       rw [show z = x from hz]
-      exact (Topology.mem_closure_singleton T).mpr h
+      exact (TopologicalSpace.mem_closure_singleton T).mpr h
 
   end GeneralTopology
   open GeneralTopology
-description: Prove `Topology.isT0_iff_closure_injective`, stating the right-hand side as `∀ x y, T.closure {x} = T.closure {y} → x = y`. Forwards, take the two containments out of the equation with `.subset` and `.symm.subset` and read them through `Topology.closure_singleton_subset_iff`; the axiom's two branches then contradict them. Backwards, `by_contra` and `push Not at` turn the failure of the axiom into the two hypotheses that build the equation.
+description: Prove `TopologicalSpace.isT0_iff_closure_injective`, stating the right-hand side as `∀ x y, T.closure {x} = T.closure {y} → x = y`. Forwards, take the two containments out of the equation with `.subset` and `.symm.subset` and read them through `TopologicalSpace.closure_singleton_iff`; the axiom's two branches then contradict them. Backwards, `by_contra` and `push Not at` turn the failure of the axiom into the two hypotheses that build the equation.
 stub_names:
-- Topology.isT0_iff_closure_injective
+- TopologicalSpace.isT0_iff_closure_injective
 namespace: GeneralTopology
 seq: 151
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@9c4b8d6
+  source: extract@62a7d2b
   file: PolyaTopology/GeneralTopology/Separation.lean
-  line: 301
+  line: 303
   closure_rounds: 1
   check_kind: theorem
