@@ -32,6 +32,11 @@ would hide it.
 §5 came in at 5 concepts, 16 problems and 460 lines, with the longest proof at twelve. It needed
 no new import at all, which is what the previous section's fence growth had already bought.
 
+§6 came in at 4 concepts, 18 problems and 603 lines, with the longest proof at eleven and the
+longest declaration — a six-field structure instance — at thirteen. Four concepts and eighteen
+problems is the other end of the range from §4's five and eighteen: a section is sized by its
+problems, not by its concepts, and a concept that carries five of them is not too big.
+
 ## The sections
 
 - [x] **1. Metric Spaces** — `MetricSpaces.lean` · 7 concepts, 31 problems
@@ -119,32 +124,48 @@ no new import at all, which is what the previous section's fence growth had alre
 
 ---
 
-- [ ] **6. Homeomorphisms** — `Homeomorphisms.lean` · 4 concepts, ~12 problems
+- [x] **6. Homeomorphisms** — `Homeomorphisms.lean` · 4 concepts, 18 problems
 
-  When two spaces are the same space. Builds on §5.
+  When two spaces are the same space: a bundled bijection continuous in both directions, with the
+  identity, the inverse and the composite that make being homeomorphic an equivalence relation;
+  open maps and closed maps, and the test they give for when a continuous bijection is one; two
+  metrics whose balls fit inside each other's, and the plane measured two ways shown to be one
+  space; and two properties a homeomorphism transports, with which the three topologies on a
+  two-point set are told apart.
 
-  - `homeomorphism` — a bundled bijection continuous in both directions, in the house style of
-    §1's `Metric` and `Norm`: a structure carried as an argument, with no instances. The identity,
-    the inverse, and the composite, so that being homeomorphic is an equivalence relation.
-  - `open_closed_maps` — open maps and closed maps; a continuous open bijection is a
-    homeomorphism, and a homeomorphism is an open map.
-  - `metric_equivalence` — two metrics whose balls fit inside each other's induce the same
-    topology, so the identity is a homeomorphism; hence the taxicab and the supremum metric on
-    the plane, whose unit balls are visibly different sets, are the same space. This is what §1's
-    last two problems were for.
-  - `topological_invariants` — a property preserved by homeomorphism, and the use of one to tell
-    two spaces apart: the discrete and codiscrete topologies on a two-point set, and Sierpiński
-    between them.
+  Concepts: `homeomorphism`, `open_closed_maps`, `metric_equivalence`, `topological_invariants`.
 
-  Flags: the `Homeomorphism` structure relates two spaces, so like §5's `Topology.Continuous` it
-  carries `{X : Type u} {Y : Type v}`, and its two continuity fields are `Topology.Continuous` in
-  each direction. `topological_invariants` has one invariant ready to hand already: §5 showed that
-  a map into the Sierpiński space *is* an open subset, so the two-point spaces are told apart by
-  counting the maps into them, with no new machinery. The source's examples here — the open
-  interval homeomorphic to the line, stereographic
-  projection, the circle as a glued interval — need rational or transcendental functions and, for
-  the last two, a square root. They are not available; the metric-equivalence example above
-  carries the same lesson and costs nothing.
+  As built, and what it settled:
+
+  - The **`@goal` moved** from §5's `continuity_examples` to `topological_invariants`.
+  - **No new import, for the second section running.** The fence has not grown since §4, so §7's
+    `Mathlib.Data.Set.Prod` will be the first addition in three sections.
+  - **A bijection is presented by its inverse map**, never by `Function.Bijective` and never by
+    choosing an inverse out of surjectivity. `Homeomorphism.ofOpenMap` takes a `g` with
+    `∀ x, g (f x) = x` and `∀ y, f (g y) = y`, which is what the structure's own fields already
+    are, so no statement downstream has to carry a `Classical.choose`. §7's and §8's universal
+    properties should be stated the same way. That a homeomorphism's forward map *is* a bijection
+    is a two-line problem (`Homeomorphism.injective`, `.surjective`), and that is where the word
+    is earned.
+  - `image_eq_preimage_of_inverse` — that `f '' U = g ⁻¹' U` for mutually inverse `f` and `g` — is
+    the one equation the whole of `open_closed_maps` rests on. It is stated for a bare pair of maps
+    rather than for a homeomorphism, so that `ofOpenMap` can use it before there is a homeomorphism
+    to use it on.
+  - **The invariants are discreteness and codiscreteness, not a count of the maps into Sierpiński.**
+    The flag proposed the latter. The two properties are cheaper: each transports in three lines
+    along `Homeomorphism.isOpen_iff`, and between them they separate all three topologies on `Bool`
+    pairwise, which counting would have needed a bijection between two families of open sets to do.
+    `Homeomorphism.isOpen_iff` and `Homeomorphism.preimage_preimage` are the tools §9 and §13
+    should transport a property with; neither needs restating there.
+  - The source's counterexample to "a continuous bijection is a homeomorphism" is `[0,2π) → S¹`,
+    which needs the circle. The identity from `discrete Bool` to `codiscrete Bool` carries the same
+    lesson inside the fence, and it is §5's `continuous_from_discrete` plus the last problem of this
+    section, so it costs nothing.
+  - **Three universes**, as `continuous_comp` already needed: `Homeomorphism.trans` relates three
+    spaces. §5's note stands and §7 and §8 should follow it.
+  - Only the **open**-map form of "a continuous bijection is a homeomorphism" is built. §13's
+    `compact_to_hausdorff` wants the closed-map form; it is the same proof with `Set.preimage_compl`
+    in the middle, and it belongs there, where the hypothesis that supplies a closed map is.
 
 - [ ] **7. Subspaces and Products** — `Products.lean` · 5 concepts, ~16 problems
 
@@ -175,7 +196,13 @@ no new import at all, which is what the previous section's fence growth had alre
   one. Fence grows by `Mathlib.Data.Set.Prod` (tested clean) — and, per the fence flag below, that
   import widens the whole subject's fence, so test it against the five forbidden names first.
   A product of two spaces at `Type u` and `Type v` lands in `Type (max u v)`; §5 already pays the
-  two-universe cost in every continuity signature, so follow it rather than forcing one universe.
+  two-universe cost in every continuity signature and §6's `Homeomorphism.trans` pays a third, so
+  follow them rather than forcing one universe. `plane_is_product` is a homeomorphism, and §6 has
+  the vocabulary for it: state it as `Homeomorphic`, build it with `Homeomorphism.ofOpenMap` or by
+  naming the two maps directly, and compose with `plane_homeomorphic` for the taxicab case rather
+  than repeating the comparison of balls. A construction's universal property — "a map into the
+  product is continuous exactly when both components are" — is stated with the maps themselves, in
+  §6's manner: never `Function.Bijective`, never an inverse chosen out of surjectivity.
 
 - [ ] **8. Quotients and Sums** — `Quotients.lean` · 4 concepts, ~12 problems
 
@@ -214,7 +241,11 @@ no new import at all, which is what the previous section's fence growth had alre
   - `regular_normal` — the two stronger axioms stated, with the easy cases: a discrete space is
     normal, and a metric space is regular.
 
-  Flags: `separation_closures` is stated in §4's vocabulary throughout — `T.mem_closure_iff` is
+  Flags: each axiom is a topological invariant, and §6 built the machine for saying so —
+  `Homeomorphism.isOpen_iff` with `Homeomorphism.preimage_preimage` beside it. If a problem here
+  wants "a space homeomorphic to a Hausdorff space is Hausdorff", it is those two and a transport
+  of points, in the shape of `Homeomorphic.isCodiscrete`; do not restate them.
+  `separation_closures` is stated in §4's vocabulary throughout — `T.mem_closure_iff` is
   the tool for all three, and "points are closed" is `T.isClosed_iff_closure_eq` at a singleton.
   "every metric space is normal" wants the distance from a point to a set, an infimum over
   a set of reals. It is available (`sInf`, with the definition marked `noncomputable`, which the
@@ -306,7 +337,12 @@ no new import at all, which is what the previous section's fence growth had alre
   - `heine_borel` — on the line, and on the plane with the supremum metric, compact means closed
     and bounded.
 
-  Flags: `heine_borel` is `interval_compact` plus `compact_basics` plus `compact_metric`, so it
+  Flags: `compact_to_hausdorff`'s second half — a continuous bijection between them is a
+  homeomorphism — is the closed-map form of §6's `Homeomorphism.ofOpenMap`, which §6 deliberately
+  did not build: it is that definition with `Set.preimage_compl` in the middle, and it belongs
+  here, where the hypothesis that makes the map closed lives. Present the bijection as §6 does,
+  by the map that undoes it.
+  `heine_borel` is `interval_compact` plus `compact_basics` plus `compact_metric`, so it
   is cheap *if* §12 landed. The plane case needs §7's identification of the supremum metric with
   the product.
 
@@ -345,7 +381,8 @@ Mathlib `v4.31.0`, on 2026-09-13:
 
 So the fence is roomier than it looks: the least-upper-bound property, the Archimedean property,
 intervals, finite sets, products of sets and Zorn's lemma are all available, and the square root
-is the one thing that is not. Test any further import before adding it; the command is in
+is the one thing that is not. Neither §5 nor §6 needed an addition, and the fence has not moved
+since §4. Test any further import before adding it; the command is in
 `STYLE.md`, and the message to grep for is `unknownIdentifier`, which Lean capitalizes.
 
 `Mathlib.Data.Real.Archimedean` is **deprecated** in this toolchain and emits a warning naming
@@ -387,11 +424,40 @@ one — never a redefinition.
   `Topology.continuous_iff_continuousAt`, `Topology.continuous_subspace_val`,
   `Topology.continuous_restrict`, `continuous_from_discrete`, `continuous_to_codiscrete`,
   `sierpinski_open_cases`, `sierpinski_continuous_iff`, `line_continuous_affine`
+- `Homeomorphism` (with `toFun`, `invFun`, `left_inv`, `right_inv`, `continuous_toFun`,
+  `continuous_invFun`), `Homeomorphism.refl`, `.symm`, `.trans`, `.injective`, `.surjective`,
+  `.image_eq_preimage`, `.isOpenMap`, `.isClosedMap`, `.ofOpenMap`, `.preimage_preimage`,
+  `.isOpen_iff`; `Homeomorphic` and `Homeomorphic.refl`, `.symm`, `.trans`, `.isDiscrete`,
+  `.isCodiscrete`; `image_eq_preimage_of_inverse`
+- `Topology.IsOpenMap`, `Topology.IsClosedMap`, `Topology.IsDiscrete`, `Topology.IsCodiscrete`,
+  `discrete_isDiscrete`, `codiscrete_isCodiscrete`, `singleton_true_not_trivial`,
+  `sierpinski_not_discrete`, `sierpinski_not_codiscrete`
+- `Metric.Equivalent`, `Metric.isOpenSet_of_ball_subset`, `Metric.Equivalent.isOpenSet_iff`,
+  `Metric.Equivalent.toHomeomorphism`, `taxicab_equivalent_supNorm`, `plane_homeomorphic`
 
 Two in particular: §7's `induced_topology` is the shape `Topology.subspace` already has
 (`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it, proved by `rfl`;
 and §4's `interior_boundary` must build on §2's `union_of_opens_inside`, which is the statement
 that an open set is its own interior.
+
+### What the closure can see
+
+`polya extract` builds each problem's preamble by walking the tokens of its reference and by
+asking the build what the target depends on. A declaration that arrives as *context* — one the
+problem never names, but that came in beside something it does — is then closed over its own
+tokens alone, and **dot notation on a local variable is not a token the walk can resolve**:
+`T.continuous_id`, with `T : Topology X`, names `Topology.continuous_id` through the *type* of
+`T`, and nothing in the text says so. A structure's *fields* are safe, since they arrive with
+the structure; a theorem that merely lives in the same namespace is not.
+
+So a declaration that a later problem is likely to pull as context writes its citations in full.
+§6's `Homeomorphism.refl` and `.trans` say `Topology.continuous_id T` and
+`Topology.continuous_comp T`, not `T.continuous_id` and `T.continuous_comp`: with the dot form,
+both problems of `metric_equivalence` failed to close at all, reporting an "invalid field" error
+inside a declaration they never mention. Only the reference's spelling changes — a student who
+writes the dot form still passes, since the spec checks the data fields — so the cost is nil.
+§5's `Topology.continuous_restrict` has the same shape and has not been pulled anywhere yet; if a
+later section stalls this way, that is the first place to look.
 
 ### Shapes that cost more than they look
 

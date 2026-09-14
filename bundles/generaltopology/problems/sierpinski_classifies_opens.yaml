@@ -71,8 +71,8 @@ namespace: GeneralTopology
 seq: 85
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@5060c35
+  source: extract@9c4b8d6
   file: PolyaTopology/GeneralTopology/Continuity.lean
-  line: 406
+  line: 405
   closure_rounds: 1
   check_kind: theorem

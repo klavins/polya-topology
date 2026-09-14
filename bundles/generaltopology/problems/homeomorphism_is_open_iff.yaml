@@ -1,0 +1,74 @@
+slug: homeomorphism_is_open_iff
+kind: example
+title: A Homeomorphism Carries the Open Sets Across
+statement: |-
+  Everything a topology knows is which sets are open, so any property shared by homeomorphic spaces must come from a correspondence between the two families of open sets. Here it is.
+
+  A homeomorphism's two maps undo each other on sets as well as on points: the preimage under the inverse of the preimage under the map is the set one started with. With that, a set of `Y` is open exactly when its preimage in `X` is open — forwards by the continuity of the map, backwards by the continuity of the inverse.
+concepts:
+- topological_invariants
+stub: |-
+  theorem Homeomorphism.preimage_preimage {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (h : Homeomorphism T T') (V : Set Y) :
+      h.invFun ⁻¹' (h.toFun ⁻¹' V) = V := sorry
+
+  theorem Homeomorphism.isOpen_iff {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') (V : Set Y) : T'.IsOpen V ↔ T.IsOpen (h.toFun ⁻¹' V) := sorry
+reference: |-
+  theorem Homeomorphism.preimage_preimage {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (h : Homeomorphism T T') (V : Set Y) :
+      h.invFun ⁻¹' (h.toFun ⁻¹' V) = V := by
+    apply Set.ext
+    intro y
+    show h.toFun (h.invFun y) ∈ V ↔ y ∈ V
+    rw [h.right_inv]
+
+  theorem Homeomorphism.isOpen_iff {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') (V : Set Y) : T'.IsOpen V ↔ T.IsOpen (h.toFun ⁻¹' V) := by
+    constructor
+    · intro hV
+      exact h.continuous_toFun V hV
+    · intro hV
+      have hp := h.continuous_invFun _ hV
+      rwa [h.preimage_preimage] at hp
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (h : Homeomorphism T T') (V : Set Y), h.invFun ⁻¹' (h.toFun ⁻¹' V) = V := _root_.GeneralTopology.Homeomorphism.preimage_preimage
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') (V : Set Y), T'.IsOpen V ↔ T.IsOpen (h.toFun ⁻¹' V) := _root_.GeneralTopology.Homeomorphism.isOpen_iff
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove the two. The first is a set equality at each point, restated with `show` and closed by rewriting with `h.right_inv`. In the second, the forward direction is the continuity of the map; the backward direction applies the continuity of the inverse and rewrites its conclusion by the first.
+stub_names:
+- Homeomorphism.preimage_preimage
+- Homeomorphism.isOpen_iff
+namespace: GeneralTopology
+seq: 100
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 448
+  closure_rounds: 1
+  check_kind: theorem

@@ -72,7 +72,7 @@ namespace: GeneralTopology
 seq: 47
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@5060c35
+  source: extract@9c4b8d6
   file: PolyaTopology/GeneralTopology/BasicExamples.lean
   line: 104
   closure_rounds: 1

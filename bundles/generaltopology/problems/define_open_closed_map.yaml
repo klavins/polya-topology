@@ -1,0 +1,59 @@
+slug: define_open_closed_map
+kind: example
+title: Maps That Carry Open Sets to Open Sets
+statement: |-
+  A continuous map `f` is an *open map* when the image of every open set is open, and a *closed map* when the image of every closed set is closed.
+
+  Neither follows from continuity, and neither implies the other. The two conditions are stated on images, where continuity is stated on preimages, and that is the whole difference between them.
+
+  We write `f '' U` for the image `{y | ∃ x ∈ U, f x = y}`, and a membership `y ∈ f '' U` is taken apart by `rintro ⟨x, hx, rfl⟩`.
+concepts:
+- open_closed_maps
+stub: |-
+  def Topology.IsOpenMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop := sorry
+
+  def Topology.IsClosedMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop := sorry
+reference: |-
+  def Topology.IsOpenMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T.IsOpen U → T'.IsOpen (f '' U)
+
+  def Topology.IsClosedMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ C, T.IsClosed C → T'.IsClosed (f '' C)
+spec: |-
+  example {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : _root_.GeneralTopology.Topology.IsOpenMap T T' f ↔ (∀ U, T.IsOpen U → T'.IsOpen (f '' U)) := by unfold _root_.GeneralTopology.Topology.IsOpenMap; first | exact Iff.rfl | grind
+  example {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : _root_.GeneralTopology.Topology.IsClosedMap T T' f ↔ (∀ C, T.IsClosed C → T'.IsClosed (f '' C)) := by unfold _root_.GeneralTopology.Topology.IsClosedMap; first | exact Iff.rfl | grind
+  example (X Y : Type) (T : Topology X) (T' : Topology Y) (f : X → Y) :
+      (T.IsOpenMap T' f ↔ ∀ U, T.IsOpen U → T'.IsOpen (f '' U))
+        ∧ (T.IsClosedMap T' f ↔ ∀ C, T.IsClosed C → T'.IsClosed (f '' C)) := ⟨Iff.rfl, Iff.rfl⟩
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Topology.IsOpenMap` and `Topology.IsClosedMap`, each taking a topology `T` on `X`, a topology `T''` on `Y` and a map `f : X → Y`. Neither definition asks for continuity; it is a separate hypothesis wherever both are wanted.'
+stub_names:
+- Topology.IsOpenMap
+- Topology.IsClosedMap
+namespace: GeneralTopology
+seq: 92
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 202
+  closure_rounds: 1
+  check_kind: mixed

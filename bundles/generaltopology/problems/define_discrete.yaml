@@ -33,7 +33,7 @@ namespace: GeneralTopology
 seq: 44
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@5060c35
+  source: extract@9c4b8d6
   file: PolyaTopology/GeneralTopology/BasicExamples.lean
   line: 21
   closure_rounds: 1

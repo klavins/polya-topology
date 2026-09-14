@@ -76,7 +76,7 @@ namespace: GeneralTopology
 seq: 82
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@5060c35
+  source: extract@9c4b8d6
   file: PolyaTopology/GeneralTopology/Continuity.lean
   line: 322
   closure_rounds: 1

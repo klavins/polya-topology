@@ -1,0 +1,129 @@
+slug: define_homeomorphic
+kind: example
+title: Being Homeomorphic is an Equivalence Relation
+statement: |-
+  A homeomorphism is data — a particular pair of maps — and usually one wants only the fact that some such pair exists. Two spaces are *homeomorphic* when there is a homeomorphism between them.
+
+  `Nonempty A` is the proposition that the type `A` has at least one term. It is proved by `⟨a⟩`, and a term is taken back out by `obtain ⟨a⟩ := h`, which is allowed because what is being proved is itself a proposition.
+
+  The three constructions above then say that this relation is reflexive, symmetric and transitive.
+concepts:
+- homeomorphism
+stub: |-
+  def Homeomorphic {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) : Prop := sorry
+
+  theorem Homeomorphic.refl {X : Type u} (T : Topology X) : Homeomorphic T T := sorry
+
+  theorem Homeomorphic.symm {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') : Homeomorphic T' T := sorry
+
+  theorem Homeomorphic.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} {T'' : Topology Z} (h : Homeomorphic T T') (h' : Homeomorphic T' T'') :
+      Homeomorphic T T'' := sorry
+reference: |-
+  def Homeomorphic {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) : Prop :=
+    Nonempty (Homeomorphism T T')
+
+  theorem Homeomorphic.refl {X : Type u} (T : Topology X) : Homeomorphic T T :=
+    ⟨Homeomorphism.refl T⟩
+
+  theorem Homeomorphic.symm {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') : Homeomorphic T' T := by
+    obtain ⟨e⟩ := h
+    exact ⟨e.symm⟩
+
+  theorem Homeomorphic.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} {T'' : Topology Z} (h : Homeomorphic T T') (h' : Homeomorphic T' T'') :
+      Homeomorphic T T'' := by
+    obtain ⟨e⟩ := h
+    obtain ⟨e'⟩ := h'
+    exact ⟨e.trans e'⟩
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X), _root_.GeneralTopology.Homeomorphic T T := _root_.GeneralTopology.Homeomorphic.refl
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : _root_.GeneralTopology.Homeomorphic T T'), _root_.GeneralTopology.Homeomorphic T' T := _root_.GeneralTopology.Homeomorphic.symm
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} {T'' : Topology Z} (h : _root_.GeneralTopology.Homeomorphic T T') (h' : _root_.GeneralTopology.Homeomorphic T' T''), _root_.GeneralTopology.Homeomorphic T T'' := _root_.GeneralTopology.Homeomorphic.trans
+  example (X Y : Type) (T : Topology X) (T' : Topology Y) :
+      _root_.GeneralTopology.Homeomorphic T T' ↔ Nonempty (Homeomorphism T T') := Iff.rfl
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := by
+    intro U hU
+    rw [Set.preimage_id]
+    exact hU
+
+  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+      (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := by
+    intro U hU
+    rw [Set.preimage_comp]
+    exact hf _ (hg U hU)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  def Homeomorphism.refl {X : Type u} (T : Topology X) : Homeomorphism T T where
+    toFun := id
+    invFun := id
+    left_inv := fun _ => rfl
+    right_inv := fun _ => rfl
+    continuous_toFun := Topology.continuous_id T
+    continuous_invFun := Topology.continuous_id T
+
+  def Homeomorphism.symm {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : Homeomorphism T' T where
+    toFun := h.invFun
+    invFun := h.toFun
+    left_inv := h.right_inv
+    right_inv := h.left_inv
+    continuous_toFun := h.continuous_invFun
+    continuous_invFun := h.continuous_toFun
+
+  def Homeomorphism.trans {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} {T'' : Topology Z} (h : Homeomorphism T T') (h' : Homeomorphism T' T'') :
+      Homeomorphism T T'' where
+    toFun := h'.toFun ∘ h.toFun
+    invFun := h.invFun ∘ h'.invFun
+    left_inv := fun x => by
+      show h.invFun (h'.invFun (h'.toFun (h.toFun x))) = x
+      rw [h'.left_inv, h.left_inv]
+    right_inv := fun z => by
+      show h'.toFun (h.toFun (h.invFun (h'.invFun z))) = z
+      rw [h.right_inv, h'.right_inv]
+    continuous_toFun := Topology.continuous_comp T h.continuous_toFun h'.continuous_toFun
+    continuous_invFun := Topology.continuous_comp T'' h'.continuous_invFun h.continuous_invFun
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Homeomorphic T T''` as `Nonempty (Homeomorphism T T'')`, and prove the three properties. Each is one line: take the homeomorphisms out of the hypotheses with `obtain`, build the new one with `Homeomorphism.refl`, `.symm` or `.trans`, and wrap it in `⟨_⟩`.'
+stub_names:
+- Homeomorphic
+- Homeomorphic.refl
+- Homeomorphic.symm
+- Homeomorphic.trans
+namespace: GeneralTopology
+seq: 91
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 155
+  closure_rounds: 1
+  check_kind: mixed

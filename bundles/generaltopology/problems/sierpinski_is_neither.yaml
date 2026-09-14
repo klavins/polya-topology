@@ -1,0 +1,81 @@
+slug: sierpinski_is_neither
+kind: example
+title: The Sierpiński Space Has Neither Property
+statement: |-
+  A two-point set carries the two extreme topologies and the Sierpiński topology, and the invariants will tell the three apart once it is known which space has which property.
+
+  The Sierpiński space is not discrete, since `{false}` is not open in it — that was the point of the example. It is not codiscrete either, since `{true}` is open in it and is neither empty nor everything.
+
+  The set `{true}` is where both failures are read, so it is worth recording once that it is not one of the two trivial subsets of `Bool`.
+concepts:
+- topological_invariants
+stub: |-
+  theorem singleton_true_not_trivial :
+      ¬ (({true} : Set Bool) = ∅ ∨ ({true} : Set Bool) = Set.univ) := sorry
+
+  theorem sierpinski_not_discrete : ¬ sierpinski.IsDiscrete := sorry
+
+  theorem sierpinski_not_codiscrete : ¬ sierpinski.IsCodiscrete := sorry
+reference: |-
+  theorem singleton_true_not_trivial :
+      ¬ (({true} : Set Bool) = ∅ ∨ ({true} : Set Bool) = Set.univ) := by
+    rintro (he | he)
+    · have h : (true : Bool) ∈ ({true} : Set Bool) := rfl
+      rw [he] at h
+      exact h
+    · have h : (false : Bool) ∈ ({true} : Set Bool) := by rw [he]; trivial
+      exact Bool.noConfusion h
+
+  theorem sierpinski_not_discrete : ¬ sierpinski.IsDiscrete := fun h =>
+    sierpinski_singleton_false_not_open (h {false})
+
+  theorem sierpinski_not_codiscrete : ¬ sierpinski.IsCodiscrete := fun h =>
+    singleton_true_not_trivial (h {true} (fun _ => rfl))
+spec: |-
+  example : ¬ (({true} : Set Bool) = ∅ ∨ ({true} : Set Bool) = Set.univ) := _root_.GeneralTopology.singleton_true_not_trivial
+  example : ¬ sierpinski.IsDiscrete := _root_.GeneralTopology.sierpinski_not_discrete
+  example : ¬ sierpinski.IsCodiscrete := _root_.GeneralTopology.sierpinski_not_codiscrete
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def sierpinski : Topology Bool where
+    IsOpen := fun U => false ∈ U → true ∈ U
+    univ := fun _ => trivial
+    inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
+    sUnion := by
+      intro F h hf
+      obtain ⟨U, hUF, hU⟩ := hf
+      exact ⟨U, hUF, h U hUF hU⟩
+
+  theorem sierpinski_singleton_false_not_open : ¬ sierpinski.IsOpen {false} := by
+    intro h
+    have : (true : Bool) ∈ ({false} : Set Bool) := h rfl
+    simp at this
+
+  def Topology.IsDiscrete {X : Type u} (T : Topology X) : Prop := ∀ U, T.IsOpen U
+
+  def Topology.IsCodiscrete {X : Type u} (T : Topology X) : Prop :=
+    ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `{true}` is neither `∅` nor `Set.univ` as a subset of `Bool`, and that `sierpinski` is neither discrete nor codiscrete. For the first, a membership of `true` refutes the empty case and a membership of `false` the other; the openness of `{true}` in `sierpinski` is an implication whose hypothesis is not needed.
+stub_names:
+- singleton_true_not_trivial
+- sierpinski_not_discrete
+- sierpinski_not_codiscrete
+namespace: GeneralTopology
+seq: 103
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 542
+  closure_rounds: 1
+  check_kind: theorem

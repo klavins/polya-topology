@@ -48,8 +48,8 @@ namespace: GeneralTopology
 seq: 84
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@5060c35
+  source: extract@9c4b8d6
   file: PolyaTopology/GeneralTopology/Continuity.lean
-  line: 384
+  line: 383
   closure_rounds: 1
   check_kind: theorem

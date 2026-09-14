@@ -13,6 +13,8 @@ description: |-
 
   **Continuous Functions** says which maps a topology admits. We give the ε-δ definition first, for metric spaces, and then the definition that needs no distances: a map is continuous when the preimage of every open set is open. The two agree wherever both can be read, which is the theorem that licenses the abstract one. Continuity then has a closed-set form, a closure form and a pointwise form, and the section ends by testing the definition on the example spaces — where the two-point space turns out to record an open subset exactly, so that the maps into it are the open sets of the space they come from.
 
+  **Homeomorphisms** asks when two spaces are the same space. A map that is continuous, invertible, and whose inverse is continuous carries the open sets of one onto the open sets of the other, and nothing a topology can see then tells the two apart. Such a map is both an open map and a closed map, and a continuous bijection is one exactly when it is open — which a continuous bijection need not be. The section ends by putting the notion to work in both directions: the plane measured by the taxicab length and the plane measured by the supremum length are the same space, though the lengths differ at almost every pair of points, while the three topologies a two-point set carries are shown to be three different spaces.
+
   Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
@@ -670,16 +672,50 @@ concepts:
 - slug: continuity_examples
   description: 'The definition is tested against the spaces already built. A discrete space admits every map out of it and a codiscrete space every map into it, so neither constrains anything. The two-point space is the opposite: a map into it is nothing more nor less than an open subset of the space it comes from.'
   kind: theorem
-  goal: true
+  goal: false
   section: Continuous Functions
   section_order: 4
   title: What the Definition Admits
   position: 25
+- slug: homeomorphism
+  description: 'Two spaces that differ only in the names of their points ought to count as the same space. A continuous map with a continuous inverse says exactly that: it matches the points of one with the points of the other and the open sets of one with the open sets of the other, so nothing a topology can see tells the two apart. This is the subject''s notion of sameness.'
+  kind: definition
+  goal: false
+  section: Homeomorphisms
+  section_order: 5
+  title: Homeomorphisms
+  position: 26
+- slug: open_closed_maps
+  description: 'Continuity is a condition on preimages and says nothing about images: a continuous map may well carry an open set to a set that is not open. The maps that do carry open sets to open sets, or closed to closed, deserve a name of their own, and the first thing the name is good for is a test telling which continuous bijections are homeomorphisms.'
+  kind: definition
+  goal: false
+  section: Homeomorphisms
+  section_order: 5
+  title: Open Maps and Closed Maps
+  position: 27
+- slug: metric_equivalence
+  description: A topology remembers less than a metric does. Two metrics on one set, each of whose balls contain balls of the other about the same point, call exactly the same subsets open, so the identity map is a homeomorphism between the spaces they give. The first section's two lengths on the plane stand in that relation, and this is what those measurements were for.
+  kind: theorem
+  goal: false
+  section: Homeomorphisms
+  section_order: 5
+  title: Equivalent Metrics
+  position: 28
+- slug: topological_invariants
+  description: To show that two spaces are the same one exhibits a homeomorphism. To show that they are not, one needs a property that homeomorphic spaces must share, and then finds it on one side and not on the other. Two such properties settle the three topologies a two-point set carries, and with them the subject can say that spaces differ, and not only that they agree.
+  kind: theorem
+  goal: true
+  section: Homeomorphisms
+  section_order: 5
+  title: Telling Two Spaces Apart
+  position: 29
 edges:
 - - closed_families
   - closure
 - - closed_sets
   - closed_families
+- - closed_sets
+  - open_closed_maps
 - - closure
   - closure_points
 - - closure
@@ -694,16 +730,28 @@ edges:
   - continuity_closed
 - - continuous_maps
   - continuity_examples
+- - continuous_maps
+  - homeomorphism
 - - epsilon_delta
   - continuity_bridge
 - - extreme_topologies
   - continuity_examples
+- - extreme_topologies
+  - topological_invariants
+- - homeomorphism
+  - metric_equivalence
+- - homeomorphism
+  - open_closed_maps
+- - homeomorphism
+  - topological_invariants
 - - metric_space
   - real_line
 - - metric_topology
   - closure_points
 - - metric_topology
   - continuity_bridge
+- - metric_topology
+  - metric_equivalence
 - - neighbourhoods
   - closure_points
 - - neighbourhoods
@@ -722,12 +770,16 @@ edges:
   - open_sets
 - - open_sets
   - metric_topology
+- - plane_norms
+  - metric_equivalence
 - - real_line
   - epsilon_delta
 - - real_line
   - open_ball
 - - sierpinski_space
   - continuity_examples
+- - sierpinski_space
+  - topological_invariants
 - - subspace_topology
   - continuity_examples
 - - topological_space
@@ -747,12 +799,12 @@ edges:
 - - topological_space
   - subspace_topology
 provenance:
-  source: extract@5060c35
+  source: extract@9c4b8d6
   module: PolyaTopology.GeneralTopology
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: 40256f99156435c1f90be60cc08f065ba7a90a76
+  commit: d390626c6e6fb4d8003dd9d9116e5f4578c1b01f
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

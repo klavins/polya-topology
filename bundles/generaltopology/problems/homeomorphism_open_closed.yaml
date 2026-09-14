@@ -1,0 +1,95 @@
+slug: homeomorphism_open_closed
+kind: example
+title: A Homeomorphism is Open and Closed
+statement: |-
+  The image of an open set under a homeomorphism is the preimage of that set under the inverse, and the inverse is continuous, so the image is open. The closed case is the same sentence with a complement moved across the preimage.
+
+  So a homeomorphism is both an open map and a closed map — which is to say that it carries the topology of its source onto the topology of its target, and not merely into it.
+concepts:
+- open_closed_maps
+stub: |-
+  theorem Homeomorphism.isOpenMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : T.IsOpenMap T' h.toFun := sorry
+
+  theorem Homeomorphism.isClosedMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : T.IsClosedMap T' h.toFun := sorry
+reference: |-
+  theorem Homeomorphism.isOpenMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : T.IsOpenMap T' h.toFun := by
+    intro U hU
+    rw [h.image_eq_preimage]
+    exact h.continuous_invFun U hU
+
+  theorem Homeomorphism.isClosedMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : T.IsClosedMap T' h.toFun := by
+    intro C hC
+    show T'.IsOpen _
+    rw [h.image_eq_preimage, ← Set.preimage_compl]
+    exact h.continuous_invFun Cᶜ hC
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T'), T.IsOpenMap T' h.toFun := _root_.GeneralTopology.Homeomorphism.isOpenMap
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T'), T.IsClosedMap T' h.toFun := _root_.GeneralTopology.Homeomorphism.isClosedMap
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  def Topology.IsOpenMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T.IsOpen U → T'.IsOpen (f '' U)
+
+  def Topology.IsClosedMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ C, T.IsClosed C → T'.IsClosed (f '' C)
+
+  theorem image_eq_preimage_of_inverse {X : Type u} {Y : Type v} {f : X → Y} {g : Y → X}
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) (U : Set X) : f '' U = g ⁻¹' U := by
+    apply Set.ext
+    intro y
+    constructor
+    · rintro ⟨x, hx, rfl⟩
+      show g (f x) ∈ U
+      rw [hgf]
+      exact hx
+    · intro hy
+      exact ⟨g y, hy, hfg y⟩
+
+  theorem Homeomorphism.image_eq_preimage {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (h : Homeomorphism T T') (U : Set X) : h.toFun '' U = h.invFun ⁻¹' U :=
+    image_eq_preimage_of_inverse h.left_inv h.right_inv U
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that the forward map of a homeomorphism is an open map and a closed map. Rewrite the image as a preimage and apply the continuity of the inverse. For the closed case, `show T'.IsOpen _` names the goal, and `Set.preimage_compl` moves the complement inside the preimage where the hypothesis has it.
+stub_names:
+- Homeomorphism.isOpenMap
+- Homeomorphism.isClosedMap
+namespace: GeneralTopology
+seq: 94
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 265
+  closure_rounds: 1
+  check_kind: theorem

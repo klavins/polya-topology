@@ -1,0 +1,61 @@
+slug: define_homeomorphism
+kind: definition
+title: The Definition of a Homeomorphism
+statement: |-
+  A continuous map carries one space into another, but it may lose almost everything on the way: a constant map is continuous and remembers nothing. A map loses nothing when it can be undone by a map of the same kind.
+
+  So a *homeomorphism* is a pair of maps, one each way, each continuous, whose composites in both orders are the identity. Both conditions are stated pointwise: `invFun (toFun x) = x` for every `x` of `X`, and `toFun (invFun y) = y` for every `y` of `Y`.
+
+  As with `Metric` and `Norm`, the pair and its four conditions are bundled into a structure carried as an ordinary argument.
+concepts:
+- homeomorphism
+stub: |-
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : sorry
+    invFun : sorry
+    left_inv : sorry
+    right_inv : sorry
+    continuous_toFun : sorry
+    continuous_invFun : sorry
+reference: |-
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+spec: |-
+  example (X Y : Type) (T : Topology X) (T' : Topology Y) (h : _root_.GeneralTopology.Homeomorphism T T') :
+      (∀ x, h.invFun (h.toFun x) = x) ∧ (∀ y, h.toFun (h.invFun y) = y)
+        ∧ T.Continuous T' h.toFun ∧ T'.Continuous T h.invFun := by
+    refine ⟨fun x => ?_, fun y => ?_, h.continuous_toFun, h.continuous_invFun⟩
+    · apply h.left_inv
+    · apply h.right_inv
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define the structure `Homeomorphism`, on a topology `T` on `X` and a topology `T''` on `Y`, with six fields in this order: `toFun`, `invFun`, then `left_inv` and `right_inv` carrying the two inverse conditions, then `continuous_toFun` and `continuous_invFun` carrying the two continuities. Bind `X` and `Y` implicitly, since the two topologies fix them.'
+stub_names:
+- Homeomorphism
+namespace: GeneralTopology
+seq: 87
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 22
+  closure_rounds: 1
+  check_kind: definition

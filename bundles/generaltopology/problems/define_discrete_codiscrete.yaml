@@ -1,0 +1,92 @@
+slug: define_discrete_codiscrete
+kind: example
+title: Two Properties of a Space
+statement: |-
+  The two extreme topologies of the third section were built; now the same two descriptions are read as properties that an arbitrary space may or may not have.
+
+  A space is *discrete* when every subset is open, and *codiscrete* when the only open subsets are the empty one and the whole space. A space may be both, if it has at most one point, and most spaces are neither.
+
+  The discrete topology is discrete and the codiscrete topology is codiscrete, which is what the names were chosen to make true.
+concepts:
+- topological_invariants
+stub: |-
+  def Topology.IsDiscrete {X : Type u} (T : Topology X) : Prop := sorry
+
+  def Topology.IsCodiscrete {X : Type u} (T : Topology X) : Prop := sorry
+
+  theorem discrete_isDiscrete (X : Type u) : (discrete X).IsDiscrete := sorry
+
+  theorem codiscrete_isCodiscrete (X : Type u) : (codiscrete X).IsCodiscrete := sorry
+reference: |-
+  def Topology.IsDiscrete {X : Type u} (T : Topology X) : Prop := ∀ U, T.IsOpen U
+
+  def Topology.IsCodiscrete {X : Type u} (T : Topology X) : Prop :=
+    ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ
+
+  theorem discrete_isDiscrete (X : Type u) : (discrete X).IsDiscrete := fun _ => trivial
+
+  theorem codiscrete_isCodiscrete (X : Type u) : (codiscrete X).IsCodiscrete := fun _ hU => hU
+spec: |-
+  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsDiscrete T ↔ (∀ U, T.IsOpen U) := by unfold _root_.GeneralTopology.Topology.IsDiscrete; first | exact Iff.rfl | grind
+  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsCodiscrete T ↔ (∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ) := by unfold _root_.GeneralTopology.Topology.IsCodiscrete; first | exact Iff.rfl | grind
+  example : ∀ (X : Type u), (discrete X).IsDiscrete := _root_.GeneralTopology.discrete_isDiscrete
+  example : ∀ (X : Type u), (codiscrete X).IsCodiscrete := _root_.GeneralTopology.codiscrete_isCodiscrete
+  example (X : Type) (T : Topology X) :
+      (T.IsDiscrete ↔ ∀ U, T.IsOpen U)
+        ∧ (T.IsCodiscrete ↔ ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ) := ⟨Iff.rfl, Iff.rfl⟩
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def discrete (X : Type u) : Topology X where
+    IsOpen := fun _ => True
+    univ := trivial
+    inter := fun _ _ => trivial
+    sUnion := fun _ => trivial
+
+  theorem trivial_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ U = Set.univ)
+      (hV : V = ∅ ∨ V = Set.univ) : U ∩ V = ∅ ∨ U ∩ V = Set.univ := by
+    rcases hU with rfl | rfl
+    · left; exact Set.empty_inter V
+    · rcases hV with rfl | rfl
+      · left; exact Set.inter_empty _
+      · right; exact Set.inter_self _
+
+  theorem trivial_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ U = Set.univ) : ⋃₀ F = ∅ ∨ ⋃₀ F = Set.univ := by
+    by_cases hu : (Set.univ : Set X) ∈ F
+    · exact Or.inr (Set.Subset.antisymm (Set.subset_univ _) (Set.subset_sUnion_of_mem hu))
+    · refine Or.inl (Set.sUnion_eq_empty.mpr ?_)
+      intro U hUF
+      rcases h U hUF with rfl | rfl
+      · rfl
+      · exact absurd hUF hu
+
+  def codiscrete (X : Type u) : Topology X where
+    IsOpen := fun U => U = ∅ ∨ U = Set.univ
+    univ := Or.inr rfl
+    inter := trivial_inter
+    sUnion := trivial_sUnion
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Topology.IsDiscrete` and `Topology.IsCodiscrete`, and then show that `discrete X` has the first property and `codiscrete X` the second. Both proofs are the definition unfolding: nothing has to be done to what `discrete` and `codiscrete` already say.'
+stub_names:
+- Topology.IsDiscrete
+- Topology.IsCodiscrete
+- discrete_isDiscrete
+- codiscrete_isCodiscrete
+namespace: GeneralTopology
+seq: 101
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 480
+  closure_rounds: 1
+  check_kind: mixed

@@ -346,7 +346,6 @@ theorem Topology.continuous_iff_continuousAt {X : Type u} {Y : Type v} (T : Topo
 @concept continuity_examples
 @title What the Definition Admits
 @kind theorem
-@goal
 
 The definition is tested against the spaces already built. A discrete space admits every map out of it and a codiscrete space every map into it, so neither constrains anything. The two-point space is the opposite: a map into it is nothing more nor less than an open subset of the space it comes from.
 -/

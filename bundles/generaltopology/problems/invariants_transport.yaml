@@ -1,0 +1,97 @@
+slug: invariants_transport
+kind: example
+title: Both Properties Are Topological Invariants
+statement: |-
+  A property is a *topological invariant* when homeomorphic spaces either both have it or both lack it. Discreteness and codiscreteness are two, and the correspondence between the open sets is the whole proof of each.
+
+  For discreteness: a set of `Y` is open when its preimage is, and upstairs every set is open. For codiscreteness: the preimage of an open set is open, hence empty or everything, and taking the preimage back under the inverse returns the set one started with — empty or everything accordingly.
+concepts:
+- topological_invariants
+stub: |-
+  theorem Homeomorphic.isDiscrete {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsDiscrete) : T'.IsDiscrete := sorry
+
+  theorem Homeomorphic.isCodiscrete {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsCodiscrete) : T'.IsCodiscrete := sorry
+reference: |-
+  theorem Homeomorphic.isDiscrete {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsDiscrete) : T'.IsDiscrete := by
+    obtain ⟨e⟩ := h
+    intro V
+    exact (e.isOpen_iff V).mpr (hT _)
+
+  theorem Homeomorphic.isCodiscrete {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsCodiscrete) : T'.IsCodiscrete := by
+    obtain ⟨e⟩ := h
+    intro V hV
+    rcases hT _ ((e.isOpen_iff V).mp hV) with he | he
+    · left
+      rw [← e.preimage_preimage V, he, Set.preimage_empty]
+    · right
+      rw [← e.preimage_preimage V, he, Set.preimage_univ]
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsDiscrete), T'.IsDiscrete := _root_.GeneralTopology.Homeomorphic.isDiscrete
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsCodiscrete), T'.IsCodiscrete := _root_.GeneralTopology.Homeomorphic.isCodiscrete
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  def Homeomorphic {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) : Prop :=
+    Nonempty (Homeomorphism T T')
+
+  theorem Homeomorphism.preimage_preimage {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (h : Homeomorphism T T') (V : Set Y) :
+      h.invFun ⁻¹' (h.toFun ⁻¹' V) = V := by
+    apply Set.ext
+    intro y
+    show h.toFun (h.invFun y) ∈ V ↔ y ∈ V
+    rw [h.right_inv]
+
+  theorem Homeomorphism.isOpen_iff {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') (V : Set Y) : T'.IsOpen V ↔ T.IsOpen (h.toFun ⁻¹' V) := by
+    constructor
+    · intro hV
+      exact h.continuous_toFun V hV
+    · intro hV
+      have hp := h.continuous_invFun _ hV
+      rwa [h.preimage_preimage] at hp
+
+  def Topology.IsDiscrete {X : Type u} (T : Topology X) : Prop := ∀ U, T.IsOpen U
+
+  def Topology.IsCodiscrete {X : Type u} (T : Topology X) : Prop :=
+    ∀ U, T.IsOpen U → U = ∅ ∨ U = Set.univ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that a space homeomorphic to a discrete space is discrete, and that a space homeomorphic to a codiscrete space is codiscrete. Take the homeomorphism out with `obtain`, and use `isOpen_iff` in each. For the second, rewrite the goal backwards with `preimage_preimage` before rewriting by the case in hand.
+stub_names:
+- Homeomorphic.isDiscrete
+- Homeomorphic.isCodiscrete
+namespace: GeneralTopology
+seq: 102
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 511
+  closure_rounds: 1
+  check_kind: theorem

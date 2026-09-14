@@ -1,0 +1,67 @@
+slug: homeomorphism_bijective
+kind: example
+title: The Underlying Map is a Bijection
+statement: |-
+  The definition was stated as four conditions on maps, and nothing was said about the points. It has settled the points all the same: a map with an inverse on both sides is a bijection, and the inverse map is the inverse bijection.
+
+  Injectivity comes from the left condition. If two points have the same image, apply the inverse to both sides; each returns to the point it came from, so the points were equal. Surjectivity comes from the right condition, which exhibits a preimage for every point of `Y`.
+
+  `Function.Injective f` says that `f x = f x'` forces `x = x'`, and `Function.Surjective f` that every `y` is `f x` for some `x`.
+concepts:
+- homeomorphism
+stub: |-
+  theorem Homeomorphism.injective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : Function.Injective h.toFun := sorry
+
+  theorem Homeomorphism.surjective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : Function.Surjective h.toFun := sorry
+reference: |-
+  theorem Homeomorphism.injective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : Function.Injective h.toFun := by
+    intro x x' hx
+    rw [← h.left_inv x, ← h.left_inv x', hx]
+
+  theorem Homeomorphism.surjective {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : Function.Surjective h.toFun :=
+    fun y => ⟨h.invFun y, h.right_inv y⟩
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T'), Function.Injective h.toFun := _root_.GeneralTopology.Homeomorphism.injective
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T'), Function.Surjective h.toFun := _root_.GeneralTopology.Homeomorphism.surjective
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that the forward map of a homeomorphism is injective and surjective. For injectivity, rewrite both sides of the goal backwards with `h.left_inv` and the hypothesis closes it; for surjectivity, the point wanted is the image of `y` under the inverse.
+stub_names:
+- Homeomorphism.injective
+- Homeomorphism.surjective
+namespace: GeneralTopology
+seq: 88
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 55
+  closure_rounds: 1
+  check_kind: theorem

@@ -1,0 +1,78 @@
+slug: homeomorphism_refl_symm
+kind: example
+title: The Identity and the Inverse
+statement: |-
+  A space is the same space as itself, by the identity map, which is its own inverse and is continuous in both directions.
+
+  And the relation is symmetric, for a reason worth noticing: the definition is already symmetric in its two maps. Exchanging `toFun` with `invFun` exchanges the two inverse conditions with each other and the two continuities with each other, so a homeomorphism from `T` to `T'` becomes one from `T'` to `T` with no work at all.
+concepts:
+- homeomorphism
+stub: |-
+  def Homeomorphism.refl {X : Type u} (T : Topology X) : Homeomorphism T T := sorry
+
+  def Homeomorphism.symm {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : Homeomorphism T' T := sorry
+reference: |-
+  def Homeomorphism.refl {X : Type u} (T : Topology X) : Homeomorphism T T where
+    toFun := id
+    invFun := id
+    left_inv := fun _ => rfl
+    right_inv := fun _ => rfl
+    continuous_toFun := Topology.continuous_id T
+    continuous_invFun := Topology.continuous_id T
+
+  def Homeomorphism.symm {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphism T T') : Homeomorphism T' T where
+    toFun := h.invFun
+    invFun := h.toFun
+    left_inv := h.right_inv
+    right_inv := h.left_inv
+    continuous_toFun := h.continuous_invFun
+    continuous_invFun := h.continuous_toFun
+spec: |-
+  example (X Y : Type) (T : Topology X) (T' : Topology Y) (h : Homeomorphism T T')
+      (x : X) (y : Y) :
+      (_root_.GeneralTopology.Homeomorphism.refl T).toFun x = x ∧ (_root_.GeneralTopology.Homeomorphism.refl T).invFun x = x
+        ∧ h.symm.toFun y = h.invFun y ∧ h.symm.invFun x = h.toFun x :=
+    ⟨rfl, rfl, rfl, rfl⟩
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Topology.continuous_id {X : Type u} (T : Topology X) : T.Continuous T id := by
+    intro U hU
+    rw [Set.preimage_id]
+    exact hU
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Homeomorphism.refl T`, the identity homeomorphism from `T` to itself, and `Homeomorphism.symm h`, the homeomorphism the other way. Every field of each is either `rfl`, `Topology.continuous_id` at the topology in hand, or one of the fields of `h` under a different name.
+stub_names:
+- Homeomorphism.refl
+- Homeomorphism.symm
+namespace: GeneralTopology
+seq: 89
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 81
+  closure_rounds: 1
+  check_kind: mixed

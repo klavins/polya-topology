@@ -1,0 +1,46 @@
+slug: define_metric_equivalent
+kind: definition
+title: The Definition of Equivalent Metrics
+statement: |-
+  Two metrics on the same set are *equivalent* when each one's balls contain balls of the other: inside every ball of `M` about a point there is a ball of `N` about that point, and inside every ball of `N` there is a ball of `M`.
+
+  Nothing is said about the radii except that they are positive. The taxicab ball of radius `ε` sits inside the supremum ball of radius `ε`, and the supremum ball of radius `ε / 2` sits inside the taxicab ball of radius `ε`; the two radii differ, and the definition does not care.
+concepts:
+- metric_equivalence
+stub: 'def Metric.Equivalent {X : Type u} (M N : Metric X) : Prop := sorry'
+reference: |-
+  def Metric.Equivalent {X : Type u} (M N : Metric X) : Prop :=
+    (∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) ∧
+      (∀ x ε, 0 < ε → ∃ δ > 0, M.ball x δ ⊆ N.ball x ε)
+spec: |-
+  example {X : Type u} (M N : Metric X) : _root_.GeneralTopology.Metric.Equivalent M N ↔ ((∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε) ∧
+      (∀ x ε, 0 < ε → ∃ δ > 0, M.ball x δ ⊆ N.ball x ε)) := by unfold _root_.GeneralTopology.Metric.Equivalent; first | exact Iff.rfl | grind
+  example (X : Type) (M N : Metric X) :
+      M.Equivalent N ↔ (∀ x ε, 0 < ε → ∃ δ > 0, N.ball x δ ⊆ M.ball x ε)
+        ∧ (∀ x ε, 0 < ε → ∃ δ > 0, M.ball x δ ⊆ N.ball x ε) := Iff.rfl
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Metric.Equivalent M N`, a conjunction of two statements: for every point `x` and every `ε > 0` some `N`-ball about `x` lies inside `M.ball x ε`, and for every `x` and `ε > 0` some `M`-ball about `x` lies inside `N.ball x ε`. Put the two in that order.'
+stub_names:
+- Metric.Equivalent
+namespace: GeneralTopology
+seq: 96
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 336
+  closure_rounds: 1
+  check_kind: definition

@@ -1,0 +1,83 @@
+slug: homeomorphism_of_open_map
+kind: definition
+title: A Continuous Open Bijection is a Homeomorphism
+statement: |-
+  The converse holds, and it is the useful direction: to build a homeomorphism it is enough to have a continuous bijection that is an open map. The inverse map's continuity comes for free, because a preimage under the inverse is an image under the map.
+
+  A bijection is presented here as it is everywhere in this section — by the map `g` that undoes it, in both orders. Then `g ⁻¹' U` is `f '' U`, which the open-map hypothesis calls open, and that is exactly the continuity of `g`.
+concepts:
+- open_closed_maps
+stub: |-
+  def Homeomorphism.ofOpenMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      {f : X → Y} {g : Y → X} (hf : T.Continuous T' f) (hopen : T.IsOpenMap T' f)
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) : Homeomorphism T T' := sorry
+reference: |-
+  def Homeomorphism.ofOpenMap {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      {f : X → Y} {g : Y → X} (hf : T.Continuous T' f) (hopen : T.IsOpenMap T' f)
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) : Homeomorphism T T' where
+    toFun := f
+    invFun := g
+    left_inv := hgf
+    right_inv := hfg
+    continuous_toFun := hf
+    continuous_invFun := by
+      intro U hU
+      rw [← image_eq_preimage_of_inverse hgf hfg U]
+      exact hopen U hU
+spec: |-
+  example (X Y : Type) (T : Topology X) (T' : Topology Y) (f : X → Y) (g : Y → X)
+      (hf : T.Continuous T' f) (hopen : T.IsOpenMap T' f)
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) (x : X) (y : Y) :
+      (_root_.GeneralTopology.Homeomorphism.ofOpenMap hf hopen hgf hfg).toFun x = f x
+        ∧ (_root_.GeneralTopology.Homeomorphism.ofOpenMap hf hopen hgf hfg).invFun y = g y := ⟨rfl, rfl⟩
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  def Topology.IsOpenMap {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T.IsOpen U → T'.IsOpen (f '' U)
+
+  theorem image_eq_preimage_of_inverse {X : Type u} {Y : Type v} {f : X → Y} {g : Y → X}
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) (U : Set X) : f '' U = g ⁻¹' U := by
+    apply Set.ext
+    intro y
+    constructor
+    · rintro ⟨x, hx, rfl⟩
+      show g (f x) ∈ U
+      rw [hgf]
+      exact hx
+    · intro hy
+      exact ⟨g y, hy, hfg y⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Homeomorphism.ofOpenMap`, building a homeomorphism from a continuous open map `f` and a two-sided inverse `g`. Four of the six fields are hypotheses already; for the last, rewrite the preimage backwards with `image_eq_preimage_of_inverse` and apply the open-map hypothesis.
+stub_names:
+- Homeomorphism.ofOpenMap
+namespace: GeneralTopology
+seq: 95
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 293
+  closure_rounds: 1
+  check_kind: definition

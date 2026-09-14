@@ -1,0 +1,74 @@
+slug: image_eq_preimage
+kind: example
+title: An Image is a Preimage Under the Inverse
+statement: |-
+  Let `f` and `g` be maps in opposite directions that undo each other. Then the image of a set under `f` is the preimage of that set under `g`.
+
+  A point `y` lies in `f '' U` when `y = f x` for some `x` of `U`; applying `g` gives `g y = x`, so `g y` lies in `U`. Conversely, if `g y` lies in `U` then `y` is the image of `g y`, since `f (g y) = y`.
+
+  This one equation is why a homeomorphism is well behaved on images as well as preimages, which is what the rest of this concept rests on.
+concepts:
+- open_closed_maps
+stub: |-
+  theorem image_eq_preimage_of_inverse {X : Type u} {Y : Type v} {f : X → Y} {g : Y → X}
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) (U : Set X) : f '' U = g ⁻¹' U := sorry
+
+  theorem Homeomorphism.image_eq_preimage {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (h : Homeomorphism T T') (U : Set X) : h.toFun '' U = h.invFun ⁻¹' U := sorry
+reference: |-
+  theorem image_eq_preimage_of_inverse {X : Type u} {Y : Type v} {f : X → Y} {g : Y → X}
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) (U : Set X) : f '' U = g ⁻¹' U := by
+    apply Set.ext
+    intro y
+    constructor
+    · rintro ⟨x, hx, rfl⟩
+      show g (f x) ∈ U
+      rw [hgf]
+      exact hx
+    · intro hy
+      exact ⟨g y, hy, hfg y⟩
+
+  theorem Homeomorphism.image_eq_preimage {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (h : Homeomorphism T T') (U : Set X) : h.toFun '' U = h.invFun ⁻¹' U :=
+    image_eq_preimage_of_inverse h.left_inv h.right_inv U
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {f : X → Y} {g : Y → X}
+      (hgf : ∀ x, g (f x) = x) (hfg : ∀ y, f (g y) = y) (U : Set X), f '' U = g ⁻¹' U := _root_.GeneralTopology.image_eq_preimage_of_inverse
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} (h : Homeomorphism T T') (U : Set X), h.toFun '' U = h.invFun ⁻¹' U := _root_.GeneralTopology.Homeomorphism.image_eq_preimage
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `image_eq_preimage_of_inverse`, for maps `f` and `g` whose composites in both orders are the identity, and then read off `Homeomorphism.image_eq_preimage`. In the first, `Set.ext` reduces to a membership at each point; `show` restates each side as what it abbreviates before rewriting.
+stub_names:
+- image_eq_preimage_of_inverse
+- Homeomorphism.image_eq_preimage
+namespace: GeneralTopology
+seq: 93
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Homeomorphisms.lean
+  line: 232
+  closure_rounds: 1
+  check_kind: theorem
