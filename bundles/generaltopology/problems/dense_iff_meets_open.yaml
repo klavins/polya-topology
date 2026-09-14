@@ -1,0 +1,87 @@
+slug: dense_iff_meets_open
+kind: theorem
+title: Dense Means Meeting Every Nonempty Open Set
+statement: |-
+  Density is a statement about the closure, and the closure is known point by point, so density is known open set by open set: `S` is dense exactly when every nonempty open set contains a point of `S`.
+
+  Forwards: a nonempty open `U` holds some `x`, which lies in the closure since the closure is everything, and `U` is a neighbourhood of `x`, so `U` meets `S`.
+
+  Backwards: to put an arbitrary `x` in the closure, take any neighbourhood `N` of `x` and the open `U` with `x ∈ U ⊆ N`; that `U` is nonempty, so it meets `S`, and so does `N`.
+concepts:
+- dense_sets
+stub: |-
+  theorem Topology.dense_iff {X : Type u} (T : Topology X) (S : Set X) :
+      T.Dense S ↔ ∀ U, T.IsOpen U → U.Nonempty → (U ∩ S).Nonempty := sorry
+reference: |-
+  theorem Topology.dense_iff {X : Type u} (T : Topology X) (S : Set X) :
+      T.Dense S ↔ ∀ U, T.IsOpen U → U.Nonempty → (U ∩ S).Nonempty := by
+    constructor
+    · rintro hd U hU ⟨x, hxU⟩
+      have hx : x ∈ T.closure S := by
+        rw [show T.closure S = Set.univ from hd]
+        trivial
+      exact T.mem_closure_iff.mp hx U (T.nbhd_of_isOpen hU hxU)
+    · intro h
+      show T.closure S = Set.univ
+      apply Set.eq_univ_of_forall
+      intro x
+      apply T.mem_closure_iff.mpr
+      rintro N ⟨U, hU, hxU, hUN⟩
+      obtain ⟨y, hyU, hyS⟩ := h U hU ⟨x, hxU⟩
+      exact ⟨y, hUN hyU, hyS⟩
+spec: 'example : ∀ {X : Type u} (T : Topology X) (S : Set X), T.Dense S ↔ ∀ U, T.IsOpen U → U.Nonempty → (U ∩ S).Nonempty := _root_.GeneralTopology.Topology.dense_iff'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+
+  theorem Topology.mem_closure_iff {X : Type u} (T : Topology X) {S : Set X} {x : X} :
+      x ∈ T.closure S ↔ ∀ N, T.IsNbhd x N → (N ∩ S).Nonempty := by
+    constructor
+    · rintro hx N ⟨U, hU, hxU, hUN⟩
+      by_contra h
+      have hSU : S ⊆ Uᶜ := by
+        intro y hy hyU
+        exact h ⟨y, hUN hyU, hy⟩
+      have hcl : T.IsClosed Uᶜ := by
+        show T.IsOpen _
+        rwa [compl_compl]
+      exact hx Uᶜ ⟨hcl, hSU⟩ hxU
+    · intro h C hC
+      by_contra hxC
+      obtain ⟨y, hyC, hyS⟩ := h Cᶜ ⟨Cᶜ, hC.1, hxC, subset_rfl⟩
+      exact hyC (hC.2 hyS)
+
+  def Topology.Dense {X : Type u} (T : Topology X) (S : Set X) : Prop :=
+    T.closure S = Set.univ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `T.Dense S` exactly when `(U ∩ S).Nonempty` for every open `U` that is `U.Nonempty`. `show` restates a `Dense` goal as the equation it abbreviates, `Set.eq_univ_of_forall` proves a set is everything one point at a time, and `T.mem_closure_iff` is the characterisation to use in both directions.
+stub_names:
+- Topology.dense_iff
+namespace: GeneralTopology
+seq: 69
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 434
+  closure_rounds: 1
+  check_kind: theorem

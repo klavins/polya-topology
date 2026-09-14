@@ -1,0 +1,64 @@
+slug: interior_largest
+kind: example
+title: The Interior is the Largest Open Set Inside S
+statement: |-
+  Three properties, mirroring the three that characterised the closure, and proved the same way: each is a line of the definition read back.
+
+  The interior is open, by the union condition applied to a collection whose members were all chosen open. It is contained in `S`, because each member is. And it contains every open `U` inside `S`, because such a `U` is one of the sets united.
+concepts:
+- interior_boundary
+stub: |-
+  theorem Topology.isOpen_interior {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsOpen (T.interior S) := sorry
+
+  theorem Topology.interior_subset {X : Type u} (T : Topology X) (S : Set X) :
+      T.interior S ⊆ S := sorry
+
+  theorem Topology.interior_max {X : Type u} (T : Topology X) {U S : Set X}
+      (hU : T.IsOpen U) (hUS : U ⊆ S) : U ⊆ T.interior S := sorry
+reference: |-
+  theorem Topology.isOpen_interior {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsOpen (T.interior S) :=
+    T.sUnion (fun _ hU => hU.1)
+
+  theorem Topology.interior_subset {X : Type u} (T : Topology X) (S : Set X) :
+      T.interior S ⊆ S := by
+    rintro x ⟨U, ⟨_, hUS⟩, hxU⟩
+    exact hUS hxU
+
+  theorem Topology.interior_max {X : Type u} (T : Topology X) {U S : Set X}
+      (hU : T.IsOpen U) (hUS : U ⊆ S) : U ⊆ T.interior S :=
+    fun _ hx => ⟨U, ⟨hU, hUS⟩, hx⟩
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) (S : Set X), T.IsOpen (T.interior S) := _root_.GeneralTopology.Topology.isOpen_interior
+  example : ∀ {X : Type u} (T : Topology X) (S : Set X), T.interior S ⊆ S := _root_.GeneralTopology.Topology.interior_subset
+  example : ∀ {X : Type u} (T : Topology X) {U S : Set X}
+      (hU : T.IsOpen U) (hUS : U ⊆ S), U ⊆ T.interior S := _root_.GeneralTopology.Topology.interior_max
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.interior {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋃₀ {U | T.IsOpen U ∧ U ⊆ S}
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove the three. A membership in `⋃₀` is a triple: the set it came from, the proof that set belongs to the collection, and the proof the point lies in it. `rintro x ⟨U, ⟨_, hUS⟩, hxU⟩` takes one apart, and an anonymous constructor builds one.'
+stub_names:
+- Topology.isOpen_interior
+- Topology.interior_subset
+- Topology.interior_max
+namespace: GeneralTopology
+seq: 63
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 280
+  closure_rounds: 1
+  check_kind: theorem

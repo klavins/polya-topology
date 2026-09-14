@@ -1,0 +1,63 @@
+slug: mem_closure_iff
+kind: theorem
+title: A Point of the Closure is Approached by the Set
+statement: |-
+  Which points does closing add? Exactly those that `S` comes arbitrarily close to: `x` lies in `T.closure S` when no neighbourhood of `x` avoids `S`.
+
+  Suppose some neighbourhood `N` of `x` misses `S`, and let `U` be the open set with `x ∈ U ⊆ N`. Then `U` misses `S` too, so `Uᶜ` is a closed set containing `S`; the closure lies inside it, and `x` does not.
+
+  Conversely, suppose `x` escapes some closed `C` containing `S`. Then `Cᶜ` is open and holds `x`, so it is a neighbourhood of `x`, and it misses `S` because `S` is inside `C`.
+concepts:
+- closure_points
+stub: |-
+  theorem Topology.mem_closure_iff {X : Type u} (T : Topology X) {S : Set X} {x : X} :
+      x ∈ T.closure S ↔ ∀ N, T.IsNbhd x N → (N ∩ S).Nonempty := sorry
+reference: |-
+  theorem Topology.mem_closure_iff {X : Type u} (T : Topology X) {S : Set X} {x : X} :
+      x ∈ T.closure S ↔ ∀ N, T.IsNbhd x N → (N ∩ S).Nonempty := by
+    constructor
+    · rintro hx N ⟨U, hU, hxU, hUN⟩
+      by_contra h
+      have hSU : S ⊆ Uᶜ := by
+        intro y hy hyU
+        exact h ⟨y, hUN hyU, hy⟩
+      have hcl : T.IsClosed Uᶜ := by
+        show T.IsOpen _
+        rwa [compl_compl]
+      exact hx Uᶜ ⟨hcl, hSU⟩ hxU
+    · intro h C hC
+      by_contra hxC
+      obtain ⟨y, hyC, hyS⟩ := h Cᶜ ⟨Cᶜ, hC.1, hxC, subset_rfl⟩
+      exact hyC (hC.2 hyS)
+spec: 'example : ∀ {X : Type u} (T : Topology X) {S : Set X} {x : X}, x ∈ T.closure S ↔ ∀ N, T.IsNbhd x N → (N ∩ S).Nonempty := _root_.GeneralTopology.Topology.mem_closure_iff'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `x ∈ T.closure S` exactly when every neighbourhood `N` of `x` meets `S` — written `(N ∩ S).Nonempty`, a point in both. Each direction assumes the opposite of what it wants and derives `False`, which is what `by_contra` sets up.
+stub_names:
+- Topology.mem_closure_iff
+namespace: GeneralTopology
+seq: 60
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 194
+  closure_rounds: 1
+  check_kind: theorem

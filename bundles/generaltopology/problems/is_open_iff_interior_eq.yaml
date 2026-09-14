@@ -1,0 +1,77 @@
+slug: is_open_iff_interior_eq
+kind: theorem
+title: A Set is Open Exactly When it is its Own Interior
+statement: |-
+  The mirror of the closure's equivalence, and one direction of it is already proved. The last section showed that a set which is a neighbourhood of each of its points is the union of the open sets inside it — which is to say, its own interior. An open set is such a set.
+
+  The converse is the easier half: if `S` equals its interior then `S` is open, the interior being open whatever `S` is.
+concepts:
+- interior_boundary
+stub: |-
+  theorem Topology.isOpen_iff_interior_eq {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsOpen S ↔ T.interior S = S := sorry
+reference: |-
+  theorem Topology.isOpen_iff_interior_eq {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsOpen S ↔ T.interior S = S := by
+    constructor
+    · intro hS
+      exact (T.union_of_opens_inside S ((T.isOpen_iff_nbhd S).mp hS)).symm
+    · intro h
+      rw [← h]
+      exact T.isOpen_interior S
+spec: 'example : ∀ {X : Type u} (T : Topology X) (S : Set X), T.IsOpen S ↔ T.interior S = S := _root_.GeneralTopology.Topology.isOpen_iff_interior_eq'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
+    constructor
+    · intro hU x hx
+      exact T.nbhd_of_isOpen hU hx
+    · intro h
+      rw [T.union_of_opens_inside U h]
+      exact T.sUnion (fun V hV => hV.1)
+
+  def Topology.interior {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋃₀ {U | T.IsOpen U ∧ U ⊆ S}
+
+  theorem Topology.isOpen_interior {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsOpen (T.interior S) :=
+    T.sUnion (fun _ hU => hU.1)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `T.IsOpen S` exactly when `T.interior S = S`. For the forward direction, `T.isOpen_iff_nbhd` turns openness into the hypothesis that `T.union_of_opens_inside` wants, and the equation it returns is this one reversed.
+stub_names:
+- Topology.isOpen_iff_interior_eq
+namespace: GeneralTopology
+seq: 64
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 308
+  closure_rounds: 1
+  check_kind: theorem

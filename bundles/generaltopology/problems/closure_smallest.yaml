@@ -1,0 +1,75 @@
+slug: closure_smallest
+kind: example
+title: The Closure is the Smallest Closed Set Containing S
+statement: |-
+  Three properties say everything the closure is, and each is a line of the definition read back.
+
+  It contains `S`: a point of `S` belongs to every closed set containing `S`, hence to their intersection. It is closed: an intersection of closed sets is closed, and every member of this collection was chosen closed. And it is the smallest: if `C` is closed and contains `S`, then `C` is one of the sets intersected, so the intersection is inside it.
+
+  The third is the one that does the work later. Every fact about a closure below is proved by naming a closed set that contains `S`.
+concepts:
+- closure
+stub: |-
+  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := sorry
+
+  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed (T.closure S) := sorry
+
+  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+      (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := sorry
+reference: |-
+  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+    intro x hx C hC
+    exact hC.2 hx
+
+  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed (T.closure S) :=
+    T.isClosed_sInter (fun _ hC => hC.1)
+
+  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+      (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
+    intro x hx
+    exact hx C ⟨hC, hSC⟩
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) (S : Set X), S ⊆ T.closure S := _root_.GeneralTopology.Topology.subset_closure
+  example : ∀ {X : Type u} (T : Topology X) (S : Set X), T.IsClosed (T.closure S) := _root_.GeneralTopology.Topology.isClosed_closure
+  example : ∀ {X : Type u} (T : Topology X) {S C : Set X}
+      (hC : T.IsClosed C) (hSC : S ⊆ C), T.closure S ⊆ C := _root_.GeneralTopology.Topology.closure_min
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
+    show T.IsOpen _
+    rw [Set.compl_sInter]
+    apply T.sUnion
+    rintro U ⟨C, hCF, rfl⟩
+    exact h C hCF
+
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove the three. For each, a membership in `⋂₀` is a function: `hx C hC` is the proof that `x` lies in `C`, given `hC` that `C` belongs to the collection, and `hC.1` and `hC.2` are its two halves.'
+stub_names:
+- Topology.subset_closure
+- Topology.isClosed_closure
+- Topology.closure_min
+namespace: GeneralTopology
+seq: 56
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 88
+  closure_rounds: 1
+  check_kind: theorem

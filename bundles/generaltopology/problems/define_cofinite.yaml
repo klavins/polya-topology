@@ -49,7 +49,7 @@ namespace: GeneralTopology
 seq: 51
 provenance:
   license: CC-BY-SA-4.0
-  source: extract@332492a
+  source: extract@5060c35
   file: PolyaTopology/GeneralTopology/BasicExamples.lean
   line: 219
   closure_rounds: 1

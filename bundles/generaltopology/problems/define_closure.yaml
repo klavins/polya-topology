@@ -1,0 +1,42 @@
+slug: define_closure
+kind: definition
+title: The Definition of the Closure
+statement: |-
+  Let `S` be any subset of a topological space. Some closed sets contain `S` — the whole space, at worst — so we may intersect all of them at once. What comes out is closed, by the problem above; it contains `S`, because each set intersected does; and it is inside every closed set containing `S`, because an intersection is inside each of its members.
+
+  That is the *closure* of `S`, written `T.closure S`: the smallest closed set containing `S`. The collection to intersect is a `Set (Set X)`, its intersection is `⋂₀`, and membership in `⋂₀ F` unfolds to `∀ C ∈ F, x ∈ C`.
+concepts:
+- closure
+stub: 'def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X := sorry'
+reference: |-
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+spec: |-
+  example {X : Type u} (T : Topology X) (S : Set X) : _root_.GeneralTopology.Topology.closure T S = (⋂₀ {C | T.IsClosed C ∧ S ⊆ C} : Set X) := rfl
+  example (X : Type) (T : Topology X) (S : Set X) (x : X) :
+      x ∈ T.closure S ↔ ∀ C, T.IsClosed C ∧ S ⊆ C → x ∈ C := Iff.rfl
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Topology.closure`, which takes a topology `T` on `X` and a set `S` and returns the intersection of every closed set containing `S`. The collection to intersect is `{C | T.IsClosed C ∧ S ⊆ C}`.
+stub_names:
+- Topology.closure
+namespace: GeneralTopology
+seq: 55
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 66
+  closure_rounds: 1
+  check_kind: definition

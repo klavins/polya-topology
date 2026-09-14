@@ -1,0 +1,40 @@
+slug: define_interior
+kind: definition
+title: The Definition of the Interior
+statement: |-
+  The closure was built by intersecting from outside. The interior is built by uniting from inside: some open sets are contained in `S` — the empty one, at worst — so unite all of them. What comes out is open, by the union condition; it is inside `S`, because each set united is; and it contains every open subset of `S`, because a union contains each of its members.
+
+  That is the *interior* of `S`, written `T.interior S`. Membership in `⋃₀ F` unfolds to `∃ U, U ∈ F ∧ x ∈ U`.
+concepts:
+- interior_boundary
+stub: 'def Topology.interior {X : Type u} (T : Topology X) (S : Set X) : Set X := sorry'
+reference: |-
+  def Topology.interior {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋃₀ {U | T.IsOpen U ∧ U ⊆ S}
+spec: |-
+  example {X : Type u} (T : Topology X) (S : Set X) : _root_.GeneralTopology.Topology.interior T S = (⋃₀ {U | T.IsOpen U ∧ U ⊆ S} : Set X) := rfl
+  example (X : Type) (T : Topology X) (S : Set X) (x : X) :
+      x ∈ T.interior S ↔ ∃ U, (T.IsOpen U ∧ U ⊆ S) ∧ x ∈ U := Iff.rfl
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `Topology.interior`, which takes a topology `T` on `X` and a set `S` and returns the union of every open set contained in `S`. The collection to unite is `{U | T.IsOpen U ∧ U ⊆ S}`.
+stub_names:
+- Topology.interior
+namespace: GeneralTopology
+seq: 62
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 258
+  closure_rounds: 1
+  check_kind: definition

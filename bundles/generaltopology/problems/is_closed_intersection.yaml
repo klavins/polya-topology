@@ -1,0 +1,48 @@
+slug: is_closed_intersection
+kind: theorem
+title: An Intersection of Closed Sets, However Many
+statement: |-
+  The union condition on open sets says that a union of any number of them is open. Its mirror says that an intersection of any number of closed sets is closed, and the proof is the union condition read through a complement.
+
+  Complementing an intersection gives the union of the complements. Mathlib writes the collection of complements as `compl '' F`, the image of `F` under complementation, and `Set.compl_sInter` is the equation `(⋂₀ F)ᶜ = ⋃₀ (compl '' F)`. A member of an image arrives with the member it came from.
+concepts:
+- closed_families
+stub: |-
+  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := sorry
+reference: |-
+  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
+    show T.IsOpen _
+    rw [Set.compl_sInter]
+    apply T.sUnion
+    rintro U ⟨C, hCF, rfl⟩
+    exact h C hCF
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C), T.IsClosed (⋂₀ F) := _root_.GeneralTopology.Topology.isClosed_sInter
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `⋂₀ F` is closed when every member of `F` is. `show T.IsOpen _`, rewrite with `Set.compl_sInter`, and apply the union condition; its hypothesis takes a member of the image, which `rintro U ⟨C, hCF, rfl⟩` breaks into the set `C` it came from.
+stub_names:
+- Topology.isClosed_sInter
+namespace: GeneralTopology
+seq: 54
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 38
+  closure_rounds: 1
+  check_kind: theorem

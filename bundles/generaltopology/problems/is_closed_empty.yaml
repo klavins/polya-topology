@@ -1,0 +1,38 @@
+slug: is_closed_empty
+kind: theorem
+title: The Empty Set is Closed
+statement: 'The whole space is closed because the empty set is open. The dual is as short: the empty set is closed because its complement is the whole space, which every topology calls open.'
+concepts:
+- closed_families
+stub: 'theorem Topology.isClosed_empty {X : Type u} (T : Topology X) : T.IsClosed (∅ : Set X) := sorry'
+reference: |-
+  theorem Topology.isClosed_empty {X : Type u} (T : Topology X) : T.IsClosed (∅ : Set X) := by
+    show T.IsOpen _
+    rw [Set.compl_empty]
+    exact T.univ
+spec: 'example : ∀ {X : Type u} (T : Topology X), T.IsClosed (∅ : Set X) := _root_.GeneralTopology.Topology.isClosed_empty'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `∅` is closed in any topology. `show T.IsOpen _` names the goal for what it is, `Set.compl_empty` rewrites the complement, and the whole space is open.
+stub_names:
+- Topology.isClosed_empty
+namespace: GeneralTopology
+seq: 53
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 23
+  closure_rounds: 1
+  check_kind: theorem

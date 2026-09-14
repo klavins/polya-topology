@@ -1,0 +1,71 @@
+slug: is_closed_iff_closure_eq
+kind: theorem
+title: A Set is Closed Exactly When it is its Own Closure
+statement: |-
+  The closure adds to `S` whatever is needed to make it closed, so it adds nothing exactly when `S` was closed already.
+
+  One direction: if `S` is closed then `S` is a closed set containing `S`, so the closure is inside `S`, and `S` is inside the closure, so the two are equal. The other: if the closure equals `S` then `S` is closed, the closure being closed whatever `S` is.
+concepts:
+- closure
+stub: |-
+  theorem Topology.isClosed_iff_closure_eq {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed S ↔ T.closure S = S := sorry
+reference: |-
+  theorem Topology.isClosed_iff_closure_eq {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed S ↔ T.closure S = S := by
+    constructor
+    · intro hS
+      exact Set.Subset.antisymm (T.closure_min hS subset_rfl) (T.subset_closure S)
+    · intro h
+      rw [← h]
+      exact T.isClosed_closure S
+spec: 'example : ∀ {X : Type u} (T : Topology X) (S : Set X), T.IsClosed S ↔ T.closure S = S := _root_.GeneralTopology.Topology.isClosed_iff_closure_eq'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
+    show T.IsOpen _
+    rw [Set.compl_sInter]
+    apply T.sUnion
+    rintro U ⟨C, hCF, rfl⟩
+    exact h C hCF
+
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+
+  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+    intro x hx C hC
+    exact hC.2 hx
+
+  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed (T.closure S) :=
+    T.isClosed_sInter (fun _ hC => hC.1)
+
+  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+      (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
+    intro x hx
+    exact hx C ⟨hC, hSC⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `T.IsClosed S` exactly when `T.closure S = S`. `Set.Subset.antisymm` builds the equality from the two containments, and `subset_rfl` says a set contains itself; for the converse, rewrite backwards along the hypothesis.
+stub_names:
+- Topology.isClosed_iff_closure_eq
+namespace: GeneralTopology
+seq: 57
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 118
+  closure_rounds: 1
+  check_kind: theorem

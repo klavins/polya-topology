@@ -241,7 +241,6 @@ example (X : Type) (U : Set X) : (cofinite X).IsOpen U ↔ (U = ∅ ∨ Uᶜ.Fin
 @concept subspace_topology
 @title The Subspace Topology
 @kind definition
-@goal
 
 A subset of a topological space is a topological space in its own right, with the sets cut out of the ambient open sets by intersection. This is how every space met in practice arises — a curve, a surface, a solid is a subset of a Euclidean space — and it is the first construction that makes new spaces out of old, which is what the rest of the subject does.
 -/

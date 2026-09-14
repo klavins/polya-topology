@@ -1,0 +1,91 @@
+slug: compl_closure
+kind: theorem
+title: Closure and Interior are Complements of Each Other
+statement: |-
+  The two operations are one operation seen from the two sides. Complementing turns closed into open, containment around, and the smallest into the largest — so the complement of the closure of `S` is the interior of the complement of `S`.
+
+  Each containment is one of the two universal properties. The complement of the closure is open, since the closure is closed, and it lies inside `Sᶜ`, since `S` lies inside its closure; so it lies inside the interior of `Sᶜ`. And the complement of the interior of `Sᶜ` is closed and contains `S`, so it contains the closure of `S`, which is the other containment complemented.
+concepts:
+- interior_boundary
+stub: |-
+  theorem Topology.compl_closure {X : Type u} (T : Topology X) (S : Set X) :
+      (T.closure S)ᶜ = T.interior Sᶜ := sorry
+reference: |-
+  theorem Topology.compl_closure {X : Type u} (T : Topology X) (S : Set X) :
+      (T.closure S)ᶜ = T.interior Sᶜ := by
+    apply Set.Subset.antisymm
+    · apply T.interior_max (T.isClosed_closure S)
+      exact Set.compl_subset_compl.mpr (T.subset_closure S)
+    · rw [Set.subset_compl_comm]
+      apply T.closure_min
+      · show T.IsOpen _
+        rw [compl_compl]
+        exact T.isOpen_interior Sᶜ
+      · rw [Set.subset_compl_comm]
+        exact T.interior_subset Sᶜ
+spec: 'example : ∀ {X : Type u} (T : Topology X) (S : Set X), (T.closure S)ᶜ = T.interior Sᶜ := _root_.GeneralTopology.Topology.compl_closure'
+preamble: |
+  universe u
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
+    show T.IsOpen _
+    rw [Set.compl_sInter]
+    apply T.sUnion
+    rintro U ⟨C, hCF, rfl⟩
+    exact h C hCF
+
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+
+  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+    intro x hx C hC
+    exact hC.2 hx
+
+  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed (T.closure S) :=
+    T.isClosed_sInter (fun _ hC => hC.1)
+
+  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+      (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
+    intro x hx
+    exact hx C ⟨hC, hSC⟩
+
+  def Topology.interior {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋃₀ {U | T.IsOpen U ∧ U ⊆ S}
+
+  theorem Topology.isOpen_interior {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsOpen (T.interior S) :=
+    T.sUnion (fun _ hU => hU.1)
+
+  theorem Topology.interior_subset {X : Type u} (T : Topology X) (S : Set X) :
+      T.interior S ⊆ S := by
+    rintro x ⟨U, ⟨_, hUS⟩, hxU⟩
+    exact hUS hxU
+
+  theorem Topology.interior_max {X : Type u} (T : Topology X) {U S : Set X}
+      (hU : T.IsOpen U) (hUS : U ⊆ S) : U ⊆ T.interior S :=
+    fun _ hx => ⟨U, ⟨hU, hUS⟩, hx⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `(T.closure S)ᶜ = T.interior Sᶜ`. `Set.subset_compl_comm` moves a complement from one side of a containment to the other, `Set.compl_subset_compl` reverses one under complementing, and `compl_compl` cancels two.
+stub_names:
+- Topology.compl_closure
+namespace: GeneralTopology
+seq: 65
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@5060c35
+  file: PolyaTopology/GeneralTopology/Closure.lean
+  line: 329
+  closure_rounds: 1
+  check_kind: theorem

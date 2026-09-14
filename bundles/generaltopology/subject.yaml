@@ -3,9 +3,15 @@ title: General Topology
 description: |-
   Topology is the study of nearness without measurement: of which points lie close to which, asked without any account of how close. The subject begins one step before that, with measurement itself. A metric space is a set together with a rule assigning a distance to each pair of its points, and nearly every space a working mathematician meets carries such a rule. From the distances one reads off the balls, from the balls the open sets, and from the open sets the topology. By the end of that passage the distances have been forgotten and only the nearness remains.
 
-  The first section builds the beginning of it. We define a metric space, deduce from its axioms the two facts the axioms did not ask for, and construct the open balls, the closed balls and the spheres. We say what it means for a set to be bounded, and prove that boundedness survives taking subsets and unions. We then treat the source of most metrics in practice: a norm on a real vector space, which measures the length of a vector and so the distance between two of them. The section ends on the plane, where two different norms — the one that adds the magnitudes of the coordinates and the one that takes the larger of them — have visibly different unit balls, a diamond and a square, and yet each one's balls fit inside the other's. That is the first sign that a topology remembers less than a metric does.
+  **Metric Spaces** builds the beginning of it. We define a metric space, deduce from its axioms the two facts the axioms did not ask for, and construct the open balls, the closed balls and the spheres. We say what it means for a set to be bounded. We then treat the source of most metrics in practice: a norm on a real vector space, which measures the length of a vector and so the distance between two of them. The section ends on the plane, where two different norms — the one that adds the magnitudes of the coordinates and the one that takes the larger of them — have visibly different unit balls, a diamond and a square, and yet each one's balls fit inside the other's. That is the first sign that a topology remembers less than a metric does.
 
-  Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes the section has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
+  **Topological Spaces** makes the passage. We single out the sets a metric calls open, prove the three properties they have, and then take those three properties as a definition that needs no distance at all. Every metric space becomes a topological space; closed sets and neighbourhoods follow, and a set turns out to be open exactly when it is a neighbourhood of each of its own points — the form in which nearly every later statement is made.
+
+  **Basic Examples** stocks the subject. The two extremes that bound every topology on a set, the two-point space whose asymmetry is the source of most counterexamples, the topology whose open sets leave out only finitely many points, and the one a subset inherits from the space around it — the construction by which nearly every space one meets is built.
+
+  **Closure, Interior and Boundary** puts the apparatus to work on an arbitrary set. Every set sits inside a smallest closed set and around a largest open one; what lies between the two is its boundary, and it is empty exactly when the set is both open and closed. A point belongs to the closure exactly when the set is found arbitrarily near it, which in a metric space is a statement about balls. The section ends with the rationals, a countable set whose closure is the whole real line.
+
+  Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
 - Eric Klavins
@@ -454,6 +460,7 @@ environment:
   - Mathlib.Tactic.NormNum
   - Mathlib.Data.Set.Lattice
   - Mathlib.Data.Set.Finite.Basic
+  - Mathlib.Algebra.Order.Archimedean.Real.Basic
   project: mathlib
   toolchain: leanprover/lean4:v4.31.0
   mathlib_rev: v4.31.0
@@ -581,14 +588,70 @@ concepts:
 - slug: subspace_topology
   description: A subset of a topological space is a topological space in its own right, with the sets cut out of the ambient open sets by intersection. This is how every space met in practice arises — a curve, a surface, a solid is a subset of a Euclidean space — and it is the first construction that makes new spaces out of old, which is what the rest of the subject does.
   kind: definition
-  goal: true
+  goal: false
   section: Basic Examples
   section_order: 2
   title: The Subspace Topology
   position: 15
+- slug: closed_families
+  description: Every condition on the open sets has a mirror image about the closed ones, with union and intersection exchanged, because complementing exchanges them. The last section took one of those mirrors and left two. Both are needed here, and the first of them is what the next concept is built out of.
+  kind: theorem
+  goal: false
+  section: Closure, Interior and Boundary
+  section_order: 3
+  title: Families of Closed Sets
+  position: 16
+- slug: closure
+  description: 'An arbitrary set is neither open nor closed, and the topology''s first act on it is to close it: to name the smallest closed set it cannot escape. That set is its closure, and it exists because closed sets are stable under intersecting any number of them. It is what the topology makes of a set it was not given.'
+  kind: definition
+  goal: false
+  section: Closure, Interior and Boundary
+  section_order: 3
+  title: The Closure of a Set
+  position: 17
+- slug: closure_points
+  description: 'The closure was built from outside, by intersecting the closed sets around a set. It has a description from inside: a point belongs to it exactly when the set is found arbitrarily near. That is the form every later use takes, and in a metric space it becomes a statement about balls, which is how a limit will be defined.'
+  kind: theorem
+  goal: false
+  section: Closure, Interior and Boundary
+  section_order: 3
+  title: The Points of the Closure
+  position: 18
+- slug: interior_boundary
+  description: 'Dual to the closure, and built the same way from the other end: the largest open set inside a set. The interior holds the points with room around them, the closure the points the set approaches, and what lies between the two is the boundary. A set is open and closed at once exactly when that is empty.'
+  kind: definition
+  goal: false
+  section: Closure, Interior and Boundary
+  section_order: 3
+  title: Interior and Boundary
+  position: 19
+- slug: dense_sets
+  description: 'A set is dense when its closure is the whole space: every point is approached by it, and no nonempty open set avoids it. Density is how a small set stands in for a large one — the rationals for the line — and it is the first property of a subset that the topology alone can see, the metric having nothing to say about it.'
+  kind: definition
+  goal: true
+  section: Closure, Interior and Boundary
+  section_order: 3
+  title: Dense Subsets
+  position: 20
 edges:
+- - closed_families
+  - closure
+- - closed_sets
+  - closed_families
+- - closure
+  - closure_points
+- - closure
+  - interior_boundary
+- - closure_points
+  - dense_sets
 - - metric_space
   - real_line
+- - metric_topology
+  - closure_points
+- - neighbourhoods
+  - closure_points
+- - neighbourhoods
+  - interior_boundary
 - - norm_metric
   - plane_norms
 - - normed_space
@@ -618,12 +681,12 @@ edges:
 - - topological_space
   - subspace_topology
 provenance:
-  source: extract@332492a
+  source: extract@5060c35
   module: PolyaTopology.GeneralTopology
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: a06729a8b1364f66e35e354fbbc77ecd03917ea8
+  commit: f78ebc246f570a4f3f809fbf6677938b557b4d44
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'
