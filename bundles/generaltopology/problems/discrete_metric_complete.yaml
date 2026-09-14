@@ -1,0 +1,87 @@
+slug: discrete_metric_complete
+kind: theorem
+title: The Discrete Metric is Complete
+statement: |-
+  A Cauchy sequence in the discrete metric is eventually constant. Apply the condition at the tolerance `1`: past some index `k` any two terms are less than `1` apart, and in this metric that means they are equal. So every term past `k` is `x k` itself.
+
+  Such a sequence converges to `x k`, and at no cost: the distance from `x k` to every later term is `0`, which is below every tolerance. Every Cauchy sequence converges, so the space is complete.
+
+  The example is not a rich one — it is complete because it has so few Cauchy sequences to satisfy — but it is a space in which completeness can be settled outright.
+concepts:
+- cauchy_complete
+stub: |-
+  theorem discreteMetric_isComplete (X : Type u) [DecidableEq X] :
+      (discreteMetric X).IsComplete := sorry
+reference: |-
+  theorem discreteMetric_isComplete (X : Type u) [DecidableEq X] :
+      (discreteMetric X).IsComplete := by
+    intro x hx
+    obtain ⟨k, hk⟩ := hx 1 one_pos
+    refine ⟨x k, fun ε hε => ⟨k, fun n hn => ?_⟩⟩
+    show (discreteMetric X).dist (x k) (x n) < ε
+    rw [← discreteMetric_eq_of_dist_lt_one (hk k (le_refl k) n hn)]
+    rw [Metric.dist_self (discreteMetric X)]
+    exact hε
+spec: 'example : ∀ (X : Type u) [DecidableEq X], (discreteMetric X).IsComplete := _root_.GeneralTopology.discreteMetric_isComplete'
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
+    M.eq_zero.mpr rfl
+
+  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
+
+  def Metric.IsCauchy {X : Type u} (M : Metric X) (x : ℕ → X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ m ≥ k, ∀ n ≥ k, M.dist (x m) (x n) < ε
+
+  def Metric.IsComplete {X : Type u} (M : Metric X) : Prop :=
+    ∀ x : ℕ → X, M.IsCauchy x → ∃ a, M.ConvergesTo x a
+
+  def discreteMetric (X : Type u) [DecidableEq X] : Metric X where
+    dist x y := if x = y then 0 else 1
+    symm {x y} := by
+      by_cases h : x = y
+      · rw [if_pos h, if_pos h.symm]
+      · rw [if_neg h, if_neg (Ne.symm h)]
+    triangle x y z := by
+      have hb : (0 : ℝ) ≤ if y = z then 0 else 1 := by split_ifs <;> norm_num
+      have ha : (if x = z then (0 : ℝ) else 1) ≤ 1 := by split_ifs <;> norm_num
+      by_cases h1 : x = y
+      · subst h1
+        rw [if_pos rfl, zero_add]
+      · rw [if_neg h1]
+        linarith
+    eq_zero {x y} := by
+      by_cases h : x = y
+      · rw [if_pos h]
+        exact ⟨fun _ => h, fun _ => rfl⟩
+      · rw [if_neg h]
+        exact ⟨fun e => absurd e one_ne_zero, fun e => absurd e h⟩
+
+  theorem discreteMetric_eq_of_dist_lt_one {X : Type u} [DecidableEq X] {x y : X}
+      (h : (discreteMetric X).dist x y < 1) : x = y := by
+    by_contra hne
+    have e : (discreteMetric X).dist x y = 1 := if_neg hne
+    linarith
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `discreteMetric_isComplete`. Apply the Cauchy condition at `1`, offer `x k` as the limit and `k` as the index, and rewrite the two terms into one with the fact that a distance below `1` forces an equality.
+stub_names:
+- discreteMetric_isComplete
+namespace: GeneralTopology
+seq: 197
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 548
+  closure_rounds: 1
+  check_kind: theorem

@@ -1,0 +1,204 @@
+slug: continuous_limits
+kind: example
+title: Continuous Maps Preserve Limits
+statement: |-
+  If `x` converges to `a` and `f` is continuous, then the images `f (x n)` converge to `f a`. The proof is the definition of continuity at a point, read once.
+
+  Let `N` be a neighbourhood of `f a`. Continuity at `a` makes `f ⁻¹' N` a neighbourhood of `a`, so past some index every `x n` lies in it — which says that every `f (x n)` lies in `N`.
+
+  The same statement for metric spaces is this one carried across the bridge, and it is carried in both directions at once: the hypothesis is translated one way and the conclusion the other.
+concepts:
+- sequential_continuity
+stub: |-
+  theorem Topology.convergesTo_comp {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {x : ℕ → X} {a : X} (h : T.ConvergesTo x a) :
+      T'.ConvergesTo (fun n => f (x n)) (f a) := sorry
+
+  theorem Metric.convergesTo_comp {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y)
+      {f : X → Y} (hf : M.Continuous N f) {x : ℕ → X} {a : X} (h : M.ConvergesTo x a) :
+      N.ConvergesTo (fun n => f (x n)) (f a) := sorry
+reference: |-
+  theorem Topology.convergesTo_comp {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {x : ℕ → X} {a : X} (h : T.ConvergesTo x a) :
+      T'.ConvergesTo (fun n => f (x n)) (f a) := by
+    intro N hN
+    have hpre : T.IsNbhd a (f ⁻¹' N) :=
+      (Topology.continuous_iff_continuousAt T T' f).mp hf a N hN
+    obtain ⟨k, hk⟩ := h (f ⁻¹' N) hpre
+    exact ⟨k, fun n hn => hk n hn⟩
+
+  theorem Metric.convergesTo_comp {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y)
+      {f : X → Y} (hf : M.Continuous N f) {x : ℕ → X} {a : X} (h : M.ConvergesTo x a) :
+      N.ConvergesTo (fun n => f (x n)) (f a) :=
+    (Metric.convergesTo_iff N _ _).mpr
+      (Topology.convergesTo_comp (Metric.toTopology M) ((Metric.continuous_iff M N f).mp hf)
+        ((Metric.convergesTo_iff M x a).mp h))
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) {T' : Topology Y}
+      {f : X → Y} (hf : T.Continuous T' f) {x : ℕ → X} {a : X} (h : T.ConvergesTo x a), T'.ConvergesTo (fun n => f (x n)) (f a) := _root_.GeneralTopology.Topology.convergesTo_comp
+  example : ∀ {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y)
+      {f : X → Y} (hf : M.Continuous N f) {x : ℕ → X} {a : X} (h : M.ConvergesTo x a), N.ConvergesTo (fun n => f (x n)) (f a) := _root_.GeneralTopology.Metric.convergesTo_comp
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
+    M.eq_zero.mpr rfl
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  theorem Metric.mem_ball_self {X : Type u} (M : Metric X) (x : X) (ε : ℝ) (h : 0 < ε) :
+      x ∈ M.ball x ε := by
+    rw [M.mem_ball, M.dist_self]
+    exact h
+
+  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+    ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
+
+  theorem Metric.isOpenSet_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.IsOpenSet (M.ball x ε) := by
+    intro y hy
+    rw [M.mem_ball] at hy
+    refine ⟨ε - M.dist x y, by linarith, ?_⟩
+    intro z hz
+    rw [M.mem_ball] at hz ⊢
+    have h := M.triangle x y z
+    linarith
+
+  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+    fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
+
+  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+      (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
+    intro x hx
+    obtain ⟨a, ha, hau⟩ := hU x hx.1
+    obtain ⟨b, hb, hbv⟩ := hV x hx.2
+    refine ⟨min a b, lt_min ha hb, ?_⟩
+    intro y hy
+    rw [M.mem_ball] at hy
+    exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
+
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
+    intro x hx
+    obtain ⟨U, hUF, hxU⟩ := hx
+    obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
+    exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
+
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+    IsOpen := M.IsOpenSet
+    univ := M.isOpenSet_univ
+    inter := M.isOpenSet_inter
+    sUnion := M.isOpenSet_sUnion
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
+    constructor
+    · intro hU x hx
+      exact T.nbhd_of_isOpen hU hx
+    · intro h
+      rw [T.union_of_opens_inside U h]
+      exact T.sUnion (fun V hV => hV.1)
+
+  def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+      (x : X) : Prop :=
+    ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε
+
+  def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop :=
+    ∀ x, M.ContinuousAt N f x
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Metric.continuous_iff {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) :
+      M.Continuous N f ↔ M.toTopology.Continuous N.toTopology f := by
+    constructor
+    · intro hf U hU x hx
+      obtain ⟨ε, hε, hball⟩ := hU (f x) hx
+      obtain ⟨δ, hδ, hδ'⟩ := hf x ε hε
+      exact ⟨δ, hδ, fun y hy => hball (hδ' y hy)⟩
+    · intro hf x ε hε
+      have hopen := hf (N.ball (f x) ε) (N.isOpenSet_ball (f x) ε)
+      obtain ⟨δ, hδ, hsub⟩ := hopen x (N.mem_ball_self (f x) ε hε)
+      exact ⟨δ, hδ, fun y hy => hsub hy⟩
+
+  def Topology.ContinuousAt {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) (f : X → Y)
+      (x : X) : Prop :=
+    ∀ N, T'.IsNbhd (f x) N → T.IsNbhd x (f ⁻¹' N)
+
+  theorem Topology.continuous_iff_continuousAt {X : Type u} {Y : Type v} (T : Topology X)
+      (T' : Topology Y) (f : X → Y) : T.Continuous T' f ↔ ∀ x, T.ContinuousAt T' f x := by
+    constructor
+    · rintro hf x N ⟨U, hU, hxU, hUN⟩
+      exact ⟨f ⁻¹' U, hf U hU, hxU, fun y hy => hUN hy⟩
+    · intro hf U hU
+      rw [T.isOpen_iff_nbhd]
+      intro x hx
+      exact hf x U (T'.nbhd_of_isOpen hU hx)
+
+  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
+
+  def Topology.ConvergesTo {X : Type u} (T : Topology X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ N, T.IsNbhd a N → ∃ k : ℕ, ∀ n ≥ k, x n ∈ N
+
+  theorem Metric.convergesTo_iff {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) :
+      M.ConvergesTo x a ↔ M.toTopology.ConvergesTo x a := by
+    constructor
+    · rintro h N ⟨U, hU, haU, hUN⟩
+      obtain ⟨ε, hε, hball⟩ := hU a haU
+      obtain ⟨k, hk⟩ := h ε hε
+      exact ⟨k, fun n hn => hUN (hball (hk n hn))⟩
+    · intro h ε hε
+      obtain ⟨k, hk⟩ := h (Metric.ball M a ε)
+        (Topology.nbhd_of_isOpen (Metric.toTopology M) (Metric.isOpenSet_ball M a ε)
+          (Metric.mem_ball_self M a ε hε))
+      exact ⟨k, fun n hn => hk n hn⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.convergesTo_comp`, and then `Metric.convergesTo_comp`. `Topology.continuous_iff_continuousAt` turns continuity into the statement at `a`; the metric version is the topological one with `Metric.convergesTo_iff` and `Metric.continuous_iff` applied on either side of it.
+stub_names:
+- Topology.convergesTo_comp
+- Metric.convergesTo_comp
+namespace: GeneralTopology
+seq: 190
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 332
+  closure_rounds: 1
+  check_kind: theorem

@@ -1,0 +1,84 @@
+slug: simple_sequences
+kind: example
+title: Two Sequences
+statement: |-
+  The simplest sequence stands still. Every term of `fun _ => a` is `a` itself, the distance from `a` to it is zero, and any index at all will do: the constant sequence converges to its own value.
+
+  The simplest sequence that moves is `1 / (n + 1)` on the real line — one, a half, a third, and so on — and it converges to `0`. Here the index does depend on the tolerance, and the previous problem says which index answers which tolerance.
+concepts:
+- convergence
+stub: |-
+  theorem Metric.convergesTo_const {X : Type u} (M : Metric X) (a : X) :
+      M.ConvergesTo (fun _ => a) a := sorry
+
+  theorem line_convergesTo_zero : line.ConvergesTo (fun n : ℕ => 1 / ((n : ℝ) + 1)) 0 := sorry
+reference: |-
+  theorem Metric.convergesTo_const {X : Type u} (M : Metric X) (a : X) :
+      M.ConvergesTo (fun _ => a) a := by
+    intro ε hε
+    refine ⟨0, fun n _ => ?_⟩
+    show M.dist a a < ε
+    rw [Metric.dist_self M]
+    exact hε
+
+  theorem line_convergesTo_zero : line.ConvergesTo (fun n : ℕ => 1 / ((n : ℝ) + 1)) 0 := by
+    intro ε hε
+    obtain ⟨k, hk⟩ := exists_one_div_succ_lt hε
+    refine ⟨k, fun n hn => ?_⟩
+    show |0 - 1 / ((n : ℝ) + 1)| < ε
+    rw [zero_sub, abs_neg, abs_of_pos (one_div_succ_pos n)]
+    exact hk n hn
+spec: |-
+  example : ∀ {X : Type u} (M : Metric X) (a : X), M.ConvergesTo (fun _ => a) a := _root_.GeneralTopology.Metric.convergesTo_const
+  example : line.ConvergesTo (fun n : ℕ => 1 / ((n : ℝ) + 1)) 0 := _root_.GeneralTopology.line_convergesTo_zero
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
+    M.eq_zero.mpr rfl
+
+  def line : Metric ℝ where
+    dist x y := |x - y|
+    symm {x y} := abs_sub_comm x y
+    triangle x y z := abs_sub_le x y z
+    eq_zero {x y} := by rw [abs_eq_zero, sub_eq_zero]
+
+  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
+
+  theorem one_div_succ_pos (n : ℕ) : 0 < 1 / ((n : ℝ) + 1) := by
+    have h : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    exact div_pos one_pos (by linarith)
+
+  theorem exists_one_div_succ_lt {ε : ℝ} (hε : 0 < ε) :
+      ∃ k : ℕ, ∀ n ≥ k, 1 / ((n : ℝ) + 1) < ε := by
+    obtain ⟨k, hk⟩ := exists_nat_gt (1 / ε)
+    refine ⟨k, fun n hn => ?_⟩
+    have h1 : (k : ℝ) ≤ (n : ℝ) := Nat.cast_le.mpr hn
+    have h2 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    have h3 : 1 / ε < (n : ℝ) + 1 := by linarith
+    rw [div_lt_iff₀ (by linarith : (0 : ℝ) < (n : ℝ) + 1)]
+    rw [div_lt_iff₀ hε] at h3
+    linarith
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Metric.convergesTo_const` and `line_convergesTo_zero`. In the first, `show` restates the goal as a distance from `a` to itself, which `Metric.dist_self` computes. In the second the distance is `|0 - 1 / (n + 1)|`; `zero_sub`, `abs_neg` and `abs_of_pos` strip it down to the number itself.
+stub_names:
+- Metric.convergesTo_const
+- line_convergesTo_zero
+namespace: GeneralTopology
+seq: 182
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 77
+  closure_rounds: 1
+  check_kind: theorem

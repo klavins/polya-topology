@@ -1,0 +1,48 @@
+slug: define_complete
+kind: definition
+title: Complete Metric Spaces
+statement: |-
+  A metric space is *complete* when every Cauchy sequence in it converges — when the terms bunching together is enough to guarantee a point they bunch up at.
+
+  The rationals are not complete. A sequence of rationals may close in on a number that is irrational, and that number is not there to be its limit. The real line is complete, which is the reason it was built; that theorem rests on the least upper bound property, and it is not proved here.
+
+  Completeness is a property of the metric and not of the topology it induces. Two metrics may call exactly the same sets open while one of them is complete and the other is not.
+concepts:
+- cauchy_complete
+stub: 'def Metric.IsComplete {X : Type u} (M : Metric X) : Prop := sorry'
+reference: |-
+  def Metric.IsComplete {X : Type u} (M : Metric X) : Prop :=
+    ∀ x : ℕ → X, M.IsCauchy x → ∃ a, M.ConvergesTo x a
+spec: |-
+  example {X : Type u} (M : Metric X) : _root_.GeneralTopology.Metric.IsComplete M ↔ (∀ x : ℕ → X, M.IsCauchy x → ∃ a, M.ConvergesTo x a) := by unfold _root_.GeneralTopology.Metric.IsComplete; first | exact Iff.rfl | grind
+  example (X : Type) (M : Metric X) :
+      M.IsComplete ↔ ∀ x : ℕ → X, M.IsCauchy x → ∃ a, M.ConvergesTo x a := Iff.rfl
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
+
+  def Metric.IsCauchy {X : Type u} (M : Metric X) (x : ℕ → X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ m ≥ k, ∀ n ≥ k, M.dist (x m) (x n) < ε
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Metric.IsComplete`, taking a metric `M` on `X`: for every sequence `x : ℕ → X` that is Cauchy there is a point `a` with `M.ConvergesTo x a`.'
+stub_names:
+- Metric.IsComplete
+namespace: GeneralTopology
+seq: 194
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 451
+  closure_rounds: 1
+  check_kind: definition

@@ -1,0 +1,72 @@
+slug: define_discrete_metric
+kind: example
+title: The Discrete Metric
+statement: |-
+  Here is a metric that any set at all carries: a point is at distance `0` from itself, and at distance `1` from every other point. Writing it down calls for deciding whether two points are equal, which Lean asks for as the assumption `[DecidableEq X]`.
+
+  Symmetry and non-degeneracy are read off the two cases. The triangle inequality is read off a bound: the left-hand distance is at most `1`, and when the two outer points differ the right-hand sum is at least `1`, since one of its terms is. When the outer points agree the left-hand distance is `0` instead.
+
+  What every later proof uses is that the distance `1` is never beaten: two points less than `1` apart are the same point.
+concepts:
+- cauchy_complete
+stub: |-
+  def discreteMetric (X : Type u) [DecidableEq X] : Metric X := sorry
+
+  theorem discreteMetric_eq_of_dist_lt_one {X : Type u} [DecidableEq X] {x y : X}
+      (h : (discreteMetric X).dist x y < 1) : x = y := sorry
+reference: |-
+  def discreteMetric (X : Type u) [DecidableEq X] : Metric X where
+    dist x y := if x = y then 0 else 1
+    symm {x y} := by
+      by_cases h : x = y
+      · rw [if_pos h, if_pos h.symm]
+      · rw [if_neg h, if_neg (Ne.symm h)]
+    triangle x y z := by
+      have hb : (0 : ℝ) ≤ if y = z then 0 else 1 := by split_ifs <;> norm_num
+      have ha : (if x = z then (0 : ℝ) else 1) ≤ 1 := by split_ifs <;> norm_num
+      by_cases h1 : x = y
+      · subst h1
+        rw [if_pos rfl, zero_add]
+      · rw [if_neg h1]
+        linarith
+    eq_zero {x y} := by
+      by_cases h : x = y
+      · rw [if_pos h]
+        exact ⟨fun _ => h, fun _ => rfl⟩
+      · rw [if_neg h]
+        exact ⟨fun e => absurd e one_ne_zero, fun e => absurd e h⟩
+
+  theorem discreteMetric_eq_of_dist_lt_one {X : Type u} [DecidableEq X] {x y : X}
+      (h : (discreteMetric X).dist x y < 1) : x = y := by
+    by_contra hne
+    have e : (discreteMetric X).dist x y = 1 := if_neg hne
+    linarith
+spec: |-
+  example : ∀ {X : Type u} [DecidableEq X] {x y : X}
+      (h : (_root_.GeneralTopology.discreteMetric X).dist x y < 1), x = y := _root_.GeneralTopology.discreteMetric_eq_of_dist_lt_one
+  example (X : Type) [DecidableEq X] (x y : X) :
+      (_root_.GeneralTopology.discreteMetric X).dist x y = if x = y then 0 else 1 := rfl
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  end GeneralTopology
+  open GeneralTopology
+description: Define `discreteMetric`, whose distance is `if x = y then 0 else 1` in that orientation, and prove `discreteMetric_eq_of_dist_lt_one`. `symm` and `eq_zero` bind their points implicitly and `triangle` takes its three explicitly, as `Metric` declares them. `by_cases` splits on an equality, `if_pos` and `if_neg` rewrite the branch it settles, and `split_ifs` does both at once where the value is only wanted between `0` and `1`.
+stub_names:
+- discreteMetric
+- discreteMetric_eq_of_dist_lt_one
+namespace: GeneralTopology
+seq: 195
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 475
+  closure_rounds: 1
+  check_kind: mixed

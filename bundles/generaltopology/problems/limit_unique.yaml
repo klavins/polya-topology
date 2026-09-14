@@ -1,0 +1,70 @@
+slug: limit_unique
+kind: theorem
+title: A Sequence Has at Most One Limit
+statement: |-
+  A sequence cannot approach two different points at once, and the triangle inequality is the reason.
+
+  Suppose `x` converges to `a` and to `b`, with `a ≠ b`, and let `d` be the distance between them, which is then positive. Past some index every term is within `d / 2` of `a`, and past some other index every term is within `d / 2` of `b`. Past both — the larger of the two indices will do — one single term is within `d / 2` of each. But then the journey from `a` to `b` through that term is shorter than `d`, and no journey from `a` to `b` is shorter than `d`.
+
+  So we may speak of *the* limit of a convergent sequence.
+concepts:
+- convergence
+stub: |-
+  theorem Metric.convergesTo_unique {X : Type u} (M : Metric X) {x : ℕ → X} {a b : X}
+      (ha : M.ConvergesTo x a) (hb : M.ConvergesTo x b) : a = b := sorry
+reference: |-
+  theorem Metric.convergesTo_unique {X : Type u} (M : Metric X) {x : ℕ → X} {a b : X}
+      (ha : M.ConvergesTo x a) (hb : M.ConvergesTo x b) : a = b := by
+    by_contra hne
+    have hd : 0 < M.dist a b := Metric.dist_pos M hne
+    obtain ⟨k, hk⟩ := ha (M.dist a b / 2) (by linarith)
+    obtain ⟨l, hl⟩ := hb (M.dist a b / 2) (by linarith)
+    have h1 : M.dist a (x (max k l)) < M.dist a b / 2 := hk _ (le_max_left k l)
+    have h2 : M.dist b (x (max k l)) < M.dist a b / 2 := hl _ (le_max_right k l)
+    have h3 : M.dist (x (max k l)) b = M.dist b (x (max k l)) := M.symm
+    have h4 := M.triangle a (x (max k l)) b
+    linarith
+spec: |-
+  example : ∀ {X : Type u} (M : Metric X) {x : ℕ → X} {a b : X}
+      (ha : M.ConvergesTo x a) (hb : M.ConvergesTo x b), a = b := _root_.GeneralTopology.Metric.convergesTo_unique
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
+    M.eq_zero.mpr rfl
+
+  theorem Metric.nonneg {X : Type u} (M : Metric X) (x y : X) : 0 ≤ M.dist x y := by
+    have h := M.triangle x y x
+    rw [M.dist_self] at h
+    have e : M.dist y x = M.dist x y := M.symm
+    rw [e] at h
+    linarith
+
+  theorem Metric.dist_pos {X : Type u} (M : Metric X) {x y : X} (h : x ≠ y) : 0 < M.dist x y := by
+    rcases lt_or_eq_of_le (Metric.nonneg M x y) with hlt | heq
+    · exact hlt
+    · exact absurd (M.eq_zero.mp heq.symm) h
+
+  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Metric.convergesTo_unique`. `Metric.dist_pos` supplies the positive distance, `max k l` is an index past both, `le_max_left` and `le_max_right` place it, and `M.symm` turns one of the two distances around before `M.triangle` and `linarith` close the gap.
+stub_names:
+- Metric.convergesTo_unique
+namespace: GeneralTopology
+seq: 183
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 108
+  closure_rounds: 1
+  check_kind: theorem

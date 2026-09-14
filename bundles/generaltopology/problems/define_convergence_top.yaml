@@ -1,0 +1,54 @@
+slug: define_convergence_top
+kind: example
+title: Convergence in a Topological Space
+statement: |-
+  Read the metric definition again with the balls hidden. A sequence converges to `a` when, for each way of saying *near `a`*, the terms are eventually there. In a topological space the ways of saying it are the neighbourhoods of `a`, and the definition is the same sentence with a neighbourhood `N` in place of the ball.
+
+  The constant sequence converges to its value here too, and for less reason than before: every neighbourhood of `a` contains `a`, so every term of the sequence is in it from the start.
+concepts:
+- convergence_topological
+stub: |-
+  def Topology.ConvergesTo {X : Type u} (T : Topology X) (x : ℕ → X) (a : X) : Prop := sorry
+
+  theorem Topology.convergesTo_const {X : Type u} (T : Topology X) (a : X) :
+      T.ConvergesTo (fun _ => a) a := sorry
+reference: |-
+  def Topology.ConvergesTo {X : Type u} (T : Topology X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ N, T.IsNbhd a N → ∃ k : ℕ, ∀ n ≥ k, x n ∈ N
+
+  theorem Topology.convergesTo_const {X : Type u} (T : Topology X) (a : X) :
+      T.ConvergesTo (fun _ => a) a := by
+    rintro N ⟨U, _, haU, hUN⟩
+    exact ⟨0, fun _ _ => hUN haU⟩
+spec: |-
+  example {X : Type u} (T : Topology X) (x : ℕ → X) (a : X) : _root_.GeneralTopology.Topology.ConvergesTo T x a ↔ (∀ N, T.IsNbhd a N → ∃ k : ℕ, ∀ n ≥ k, x n ∈ N) := by unfold _root_.GeneralTopology.Topology.ConvergesTo; first | exact Iff.rfl | grind
+  example : ∀ {X : Type u} (T : Topology X) (a : X), T.ConvergesTo (fun _ => a) a := _root_.GeneralTopology.Topology.convergesTo_const
+  example (X : Type) (T : Topology X) (x : ℕ → X) (a : X) :
+      T.ConvergesTo x a ↔ ∀ N, T.IsNbhd a N → ∃ k : ℕ, ∀ n ≥ k, x n ∈ N := Iff.rfl
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Topology.ConvergesTo`, taking a topology `T` on `X`, a sequence `x : ℕ → X` and a point `a`: for every `N` with `T.IsNbhd a N` there is a `k : ℕ` with `x n ∈ N` for every `n ≥ k`. Then prove `Topology.convergesTo_const`, for which `rintro` takes the neighbourhood apart into the open set inside it.'
+stub_names:
+- Topology.ConvergesTo
+- Topology.convergesTo_const
+namespace: GeneralTopology
+seq: 184
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 142
+  closure_rounds: 1
+  check_kind: mixed

@@ -1,0 +1,82 @@
+slug: seq_continuity_metric
+kind: theorem
+title: Sequences Detect Continuity in a Metric Space
+statement: |-
+  Between metric spaces the converse holds: a map that preserves the limit of every convergent sequence is continuous. The argument runs by contradiction, and it builds its sequence out of the failure it assumes.
+
+  Suppose `f` is not continuous at `a`. Then some `ε > 0` is missed by every `δ`: however small `δ` is, some point within `δ` of `a` has its image further than `ε` from `f a`. Take `δ = 1 / (n + 1)` for each `n` in turn and collect those points. They converge to `a`, since the radii shrink, so their images converge to `f a` by hypothesis — and yet every image is at least `ε` away from `f a`.
+concepts:
+- sequential_continuity
+stub: |-
+  theorem Metric.continuous_of_seq {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y)
+      {f : X → Y}
+      (h : ∀ (x : ℕ → X) (a : X), M.ConvergesTo x a → N.ConvergesTo (fun n => f (x n)) (f a)) :
+      M.Continuous N f := sorry
+reference: |-
+  theorem Metric.continuous_of_seq {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y)
+      {f : X → Y}
+      (h : ∀ (x : ℕ → X) (a : X), M.ConvergesTo x a → N.ConvergesTo (fun n => f (x n)) (f a)) :
+      M.Continuous N f := by
+    intro a ε hε
+    by_contra hcon
+    push Not at hcon
+    have hpt : ∀ n : ℕ, ∃ y, M.dist a y < 1 / ((n : ℝ) + 1) ∧ ε ≤ N.dist (f a) (f y) :=
+      fun n => hcon _ (one_div_succ_pos n)
+    have hconv : M.ConvergesTo (fun n => (hpt n).choose) a := by
+      intro δ hδ
+      obtain ⟨k, hk⟩ := exists_one_div_succ_lt hδ
+      exact ⟨k, fun n hn => lt_trans (hpt n).choose_spec.1 (hk n hn)⟩
+    obtain ⟨k, hk⟩ := h _ a hconv ε hε
+    exact absurd (hk k (le_refl k)) (not_lt.mpr (hpt k).choose_spec.2)
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y)
+      {f : X → Y}
+      (h : ∀ (x : ℕ → X) (a : X), M.ConvergesTo x a → N.ConvergesTo (fun n => f (x n)) (f a)), M.Continuous N f := _root_.GeneralTopology.Metric.continuous_of_seq
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  def Metric.ContinuousAt {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y)
+      (x : X) : Prop :=
+    ∀ ε > 0, ∃ δ > 0, ∀ x', M.dist x x' < δ → N.dist (f x) (f x') < ε
+
+  def Metric.Continuous {X : Type u} {Y : Type v} (M : Metric X) (N : Metric Y) (f : X → Y) : Prop :=
+    ∀ x, M.ContinuousAt N f x
+
+  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
+
+  theorem one_div_succ_pos (n : ℕ) : 0 < 1 / ((n : ℝ) + 1) := by
+    have h : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    exact div_pos one_pos (by linarith)
+
+  theorem exists_one_div_succ_lt {ε : ℝ} (hε : 0 < ε) :
+      ∃ k : ℕ, ∀ n ≥ k, 1 / ((n : ℝ) + 1) < ε := by
+    obtain ⟨k, hk⟩ := exists_nat_gt (1 / ε)
+    refine ⟨k, fun n hn => ?_⟩
+    have h1 : (k : ℝ) ≤ (n : ℝ) := Nat.cast_le.mpr hn
+    have h2 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    have h3 : 1 / ε < (n : ℝ) + 1 := by linarith
+    rw [div_lt_iff₀ (by linarith : (0 : ℝ) < (n : ℝ) + 1)]
+    rw [div_lt_iff₀ hε] at h3
+    linarith
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Metric.continuous_of_seq`. `intro a ε hε` leaves a goal about `δ`; `by_contra` and `push Not` turn its denial into the family of bad points, out of which `Exists.choose` builds the sequence, and `not_lt` closes the contradiction at the end.
+stub_names:
+- Metric.continuous_of_seq
+namespace: GeneralTopology
+seq: 191
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 365
+  closure_rounds: 1
+  check_kind: theorem

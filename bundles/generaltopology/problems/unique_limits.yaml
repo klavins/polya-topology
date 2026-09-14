@@ -1,0 +1,89 @@
+slug: unique_limits
+kind: example
+title: Unique Limits, Between T₁ and Hausdorff
+statement: |-
+  Which spaces have unique limits? Two conditions bracket the answer, and neither one is it.
+
+  A Hausdorff space has them. Two distinct limits are separated by disjoint open sets, each of which holds every term past some index; past both indices a single term lies in both, and the two sets share no point.
+
+  Conversely, a space with unique limits is T₁. Were it not, there would be distinct `x` and `y` with every open set containing `x` containing `y` as well. The constant sequence at `y` would then converge to `x` — every neighbourhood of `x` holds `y` — and to `y`, which is two limits.
+
+  Between the two conditions is a gap that nothing here closes: the converse of the first needs each point to have countably many neighbourhoods to work through, which a topology need not supply.
+concepts:
+- convergence_topological
+stub: |-
+  theorem Topology.convergesTo_unique {X : Type u} {T : Topology X} (h : T.IsHausdorff)
+      {x : ℕ → X} {a b : X} (ha : T.ConvergesTo x a) (hb : T.ConvergesTo x b) : a = b := sorry
+
+  theorem Topology.isT1_of_convergesTo_unique {X : Type u} {T : Topology X}
+      (h : ∀ (x : ℕ → X) (a b : X), T.ConvergesTo x a → T.ConvergesTo x b → a = b) : T.IsT1 := sorry
+reference: |-
+  theorem Topology.convergesTo_unique {X : Type u} {T : Topology X} (h : T.IsHausdorff)
+      {x : ℕ → X} {a b : X} (ha : T.ConvergesTo x a) (hb : T.ConvergesTo x b) : a = b := by
+    by_contra hne
+    obtain ⟨U, V, hU, hV, haU, hbV, hUV⟩ := h a b hne
+    obtain ⟨k, hk⟩ := ha U (Topology.nbhd_of_isOpen T hU haU)
+    obtain ⟨l, hl⟩ := hb V (Topology.nbhd_of_isOpen T hV hbV)
+    have hm : x (max k l) ∈ U ∩ V := ⟨hk _ (le_max_left k l), hl _ (le_max_right k l)⟩
+    rw [hUV] at hm
+    exact Set.notMem_empty _ hm
+
+  theorem Topology.isT1_of_convergesTo_unique {X : Type u} {T : Topology X}
+      (h : ∀ (x : ℕ → X) (a b : X), T.ConvergesTo x a → T.ConvergesTo x b → a = b) : T.IsT1 := by
+    intro x y hxy
+    by_contra hcon
+    push Not at hcon
+    have hconv : T.ConvergesTo (fun _ => y) x := by
+      rintro N ⟨U, hU, hxU, hUN⟩
+      exact ⟨0, fun _ _ => hUN (hcon U hU hxU)⟩
+    exact hxy (h (fun _ => y) x y hconv (Topology.convergesTo_const T y))
+spec: |-
+  example : ∀ {X : Type u} {T : Topology X} (h : T.IsHausdorff)
+      {x : ℕ → X} {a b : X} (ha : T.ConvergesTo x a) (hb : T.ConvergesTo x b), a = b := _root_.GeneralTopology.Topology.convergesTo_unique
+  example : ∀ {X : Type u} {T : Topology X}
+      (h : ∀ (x : ℕ → X) (a b : X), T.ConvergesTo x a → T.ConvergesTo x b → a = b), T.IsT1 := _root_.GeneralTopology.Topology.isT1_of_convergesTo_unique
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
+
+  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
+
+  def Topology.ConvergesTo {X : Type u} (T : Topology X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ N, T.IsNbhd a N → ∃ k : ℕ, ∀ n ≥ k, x n ∈ N
+
+  theorem Topology.convergesTo_const {X : Type u} (T : Topology X) (a : X) :
+      T.ConvergesTo (fun _ => a) a := by
+    rintro N ⟨U, _, haU, hUN⟩
+    exact ⟨0, fun _ _ => hUN haU⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.convergesTo_unique` and `Topology.isT1_of_convergesTo_unique`. The first takes `max k l` as an index past both and rewrites along the emptiness of the intersection. In the second, `by_contra` and `push Not` turn the goal into the hypothesis that every open set around `x` holds `y`.
+stub_names:
+- Topology.convergesTo_unique
+- Topology.isT1_of_convergesTo_unique
+namespace: GeneralTopology
+seq: 187
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 218
+  closure_rounds: 1
+  check_kind: theorem

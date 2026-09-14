@@ -16,7 +16,7 @@ follows the source.
 
 ## How a section is sized
 
-The ten built sections measure 4 to 7 concepts and 9 to 31 problems, in 280 to 780 lines. That
+The eleven built sections measure 4 to 7 concepts and 9 to 31 problems, in 280 to 780 lines. That
 is the target: **five or six concepts and twelve to eighteen problems**, which is a section a
 coding agent can draft, compile and extract in one sitting. A section wanting more than that is
 two sections. Every proof stays under fifteen lines; where a step will not, the step becomes a
@@ -62,6 +62,11 @@ space and for a subset** costs three problems before it is used once — the two
 lemmas that compare them, and the comparison — and a theorem resting on the least upper bound
 property costs four. Both are §12's bill as well, so **a section carrying either should be
 budgeted at twenty problems, and a section carrying both should be split**.
+
+§11 came in at 5 concepts, 18 problems and 571 lines, with the longest proof at fourteen. It is
+the first section since §7 to land inside the band with nothing to explain, and what kept it
+there is that the two proofs billed as expensive were not. So §10's twenty-problem budget for §12
+should still be read as §10's two causes and not as a new normal.
 
 ## The sections
 
@@ -549,7 +554,7 @@ budgeted at twenty problems, and a section carrying both should be split**.
     any mathematics is done with it, and a theorem resting on the least upper bound property costs
     four. §12 owes both bills again; budget five concepts and twenty problems for it, or split it.
 
-- [ ] **11. Sequences and Convergence** — `Sequences.lean` · 5 concepts, ~14 problems
+- [x] **11. Sequences and Convergence** — `Sequences.lean` · 5 concepts, 18 problems
 
   What the source treats first, and what reads better here, where closures and the separation
   axioms are already available to say what a limit is and when it is unique. Builds on §1, §4,
@@ -581,6 +586,65 @@ budgeted at twenty problems, and a section carrying both should be split**.
   concept, as every section has moved it. And a side condition on two sets is to be written in the
   form the proofs consume — pointwise, not as an equation between intersections; §10's
   `Topology.IsConnectedSet` says why.
+
+  As built, and what it settled:
+
+  - The **`@goal` moved** from §10's `path_connected` to `cauchy_complete`, which is where the
+    course now ends.
+  - **"Limits are unique exactly when the space is Hausdorff" is false**, and the plan above said
+    it. Uniqueness of the limit of a *sequence* is strictly weaker than Hausdorff in a general
+    space: the converse needs each point to have countably many neighbourhoods to work through,
+    which this subject has no way to say. What is built is the true bracket —
+    `Topology.convergesTo_unique` (a Hausdorff space has at most one limit) and
+    `Topology.isT1_of_convergesTo_unique` (a space with unique limits is T₁, witnessed by the
+    constant sequence at the point the space cannot separate off) — and the gap between them is
+    named in the preamble and left open. **Check a plan's "exactly when" against a general space
+    before budgeting it as one problem.**
+  - **No new import, for the fifth section running.** `exists_nat_gt`, `Nat.cast_le`,
+    `Nat.cast_nonneg`, `div_lt_iff₀`, `Exists.choose` and `split_ifs` are all under what §7 left,
+    and the Archimedean module §4 added supplies the first. The fence is still the ten modules
+    `polya extract` reports.
+  - **The two reverse halves were not expensive**, which is the fourth estimate on the list below
+    to be struck. `Metric.mem_closure_iff_seq` is fourteen lines and `Metric.continuous_of_seq`
+    thirteen, and neither wants the `choose` tactic: `Exists.choose` does it as a term, so
+    `(hpt n).choose` is the `n`-th point of the sequence and `(hpt n).choose_spec` the proof that
+    it is one, and no tactic state has to carry the sequence at all. Two things made them fit.
+    One helper, `exists_one_div_succ_lt`, is stated once and used by both, as §9's rule about
+    helpers predicted. And **the family of witnesses is named in a `have` with its type written
+    out** — `∀ n, ∃ y, M.dist a y < 1 / (n + 1) ∧ y ∈ S`, not the `Set.Nonempty` form
+    `Metric.mem_closure_iff` hands over: the `have` does the definitional unfolding once, and
+    `lt_trans` then closes each term in one line instead of three.
+  - **The Archimedean helper costs a problem, and pays for the section.** `one_div_succ_pos` and
+    `exists_one_div_succ_lt` are twelve lines together — `div_lt_iff₀` clears each denominator and
+    `linarith` finishes — and every sequence built below is built out of them.
+  - **The discrete metric is here, and it is the subject's first `[DecidableEq X]`.** The plan
+    asked for "a discrete metric space is complete" and the subject had no discrete metric.
+    `discreteMetric` is `if x = y then 0 else 1`, which needs equality decided and so takes an
+    instance binder — the first beside `Norm`'s `AddCommGroup` and `Module`. It costs three
+    problems: the definition with the one fact everything else uses
+    (`discreteMetric_eq_of_dist_lt_one`, that two points less than `1` apart are equal), the
+    identification `discreteMetric_toTopology` with §3's `discrete`, and completeness. The
+    identification is what earns the name — it is thirteen lines through
+    `Topology.eq_of_isOpen_iff` — and it is the first metric this subject has produced for a
+    topology that was written down by hand.
+  - **A `where`-bodied definition's spec is still `rfl`, and the description still names the
+    spelling.** `discreteMetric`'s spec is `(discreteMetric X).dist x y = if x = y then 0 else 1`,
+    as `line`'s is `|x - y|`. A tolerant spec was tried and abandoned:
+    `simp [discreteMetric, eq_comm]` does accept both orientations of the equality test and does
+    still reject a wrong distance, but against the reference `eq_comm` goes unused,
+    `linter.unusedSimpArgs` warns, and a warning is an error under publish. **§7's rule stands:
+    name the orientation in the description.**
+  - **The four `Iff.rfl` specs accept every variant a student actually writes**, tested against
+    each: `∀ ε, 0 < ε → …` for `∀ ε > 0, …`, `k ≤ n` for `n ≥ k`, renamed and ascribed binders,
+    and — for convergence — `x n ∈ M.ball a ε` for the distance inequality, since a ball's
+    membership *is* that inequality. What they reject is a reordered quantifier and a reversed
+    `M.dist`, and the descriptions name both. `polya simulate --creative` finds exactly those two
+    and nothing else, and every one of the section's eighteen problems is solved in one attempt.
+  - **Eighteen problems, 5 concepts, 571 lines**, with the longest proof at fourteen
+    (`Metric.mem_closure_iff_seq`) and the longest declaration at twenty-one (`discreteMetric`,
+    four fields). The band holds. Six of the eighteen problems sit on the last concept, and the
+    cause is §8's again: it teaches a **construction** inside a concept about a property, and a
+    construction is three problems wherever it lands.
 
 - [ ] **12. Compactness** — `Compactness.lean` · 5 concepts, ~15 problems
 
@@ -616,6 +680,15 @@ budgeted at twenty problems, and a section carrying both should be split**.
   of a set's own. `Topology.isConnectedSet_image` is the five-line shape for `compact_images`, and
   `Homeomorphic.isConnected` the eleven-line shape for compactness as a topological property.
   Count the section at twenty problems, or split `interval_compact` off as §12½.
+  §11 leaves three things here. `exists_one_div_succ_lt` is the Archimedean property in the form
+  every shrinking-radius argument wants, with `one_div_succ_pos` beside it; neither is to be
+  restated. `Exists.choose` and `.choose_spec`, used as terms and never through the `choose`
+  tactic, are how a sequence or a family of witnesses is picked — and the family is named in a
+  `have` with its type **written out**, not in the `Set.Nonempty` form a lemma hands over, which
+  is what kept §11's two longest proofs under fifteen lines. And `discreteMetric` exists, with
+  `discreteMetric_eq_of_dist_lt_one` and `discreteMetric_toTopology`: an infinite discrete space
+  is the cheapest non-compact space inside the fence, and a finite one the cheapest compact space
+  that is not a subset of the line.
 
 - [ ] **13. Compact Hausdorff Spaces** — `CompactHausdorff.lean` · 5 concepts, ~13 problems
 
@@ -656,6 +729,10 @@ budgeted at twenty problems, and a section carrying both should be split**.
   statement pairing connectedness with compactness at the level of spaces will want it first. It
   is nine lines: `S` and `Sᶜ` against the definition one way, and `Set.univ_subset_iff` with
   `Set.compl_univ_iff` the other.
+  §11 leaves `Topology.ConvergesTo` and `Topology.convergesTo_unique` here, which is as far as
+  sequences go. Sequential compactness is in the source and is **not** to be built: its
+  equivalence with compactness for a metric space needs completeness and total boundedness, and
+  the table below says why neither is in reach.
 
 ## What is deliberately left out
 
@@ -670,7 +747,7 @@ and why:
 | Tychonoff's theorem for infinite products | needs Zorn's lemma or ultrafilters, and an infinite product needs a generated topology, which §7 rules out |
 | Urysohn's lemma, partitions of unity, paracompactness | the dyadic construction is a section on its own, and partitions of unity need bump functions, hence analysis |
 | Local compactness, one-point compactification, mapping spaces and the compact-open topology | reachable in principle; a later roadmap's business, once §13 is in |
-| Sequential compactness equivalent to compactness for metric spaces | needs completeness and total boundedness, both of which are theorems this subject has not built |
+| Sequential compactness equivalent to compactness for metric spaces | §11 defines completeness but proves no space complete, and total boundedness is not built at all; the equivalence needs both as theorems |
 | Locally connected and locally path-connected spaces, and π₀ as a space | the source wants them for the decomposition of a space into the disjoint union of its components, which needs an infinite sum; §10 stops at the components themselves |
 | Cell complexes, vector bundles, manifolds, tangent bundles | the source's part 2; needs analysis and smoothness, so out of reach entirely |
 
@@ -703,7 +780,11 @@ either, so the fence has stood still for three sections: `Set.infinite_univ`,
 `Set.finite_singleton` and `Subtype.ext` are all under what §7 left. §10 added nothing either — four
 sections now — and it is the section that most looked as though it would: the least upper bound
 property arrives as `Real.exists_isLUB` and `IsLUB.exists_between`, both under §4's
-`Mathlib.Algebra.Order.Archimedean.Real.Basic`, exactly as the paragraph below predicted. Test any further import
+`Mathlib.Algebra.Order.Archimedean.Real.Basic`, exactly as the paragraph below predicted. §11 added
+nothing either — five sections — and it is the second in a row that looked as though it would:
+`exists_nat_gt`, `Nat.cast_le`, `Nat.cast_nonneg` and `div_lt_iff₀` all sit under §4's
+Archimedean module, `Exists.choose` and `split_ifs` are core, and `DecidableEq` is a core class
+taken as an instance binder, which costs no import at all. Test any further import
 before adding it; the command is in `STYLE.md`, and the message to grep for is
 `unknownIdentifier`, which Lean capitalizes.
 
@@ -801,6 +882,14 @@ one — never a redefinition.
   `Topology.IsTotallyDisconnected`, `discrete_isTotallyDisconnected`
 - `unitInterval.zero`, `unitInterval.one`, `Topology.IsPathConnected`, `line_isPathConnected`,
   `Topology.isConnected_of_isPathConnected`
+- `Metric.ConvergesTo`, `one_div_succ_pos`, `exists_one_div_succ_lt`, `Metric.convergesTo_const`,
+  `line_convergesTo_zero`, `Metric.convergesTo_unique`
+- `Topology.ConvergesTo`, `Topology.convergesTo_const`, `Metric.convergesTo_iff`,
+  `codiscrete_convergesTo`, `Topology.convergesTo_unique`, `Topology.isT1_of_convergesTo_unique`
+- `Metric.mem_closure_iff_seq`, `Metric.isClosed_iff_seq`, `Topology.convergesTo_comp`,
+  `Metric.convergesTo_comp`, `Metric.continuous_of_seq`
+- `Metric.IsCauchy`, `Metric.isCauchy_of_convergesTo`, `Metric.IsComplete`, `discreteMetric`,
+  `discreteMetric_eq_of_dist_lt_one`, `discreteMetric_toTopology`, `discreteMetric_isComplete`
 
 Two in particular: §7's `Topology.induced` is the shape `Topology.subspace` already had
 (`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it and
@@ -839,6 +928,12 @@ it is followed first; follow it in every section from here. §9 did the same thr
 nothing stalled there either. Structure *fields* stay in dot form (`M.dist`, `M.triangle`,
 `M.symm`, `T.IsOpen`, `e.continuous_invFun`), since they arrive with the structure.
 
+§11 followed it too, and the one place it bit is worth naming: `Metric.ball` is a **`def`, not a
+field of `Metric`**, so `M.ball a ε` inside a proof is dot notation on a local variable and is
+written `Metric.ball M a ε`. Fields — `M.dist`, `M.symm`, `M.triangle`, `T.IsOpen` — stay in dot
+form wherever they appear, and everything else that is reached through the type of a local
+variable does not.
+
 §10 followed §9 exactly, and the line it drew is worth writing down, since it is the one both
 sections used: **dot notation stays in a statement, and never appears in a proof.** A type may say
 `T.subspace A`, `T.closure S`, `T.component x`, `M.toTopology` — a student reads those, and §9's
@@ -872,7 +967,16 @@ depends on; a pulled *proof* is closed over its own tokens alone, which is where
   stub shows it, and it costs the student nothing.
 - **Choice and computability.** `Classical.choice` is on the check's axiom allowlist, so `choose`
   and proof by contradiction are available, and a `noncomputable def` — which an infimum over a
-  set of reals forces — passes the extractor's command allowlist.
+  set of reals forces — passes the extractor's command allowlist. §11 wanted choice in every
+  shrinking-ball argument and never used the tactic: `Exists.choose` and `.choose_spec` as terms
+  are shorter, and they keep the chosen sequence out of the tactic state, where it would have to
+  be named again at each mention.
+- **A core class as an instance binder.** "Bundling, not classes" is about the subject's own
+  structures, and it survives borrowing a class from core. §11's `discreteMetric` needs equality
+  decided and takes `[DecidableEq X]`, exactly as §1's `Norm` takes `[AddCommGroup V]` and
+  `[Module ℝ V]`: it is one binder in the signature, the stub shows it, and the alternative —
+  `Classical.propDecidable` behind an `open Classical in` — cannot stand between a `@problem`
+  docstring and its declaration.
 - **A definition beats its universal property, for a statement about open sets.** §9 planned three
   proofs around `Topology.continuous_prod_mk`, `Topology.continuous_into_subspace` and
   `Topology.isClosed_subspace_iff`, and all three came out shorter by reading `Topology.prod` and
@@ -882,18 +986,24 @@ depends on; a pulled *proof* is closed over its own tokens alone, which is where
 
 ### The expensive proofs
 
-In the order they arise, these are the ones to budget for and to split into helper problems:
-§11's two reverse halves, which pick a point from each of a shrinking sequence of balls; and, far
-above the rest, §12's compactness of a closed interval.
+What is left on this list is one item: §12's compactness of a closed interval, far above the
+rest.
 
 §10's connectedness of an interval is struck from this list, and what it cost is the estimate to
 carry forward: **four problems and about forty lines of Lean**, of which the argument proper is
 twelve. The three helpers are `IsInterval.mem_of_le`, `line_open_right` and `line_open_left`, and
 all three are reusable — §12 needs exactly them.
 
+§11's two reverse halves — the sequence chosen from a shrinking family of balls, in the closure
+and in the continuity statement — are struck as well. Each is one helper problem
+(`exists_one_div_succ_lt`, shared between them) and thirteen or fourteen lines, and what kept
+them there is naming the family of witnesses in a `have` with its type written out and then
+choosing from it with `Exists.choose` as a term. Budget a shrinking-sequence argument at one
+helper and one problem, not at a concept.
+
 §5's bridge between ε-δ and open sets was on this list and is struck from it: built, it is ten
 lines and wanted no helper, because §1's balls and §2's `Metric.toTopology` had already made the
 two sides the same data. §7's identification of the plane with a product was billed as a capstone
-and came out at three short problems, for the same reason. Take the remaining three as estimates
-of the same kind — a proof looks expensive until the definitions line up, and the way to find out
-is to write the statement and see what the earlier sections hand over.
+and came out at three short problems, for the same reason. Take the one remaining estimate the
+same way — a proof looks expensive until the definitions line up, and the way to find out is to
+write the statement and see what the earlier sections hand over.

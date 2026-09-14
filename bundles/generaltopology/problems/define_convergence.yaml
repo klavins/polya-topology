@@ -1,0 +1,42 @@
+slug: define_convergence
+kind: definition
+title: The Limit of a Sequence
+statement: |-
+  A *sequence* of points of a set `X` is a function `x : ℕ → X`, and its `n`-th term is `x n`. Nothing more is meant by the word: a sequence is a list of points indexed by the naturals, and it need not do anything in particular.
+
+  It converges to a point `a` when the terms end up arbitrarily near `a`. Fix a tolerance `ε > 0`. Past some index `k` every term is to be within `ε` of `a`, which is to say that `x n` lies in the ball of radius `ε` about `a` for all `n ≥ k`. The index may depend on the tolerance, and that dependence is the whole content: a smaller tolerance is allowed a longer wait.
+
+  A point `a` for which this holds is a *limit* of the sequence.
+concepts:
+- convergence
+stub: 'def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop := sorry'
+reference: |-
+  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
+spec: |-
+  example {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : _root_.GeneralTopology.Metric.ConvergesTo M x a ↔ (∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε) := by unfold _root_.GeneralTopology.Metric.ConvergesTo; first | exact Iff.rfl | grind
+  example (X : Type) (M : Metric X) (x : ℕ → X) (a : X) :
+      M.ConvergesTo x a ↔ ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε := Iff.rfl
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Metric.ConvergesTo`, taking a metric `M` on `X`, a sequence `x : ℕ → X` and a point `a`: for every `ε > 0` there is a `k : ℕ` with `M.dist a (x n) < ε` for every `n ≥ k`. Write the distance in that order, the limit first. Here `∀ n ≥ k, p n` abbreviates `∀ n, n ≥ k → p n`.'
+stub_names:
+- Metric.ConvergesTo
+namespace: GeneralTopology
+seq: 180
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 23
+  closure_rounds: 1
+  check_kind: definition

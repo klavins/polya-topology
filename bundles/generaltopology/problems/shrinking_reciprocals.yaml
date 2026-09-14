@@ -1,0 +1,47 @@
+slug: shrinking_reciprocals
+kind: example
+title: The Reciprocals Shrink Below Any Bound
+statement: |-
+  Every argument below that builds a sequence builds it out of a shrinking family of balls, and the radii it uses are the numbers `1 / (n + 1)`: positive for every natural `n`, and small for large ones. Both halves of that sentence have to be proved.
+
+  That the radius is positive is one division. That it eventually drops below a given `ε > 0` is the Archimedean property of the real line: no real number bounds every natural, so some `k` exceeds `1 / ε`, and past that `k` the reciprocal is below `ε`.
+concepts:
+- convergence
+stub: |-
+  theorem one_div_succ_pos (n : ℕ) : 0 < 1 / ((n : ℝ) + 1) := sorry
+
+  theorem exists_one_div_succ_lt {ε : ℝ} (hε : 0 < ε) :
+      ∃ k : ℕ, ∀ n ≥ k, 1 / ((n : ℝ) + 1) < ε := sorry
+reference: |-
+  theorem one_div_succ_pos (n : ℕ) : 0 < 1 / ((n : ℝ) + 1) := by
+    have h : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    exact div_pos one_pos (by linarith)
+
+  theorem exists_one_div_succ_lt {ε : ℝ} (hε : 0 < ε) :
+      ∃ k : ℕ, ∀ n ≥ k, 1 / ((n : ℝ) + 1) < ε := by
+    obtain ⟨k, hk⟩ := exists_nat_gt (1 / ε)
+    refine ⟨k, fun n hn => ?_⟩
+    have h1 : (k : ℝ) ≤ (n : ℝ) := Nat.cast_le.mpr hn
+    have h2 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    have h3 : 1 / ε < (n : ℝ) + 1 := by linarith
+    rw [div_lt_iff₀ (by linarith : (0 : ℝ) < (n : ℝ) + 1)]
+    rw [div_lt_iff₀ hε] at h3
+    linarith
+spec: |-
+  example : ∀ (n : ℕ), 0 < 1 / ((n : ℝ) + 1) := _root_.GeneralTopology.one_div_succ_pos
+  example : ∀ {ε : ℝ} (hε : 0 < ε), ∃ k : ℕ, ∀ n ≥ k, 1 / ((n : ℝ) + 1) < ε := _root_.GeneralTopology.exists_one_div_succ_lt
+preamble: |
+  universe u v
+description: Prove `one_div_succ_pos`, and then `exists_one_div_succ_lt`, which says that for `ε > 0` there is a `k` with `1 / (n + 1) < ε` for every `n ≥ k`. `exists_nat_gt` supplies the `k`, `Nat.cast_le` and `Nat.cast_nonneg` carry an inequality of naturals into the reals, and `div_lt_iff₀` clears a denominator so that `linarith` can finish.
+stub_names:
+- one_div_succ_pos
+- exists_one_div_succ_lt
+namespace: GeneralTopology
+seq: 181
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 47
+  closure_rounds: 1
+  check_kind: theorem

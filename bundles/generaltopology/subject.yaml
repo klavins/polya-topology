@@ -23,6 +23,8 @@ description: |-
 
   **Connectedness** asks whether a space is in one piece. A set both open and closed is a piece cut cleanly out of it, and a space with no such piece but the empty set and itself is connected; a subset is connected when no two open sets divide it, which says exactly that the space the subset inherits is connected. The codiscrete topology is connected and a two-point discrete space is not, and between the two extremes stands the theorem the subject has owed since the real line was defined: an interval does not fall apart, which is the least upper bound property in another form. A continuous map carries a connected set to a connected set, so no homeomorphism can tell a connected space from a disconnected one, and on the line that one sentence is the intermediate value theorem of calculus. What is not connected still decomposes: every point lies in a largest connected set, its component; the components are closed and partition the space, and in a discrete space they are the points themselves. The section ends with the everyday reason for believing a space to be in one piece, which is that one can walk across it — a path is a continuous map from the unit interval, and a space whose points are joined by paths is connected because the interval is.
 
+  **Sequences and Convergence** returns to the idea analysis began with, and asks how much of it a topology keeps. A sequence converges to a point when its terms end up arbitrarily near that point, which in a metric space is a statement about balls and in any space a statement about neighbourhoods; wherever both readings can be had they agree. Uniqueness of the limit is no part of the idea but a demand on the space: in a codiscrete space every point is a limit of every sequence, in a Hausdorff space there is at most one, and a space with unique limits is at least T₁. Sequences then re-describe what the earlier sections built — a point of the closure of a set is the limit of a sequence in the set, a set is closed exactly when it holds the limits of its own convergent sequences, and a map between metric spaces is continuous exactly when it preserves limits. The section ends where analysis proper begins: a sequence whose terms bunch together need not have anything to bunch up at, and a space in which it always does is complete.
+
   Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
@@ -873,11 +875,51 @@ concepts:
 - slug: path_connected
   description: The everyday reason for believing a space to be in one piece is that one can walk across it. A path is a continuous map from the unit interval into the space, and a space is path-connected when every two of its points are joined by one. Since the interval is connected, so is every space that is — and the walk is usually the easier thing to exhibit.
   kind: definition
-  goal: true
+  goal: false
   section: Connectedness
   section_order: 9
   title: Paths
   position: 49
+- slug: convergence
+  description: A sequence is a list of points running on for ever, and it converges to a point when its terms end up arbitrarily near that point. It is the oldest idea in analysis, and in a metric space it is stated with distances alone. What the rest of the section asks is how much of it survives when the distances are taken away.
+  kind: definition
+  goal: false
+  section: Sequences and Convergence
+  section_order: 10
+  title: Convergence in a Metric Space
+  position: 50
+- slug: convergence_topological
+  description: 'A ball about the limit is only a way of saying *near the limit*, and a topology says that with neighbourhoods. Convergence therefore survives the loss of the metric, and where both readings can be had they agree. What does not survive is uniqueness: how many limits a sequence may have turns out to be a question about how well the space tells its points apart.'
+  kind: definition
+  goal: false
+  section: Sequences and Convergence
+  section_order: 10
+  title: Convergence Without Distances
+  position: 51
+- slug: sequential_closure
+  description: In a metric space a point of the closure of a set is a point the set comes arbitrarily near, and a sequence is precisely a record of such an approach. So the closure can be described without open sets at all, and closedness becomes a condition on limits — which is the form in which analysis states it.
+  kind: theorem
+  goal: false
+  section: Sequences and Convergence
+  section_order: 10
+  title: Closures and Sequences
+  position: 52
+- slug: sequential_continuity
+  description: A continuous map carries a convergent sequence to a convergent sequence — the behaviour the word *continuous* originally named. Between metric spaces the converse holds as well, so continuity may be tested one sequence at a time; between general spaces it may not, and the reason is the one that left the last concept's gap open.
+  kind: theorem
+  goal: false
+  section: Sequences and Convergence
+  section_order: 10
+  title: Continuity and Limits
+  position: 53
+- slug: cauchy_complete
+  description: 'A sequence may bunch up with nothing to bunch up at: its terms grow arbitrarily close to one another while the point they would converge to is missing from the space. A space where that never happens is complete. It is the condition under which a limit may be asserted before it is known, and it is what the real numbers have that the rationals do not.'
+  kind: definition
+  goal: true
+  section: Sequences and Convergence
+  section_order: 10
+  title: Cauchy Sequences and Completeness
+  position: 54
 edges:
 - - closed_families
   - closure
@@ -903,6 +945,8 @@ edges:
   - dense_sets
 - - closure_points
   - separation_closures
+- - closure_points
+  - sequential_closure
 - - cofinite_topology
   - separation_examples
 - - connected
@@ -915,8 +959,12 @@ edges:
   - path_connected
 - - continuity_bridge
   - path_connected
+- - continuity_bridge
+  - sequential_continuity
 - - continuity_closed
   - path_connected
+- - continuity_closed
+  - sequential_continuity
 - - continuity_examples
   - path_connected
 - - continuity_examples
@@ -933,6 +981,14 @@ edges:
   - homeomorphism
 - - continuous_maps
   - induced_topology
+- - convergence
+  - cauchy_complete
+- - convergence
+  - convergence_topological
+- - convergence
+  - sequential_closure
+- - convergence_topological
+  - sequential_continuity
 - - epsilon_delta
   - continuity_bridge
 - - extreme_topologies
@@ -956,6 +1012,8 @@ edges:
 - - homeomorphism
   - topological_invariants
 - - induced_topology
+  - cauchy_complete
+- - induced_topology
   - quotient_space
 - - metric_equivalence
   - plane_is_product
@@ -975,6 +1033,8 @@ edges:
   - closure_points
 - - neighbourhoods
   - continuity_closed
+- - neighbourhoods
+  - convergence_topological
 - - neighbourhoods
   - interior_boundary
 - - neighbourhoods
@@ -1022,6 +1082,8 @@ edges:
 - - separation_closures
   - regular_normal
 - - separation_examples
+  - convergence
+- - separation_examples
   - regular_normal
 - - sierpinski_space
   - continuity_examples
@@ -1065,7 +1127,7 @@ provenance:
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: 54e2f1e0f77aab35fa442511ece4f48909385e06
+  commit: 60c1a433b423ceb75b8802085ab30aae0630a2d4
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

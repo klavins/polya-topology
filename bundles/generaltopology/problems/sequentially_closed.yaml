@@ -1,0 +1,221 @@
+slug: sequentially_closed
+kind: theorem
+title: Closed Means Closed Under Limits
+statement: |-
+  A set of a metric space is closed exactly when it contains the limit of every convergent sequence of its own points. That is what the word means in analysis, and here it is a corollary of the last problem.
+
+  A closed set is its own closure. So if a sequence in `S` converges to `a`, the last problem puts `a` in the closure, which is `S`.
+
+  Conversely, suppose `S` holds the limit of every convergent sequence in it. A point of the closure is the limit of such a sequence, so it lies in `S`; the closure is then contained in `S`, and a set containing its own closure is closed.
+concepts:
+- sequential_closure
+stub: |-
+  theorem Metric.isClosed_iff_seq {X : Type u} (M : Metric X) (S : Set X) :
+      M.toTopology.IsClosed S ↔
+        ∀ (x : ℕ → X) (a : X), (∀ n, x n ∈ S) → M.ConvergesTo x a → a ∈ S := sorry
+reference: |-
+  theorem Metric.isClosed_iff_seq {X : Type u} (M : Metric X) (S : Set X) :
+      M.toTopology.IsClosed S ↔
+        ∀ (x : ℕ → X) (a : X), (∀ n, x n ∈ S) → M.ConvergesTo x a → a ∈ S := by
+    rw [Topology.isClosed_iff_closure_eq (Metric.toTopology M) S]
+    constructor
+    · intro h x a hxS hconv
+      rw [← h]
+      exact (Metric.mem_closure_iff_seq M).mpr ⟨x, hxS, hconv⟩
+    · intro h
+      refine Set.Subset.antisymm ?_ (Topology.subset_closure (Metric.toTopology M) S)
+      intro a ha
+      obtain ⟨x, hxS, hconv⟩ := (Metric.mem_closure_iff_seq M).mp ha
+      exact h x a hxS hconv
+spec: |-
+  example : ∀ {X : Type u} (M : Metric X) (S : Set X), M.toTopology.IsClosed S ↔
+        ∀ (x : ℕ → X) (a : X), (∀ n, x n ∈ S) → M.ConvergesTo x a → a ∈ S := _root_.GeneralTopology.Metric.isClosed_iff_seq
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  theorem Metric.dist_self {X : Type u} (M : Metric X) {x : X} : M.dist x x = 0 :=
+    M.eq_zero.mpr rfl
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  theorem Metric.mem_ball_self {X : Type u} (M : Metric X) (x : X) (ε : ℝ) (h : 0 < ε) :
+      x ∈ M.ball x ε := by
+    rw [M.mem_ball, M.dist_self]
+    exact h
+
+  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+    ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
+
+  theorem Metric.isOpenSet_ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) :
+      M.IsOpenSet (M.ball x ε) := by
+    intro y hy
+    rw [M.mem_ball] at hy
+    refine ⟨ε - M.dist x y, by linarith, ?_⟩
+    intro z hz
+    rw [M.mem_ball] at hz ⊢
+    have h := M.triangle x y z
+    linarith
+
+  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+    fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
+
+  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+      (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
+    intro x hx
+    obtain ⟨a, ha, hau⟩ := hU x hx.1
+    obtain ⟨b, hb, hbv⟩ := hV x hx.2
+    refine ⟨min a b, lt_min ha hb, ?_⟩
+    intro y hy
+    rw [M.mem_ball] at hy
+    exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
+
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
+    intro x hx
+    obtain ⟨U, hUF, hxU⟩ := hx
+    obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
+    exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
+
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+    IsOpen := M.IsOpenSet
+    univ := M.isOpenSet_univ
+    inter := M.isOpenSet_inter
+    sUnion := M.isOpenSet_sUnion
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.isClosed_sInter {X : Type u} (T : Topology X) {F : Set (Set X)}
+      (h : ∀ C ∈ F, T.IsClosed C) : T.IsClosed (⋂₀ F) := by
+    show T.IsOpen _
+    rw [Set.compl_sInter]
+    apply T.sUnion
+    rintro U ⟨C, hCF, rfl⟩
+    exact h C hCF
+
+  def Topology.closure {X : Type u} (T : Topology X) (S : Set X) : Set X :=
+    ⋂₀ {C | T.IsClosed C ∧ S ⊆ C}
+
+  theorem Topology.subset_closure {X : Type u} (T : Topology X) (S : Set X) : S ⊆ T.closure S := by
+    intro x hx C hC
+    exact hC.2 hx
+
+  theorem Topology.isClosed_closure {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed (T.closure S) :=
+    T.isClosed_sInter (fun _ hC => hC.1)
+
+  theorem Topology.closure_min {X : Type u} (T : Topology X) {S C : Set X}
+      (hC : T.IsClosed C) (hSC : S ⊆ C) : T.closure S ⊆ C := by
+    intro x hx
+    exact hx C ⟨hC, hSC⟩
+
+  theorem Topology.isClosed_iff_closure_eq {X : Type u} (T : Topology X) (S : Set X) :
+      T.IsClosed S ↔ T.closure S = S := by
+    constructor
+    · intro hS
+      exact Set.Subset.antisymm (T.closure_min hS subset_rfl) (T.subset_closure S)
+    · intro h
+      rw [← h]
+      exact T.isClosed_closure S
+
+  theorem Topology.mem_closure_iff {X : Type u} (T : Topology X) {S : Set X} {x : X} :
+      x ∈ T.closure S ↔ ∀ N, T.IsNbhd x N → (N ∩ S).Nonempty := by
+    constructor
+    · rintro hx N ⟨U, hU, hxU, hUN⟩
+      by_contra h
+      have hSU : S ⊆ Uᶜ := by
+        intro y hy hyU
+        exact h ⟨y, hUN hyU, hy⟩
+      have hcl : T.IsClosed Uᶜ := by
+        show T.IsOpen _
+        rwa [compl_compl]
+      exact hx Uᶜ ⟨hcl, hSU⟩ hxU
+    · intro h C hC
+      by_contra hxC
+      obtain ⟨y, hyC, hyS⟩ := h Cᶜ ⟨Cᶜ, hC.1, hxC, subset_rfl⟩
+      exact hyC (hC.2 hyS)
+
+  theorem Metric.mem_closure_iff {X : Type u} (M : Metric X) {S : Set X} {x : X} :
+      x ∈ M.toTopology.closure S ↔ ∀ ε > 0, (M.ball x ε ∩ S).Nonempty := by
+    rw [M.toTopology.mem_closure_iff]
+    constructor
+    · intro h ε hε
+      have hN : M.toTopology.IsNbhd x (M.ball x ε) :=
+        M.toTopology.nbhd_of_isOpen (M.isOpenSet_ball x ε) (M.mem_ball_self x ε hε)
+      exact h (M.ball x ε) hN
+    · rintro h N ⟨U, hU, hxU, hUN⟩
+      obtain ⟨ε, hε, hball⟩ := hU x hxU
+      obtain ⟨y, hy, hyS⟩ := h ε hε
+      exact ⟨y, hUN (hball hy), hyS⟩
+
+  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
+
+  theorem one_div_succ_pos (n : ℕ) : 0 < 1 / ((n : ℝ) + 1) := by
+    have h : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    exact div_pos one_pos (by linarith)
+
+  theorem exists_one_div_succ_lt {ε : ℝ} (hε : 0 < ε) :
+      ∃ k : ℕ, ∀ n ≥ k, 1 / ((n : ℝ) + 1) < ε := by
+    obtain ⟨k, hk⟩ := exists_nat_gt (1 / ε)
+    refine ⟨k, fun n hn => ?_⟩
+    have h1 : (k : ℝ) ≤ (n : ℝ) := Nat.cast_le.mpr hn
+    have h2 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    have h3 : 1 / ε < (n : ℝ) + 1 := by linarith
+    rw [div_lt_iff₀ (by linarith : (0 : ℝ) < (n : ℝ) + 1)]
+    rw [div_lt_iff₀ hε] at h3
+    linarith
+
+  theorem Metric.mem_closure_iff_seq {X : Type u} (M : Metric X) {S : Set X} {a : X} :
+      a ∈ M.toTopology.closure S ↔ ∃ x : ℕ → X, (∀ n, x n ∈ S) ∧ M.ConvergesTo x a := by
+    constructor
+    · intro ha
+      rw [Metric.mem_closure_iff M] at ha
+      have hpt : ∀ n : ℕ, ∃ y, M.dist a y < 1 / ((n : ℝ) + 1) ∧ y ∈ S :=
+        fun n => ha _ (one_div_succ_pos n)
+      refine ⟨fun n => (hpt n).choose, fun n => (hpt n).choose_spec.2, ?_⟩
+      intro ε hε
+      obtain ⟨k, hk⟩ := exists_one_div_succ_lt hε
+      exact ⟨k, fun n hn => lt_trans (hpt n).choose_spec.1 (hk n hn)⟩
+    · rintro ⟨x, hxS, hconv⟩
+      rw [Metric.mem_closure_iff M]
+      intro ε hε
+      obtain ⟨k, hk⟩ := hconv ε hε
+      exact ⟨x k, hk k (le_refl k), hxS k⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Metric.isClosed_iff_seq`. `Topology.isClosed_iff_closure_eq` trades closedness for the equation `T.closure S = S`, and `Set.Subset.antisymm` splits that equation into two containments, of which `Topology.subset_closure` is one.
+stub_names:
+- Metric.isClosed_iff_seq
+namespace: GeneralTopology
+seq: 189
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 296
+  closure_rounds: 1
+  check_kind: theorem

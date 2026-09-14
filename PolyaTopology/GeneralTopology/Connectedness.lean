@@ -576,7 +576,6 @@ example (X : Type) (T : Topology X) :
 @concept path_connected
 @title Paths
 @kind definition
-@goal
 
 The everyday reason for believing a space to be in one piece is that one can walk across it. A path is a continuous map from the unit interval into the space, and a space is path-connected when every two of its points are joined by one. Since the interval is connected, so is every space that is — and the walk is usually the easier thing to exhibit.
 -/

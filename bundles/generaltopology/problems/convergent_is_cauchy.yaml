@@ -1,0 +1,57 @@
+slug: convergent_is_cauchy
+kind: theorem
+title: Every Convergent Sequence is Cauchy
+statement: |-
+  One implication holds in every metric space. If the terms are eventually all within `ε / 2` of the limit, then any two of them are within `ε` of each other, by the triangle inequality through the limit.
+
+  The halving is the whole of the trick, and it is the same halving that separated two points of a metric space by disjoint balls.
+
+  The converse is not a theorem. That a Cauchy sequence converges is a property a metric space may or may not have, and the next problems give it a name.
+concepts:
+- cauchy_complete
+stub: |-
+  theorem Metric.isCauchy_of_convergesTo {X : Type u} (M : Metric X) {x : ℕ → X} {a : X}
+      (h : M.ConvergesTo x a) : M.IsCauchy x := sorry
+reference: |-
+  theorem Metric.isCauchy_of_convergesTo {X : Type u} (M : Metric X) {x : ℕ → X} {a : X}
+      (h : M.ConvergesTo x a) : M.IsCauchy x := by
+    intro ε hε
+    obtain ⟨k, hk⟩ := h (ε / 2) (by linarith)
+    refine ⟨k, fun m hm n hn => ?_⟩
+    have h1 : M.dist a (x m) < ε / 2 := hk m hm
+    have h2 : M.dist a (x n) < ε / 2 := hk n hn
+    have h3 : M.dist (x m) a = M.dist a (x m) := M.symm
+    have h4 := M.triangle (x m) a (x n)
+    linarith
+spec: |-
+  example : ∀ {X : Type u} (M : Metric X) {x : ℕ → X} {a : X}
+      (h : M.ConvergesTo x a), M.IsCauchy x := _root_.GeneralTopology.Metric.isCauchy_of_convergesTo
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  def Metric.ConvergesTo {X : Type u} (M : Metric X) (x : ℕ → X) (a : X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ n ≥ k, M.dist a (x n) < ε
+
+  def Metric.IsCauchy {X : Type u} (M : Metric X) (x : ℕ → X) : Prop :=
+    ∀ ε > 0, ∃ k : ℕ, ∀ m ≥ k, ∀ n ≥ k, M.dist (x m) (x n) < ε
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Metric.isCauchy_of_convergesTo`. Apply the convergence at `ε / 2` and offer the index it returns; `M.symm` turns one of the two distances around before `M.triangle (x m) a (x n)` and `linarith` finish.
+stub_names:
+- Metric.isCauchy_of_convergesTo
+namespace: GeneralTopology
+seq: 193
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 426
+  closure_rounds: 1
+  check_kind: theorem

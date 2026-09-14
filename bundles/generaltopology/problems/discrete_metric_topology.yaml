@@ -1,0 +1,131 @@
+slug: discrete_metric_topology
+kind: theorem
+title: The Discrete Metric Induces the Discrete Topology
+statement: |-
+  The name is earned here. In this metric the ball of radius `1` about `x` holds `x` and nothing else, every other point being a whole unit away. So every set holds a ball about each of its own points, every set is open, and the topology the metric induces is the discrete one.
+
+  This is the first metric the subject has produced for a topology it wrote down by hand, and it settles a question left open when that topology was first met: the discrete topology does come from a distance.
+concepts:
+- cauchy_complete
+stub: |-
+  theorem discreteMetric_toTopology (X : Type u) [DecidableEq X] :
+      (discreteMetric X).toTopology = discrete X := sorry
+reference: |-
+  theorem discreteMetric_toTopology (X : Type u) [DecidableEq X] :
+      (discreteMetric X).toTopology = discrete X := by
+    apply Topology.eq_of_isOpen_iff
+    intro U
+    constructor
+    · intro _
+      trivial
+    · intro _ x hx
+      refine ⟨1, one_pos, fun y hy => ?_⟩
+      have h1 : (discreteMetric X).dist x y < 1 := hy
+      rw [← discreteMetric_eq_of_dist_lt_one h1]
+      exact hx
+spec: 'example : ∀ (X : Type u) [DecidableEq X], (discreteMetric X).toTopology = discrete X := _root_.GeneralTopology.discreteMetric_toTopology'
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Metric (X : Type u) where
+    dist : X → X → ℝ
+    symm : ∀ {x y}, dist x y = dist y x
+    triangle : ∀ x y z, dist x z ≤ dist x y + dist y z
+    eq_zero : ∀ {x y}, dist x y = 0 ↔ x = y
+
+  def Metric.ball {X : Type u} (M : Metric X) (x : X) (ε : ℝ) : Set X :=
+    {y | M.dist x y < ε}
+
+  theorem Metric.mem_ball {X : Type u} (M : Metric X) {x y : X} {ε : ℝ} :
+      y ∈ M.ball x ε ↔ M.dist x y < ε := Iff.rfl
+
+  def Metric.IsOpenSet {X : Type u} (M : Metric X) (U : Set X) : Prop :=
+    ∀ x ∈ U, ∃ ε > 0, M.ball x ε ⊆ U
+
+  theorem Metric.isOpenSet_univ {X : Type u} (M : Metric X) : M.IsOpenSet (Set.univ : Set X) :=
+    fun _ _ => ⟨1, one_pos, fun _ _ => trivial⟩
+
+  theorem Metric.isOpenSet_inter {X : Type u} (M : Metric X) {U V : Set X}
+      (hU : M.IsOpenSet U) (hV : M.IsOpenSet V) : M.IsOpenSet (U ∩ V) := by
+    intro x hx
+    obtain ⟨a, ha, hau⟩ := hU x hx.1
+    obtain ⟨b, hb, hbv⟩ := hV x hx.2
+    refine ⟨min a b, lt_min ha hb, ?_⟩
+    intro y hy
+    rw [M.mem_ball] at hy
+    exact ⟨hau (lt_of_lt_of_le hy (min_le_left a b)), hbv (lt_of_lt_of_le hy (min_le_right a b))⟩
+
+  theorem Metric.isOpenSet_sUnion {X : Type u} (M : Metric X) {F : Set (Set X)}
+      (h : ∀ U ∈ F, M.IsOpenSet U) : M.IsOpenSet (⋃₀ F) := by
+    intro x hx
+    obtain ⟨U, hUF, hxU⟩ := hx
+    obtain ⟨ε, hε, hsub⟩ := h U hUF x hxU
+    exact ⟨ε, hε, fun y hy => ⟨U, hUF, hsub hy⟩⟩
+
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Metric.toTopology {X : Type u} (M : Metric X) : Topology X where
+    IsOpen := M.IsOpenSet
+    univ := M.isOpenSet_univ
+    inter := M.isOpenSet_inter
+    sUnion := M.isOpenSet_sUnion
+
+  def discrete (X : Type u) : Topology X where
+    IsOpen := fun _ => True
+    univ := trivial
+    inter := fun _ _ => trivial
+    sUnion := fun _ => trivial
+
+  theorem Topology.eq_of_isOpen_iff {X : Type u} {T T' : Topology X}
+      (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U) : T = T' := by
+    obtain ⟨o, hu, hi, hs⟩ := T
+    obtain ⟨o', hu', hi', hs'⟩ := T'
+    have e : o = o' := funext (fun U => propext (h U))
+    subst e
+    rfl
+
+  def discreteMetric (X : Type u) [DecidableEq X] : Metric X where
+    dist x y := if x = y then 0 else 1
+    symm {x y} := by
+      by_cases h : x = y
+      · rw [if_pos h, if_pos h.symm]
+      · rw [if_neg h, if_neg (Ne.symm h)]
+    triangle x y z := by
+      have hb : (0 : ℝ) ≤ if y = z then 0 else 1 := by split_ifs <;> norm_num
+      have ha : (if x = z then (0 : ℝ) else 1) ≤ 1 := by split_ifs <;> norm_num
+      by_cases h1 : x = y
+      · subst h1
+        rw [if_pos rfl, zero_add]
+      · rw [if_neg h1]
+        linarith
+    eq_zero {x y} := by
+      by_cases h : x = y
+      · rw [if_pos h]
+        exact ⟨fun _ => h, fun _ => rfl⟩
+      · rw [if_neg h]
+        exact ⟨fun e => absurd e one_ne_zero, fun e => absurd e h⟩
+
+  theorem discreteMetric_eq_of_dist_lt_one {X : Type u} [DecidableEq X] {x y : X}
+      (h : (discreteMetric X).dist x y < 1) : x = y := by
+    by_contra hne
+    have e : (discreteMetric X).dist x y = 1 := if_neg hne
+    linarith
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `discreteMetric_toTopology`. `Topology.eq_of_isOpen_iff` reduces an equality of topologies to an equivalence between their open sets; one direction is `trivial`, and the other offers the radius `1` and closes with the fact from the previous problem.
+stub_names:
+- discreteMetric_toTopology
+namespace: GeneralTopology
+seq: 196
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Sequences.lean
+  line: 523
+  closure_rounds: 1
+  check_kind: theorem
