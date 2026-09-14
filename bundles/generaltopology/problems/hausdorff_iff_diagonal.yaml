@@ -1,0 +1,92 @@
+slug: hausdorff_iff_diagonal
+kind: example
+title: Hausdorff Means the Diagonal is Closed
+statement: |-
+  The *diagonal* of a space is the set of pairs `(x, x)` inside `X × X`: a copy of the space sitting inside its own square. The Hausdorff condition is exactly the statement that this copy is closed there.
+
+  A point off the diagonal is a pair whose two coordinates differ. To say the complement of the diagonal is open is to put an open box `U ×ˢ V` around each such pair inside that complement — and a box misses the diagonal exactly when `U` and `V` are disjoint, since a point `z` of both would put the pair `(z, z)` inside the box.
+concepts:
+- separation_closures
+stub: |-
+  def diagonal (X : Type u) : Set (X × X) := {p | p.1 = p.2}
+
+  theorem Topology.isClosed_diagonal_of_isHausdorff {X : Type u} {T : Topology X}
+      (h : T.IsHausdorff) : (T.prod T).IsClosed (diagonal X) := sorry
+
+  theorem Topology.isHausdorff_of_isClosed_diagonal {X : Type u} {T : Topology X}
+      (h : (T.prod T).IsClosed (diagonal X)) : T.IsHausdorff := sorry
+reference: |-
+  def diagonal (X : Type u) : Set (X × X) := {p | p.1 = p.2}
+
+  theorem Topology.isClosed_diagonal_of_isHausdorff {X : Type u} {T : Topology X}
+      (h : T.IsHausdorff) : (T.prod T).IsClosed (diagonal X) := by
+    show (T.prod T).IsOpen _
+    intro p hp
+    obtain ⟨U, V, hU, hV, h1, h2, hUV⟩ := h p.1 p.2 hp
+    refine ⟨U, V, hU, hV, ⟨h1, h2⟩, ?_⟩
+    rintro q ⟨hq1, hq2⟩ he
+    have hz : q.1 ∈ U ∩ V := ⟨hq1, by rw [show q.1 = q.2 from he]; exact hq2⟩
+    rw [hUV] at hz
+    exact hz
+
+  theorem Topology.isHausdorff_of_isClosed_diagonal {X : Type u} {T : Topology X}
+      (h : (T.prod T).IsClosed (diagonal X)) : T.IsHausdorff := by
+    intro x y hxy
+    obtain ⟨U, V, hU, hV, hp, hsub⟩ := h (x, y) hxy
+    refine ⟨U, V, hU, hV, hp.1, hp.2, ?_⟩
+    apply Set.eq_empty_of_forall_notMem
+    rintro z ⟨hzU, hzV⟩
+    exact hsub (show ((z, z) : X × X) ∈ U ×ˢ V from ⟨hzU, hzV⟩) rfl
+spec: |-
+  example (X : Type u) : _root_.GeneralTopology.diagonal X = ({p | p.1 = p.2} : Set (X × X)) := rfl
+  example : ∀ {X : Type u} {T : Topology X}
+      (h : T.IsHausdorff), (T.prod T).IsClosed (_root_.GeneralTopology.diagonal X) := _root_.GeneralTopology.Topology.isClosed_diagonal_of_isHausdorff
+  example : ∀ {X : Type u} {T : Topology X}
+      (h : (T.prod T).IsClosed (_root_.GeneralTopology.diagonal X)), T.IsHausdorff := _root_.GeneralTopology.Topology.isHausdorff_of_isClosed_diagonal
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X × Y) where
+    IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
+    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    inter := by
+      rintro W W' hW hW' p hp
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
+      obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
+      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+        ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
+      rintro q ⟨hq1, hq2⟩
+      exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
+    sUnion := by
+      rintro F h p ⟨W, hWF, hpW⟩
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
+      exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
+
+  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove `Topology.isClosed_diagonal_of_isHausdorff` and `Topology.isHausdorff_of_isClosed_diagonal`, both against `T.prod T`. Each restates the closedness with `show` and then reads the definition of the product topology directly: forwards the separating pair becomes the box, and backwards the box at `(x, y)` becomes the separating pair, with `(z, z)` the point that shows it disjoint.'
+stub_names:
+- diagonal
+- Topology.isClosed_diagonal_of_isHausdorff
+- Topology.isHausdorff_of_isClosed_diagonal
+namespace: GeneralTopology
+seq: 152
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Separation.lean
+  line: 330
+  closure_rounds: 1
+  check_kind: theorem

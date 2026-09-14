@@ -1,0 +1,66 @@
+slug: hausdorff_invariant
+kind: theorem
+title: Being Hausdorff is a Topological Property
+statement: |-
+  Nothing in the Hausdorff condition mentions anything but open sets and points, so a homeomorphism carries it across. Given two distinct points of the second space, send them back by the inverse map — they are still distinct, since the forward map returns them — separate them there, and pull the two open sets forward along the inverse map, which is continuous.
+
+  Discreteness and codiscreteness were transported by the same argument in an earlier section, and every axiom of this one transports the same way. A property that survives every homeomorphism is a property of the space and not of the names of its points.
+concepts:
+- separation_hereditary
+stub: |-
+  theorem Homeomorphic.isHausdorff {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsHausdorff) : T'.IsHausdorff := sorry
+reference: |-
+  theorem Homeomorphic.isHausdorff {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsHausdorff) : T'.IsHausdorff := by
+    obtain ⟨e⟩ := h
+    intro x y hxy
+    obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := hT (e.invFun x) (e.invFun y)
+      (fun he => hxy (by rw [← e.right_inv x, ← e.right_inv y, he]))
+    refine ⟨e.invFun ⁻¹' U, e.invFun ⁻¹' V, e.continuous_invFun U hU, e.continuous_invFun V hV,
+      hxU, hyV, ?_⟩
+    rw [← Set.preimage_inter, hUV, Set.preimage_empty]
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X} {T' : Topology Y}
+      (h : Homeomorphic T T') (hT : T.IsHausdorff), T'.IsHausdorff := _root_.GeneralTopology.Homeomorphic.isHausdorff
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  structure Homeomorphism {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) where
+    toFun : X → Y
+    invFun : Y → X
+    left_inv : ∀ x, invFun (toFun x) = x
+    right_inv : ∀ y, toFun (invFun y) = y
+    continuous_toFun : T.Continuous T' toFun
+    continuous_invFun : T'.Continuous T invFun
+
+  def Homeomorphic {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) : Prop :=
+    Nonempty (Homeomorphism T T')
+
+  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `T'.IsHausdorff` when `Homeomorphic T T'` and `T.IsHausdorff`. Take the homeomorphism out of the hypothesis with `obtain ⟨e⟩`. The two open sets are `e.invFun ⁻¹' U` and `e.invFun ⁻¹' V`, open by `e.continuous_invFun`; `e.right_inv` is what shows the two pulled-back points distinct.
+stub_names:
+- Homeomorphic.isHausdorff
+namespace: GeneralTopology
+seq: 155
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Separation.lean
+  line: 436
+  closure_rounds: 1
+  check_kind: theorem

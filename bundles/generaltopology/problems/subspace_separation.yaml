@@ -1,0 +1,94 @@
+slug: subspace_separation
+kind: example
+title: A Subspace Inherits All Three
+statement: |-
+  A subset of a space carries the traces of the ambient open sets, and that is all three axioms need. Two distinct points of `A` are distinct as points of `X`, since they differ only by the proof each carries that it lies in `A`. Whatever open sets separate them in `X`, their traces separate them in `A`.
+
+  Disjointness survives too, because a preimage commutes with intersecting: the traces of two disjoint sets meet in the trace of the empty set, which is empty.
+concepts:
+- separation_hereditary
+stub: |-
+  theorem Topology.isT0_subspace {X : Type u} {T : Topology X} (h : T.IsT0) (A : Set X) :
+      (T.subspace A).IsT0 := sorry
+
+  theorem Topology.isT1_subspace {X : Type u} {T : Topology X} (h : T.IsT1) (A : Set X) :
+      (T.subspace A).IsT1 := sorry
+
+  theorem Topology.isHausdorff_subspace {X : Type u} {T : Topology X} (h : T.IsHausdorff)
+      (A : Set X) : (T.subspace A).IsHausdorff := sorry
+reference: |-
+  theorem Topology.isT0_subspace {X : Type u} {T : Topology X} (h : T.IsT0) (A : Set X) :
+      (T.subspace A).IsT0 := by
+    intro a b hab
+    rcases h a.val b.val (fun e => hab (Subtype.ext e)) with ⟨U, hU, haU, hbU⟩ | ⟨U, hU, hbU, haU⟩
+    · exact Or.inl ⟨Subtype.val ⁻¹' U, ⟨U, hU, rfl⟩, haU, hbU⟩
+    · exact Or.inr ⟨Subtype.val ⁻¹' U, ⟨U, hU, rfl⟩, hbU, haU⟩
+
+  theorem Topology.isT1_subspace {X : Type u} {T : Topology X} (h : T.IsT1) (A : Set X) :
+      (T.subspace A).IsT1 := by
+    intro a b hab
+    obtain ⟨U, hU, haU, hbU⟩ := h a.val b.val (fun e => hab (Subtype.ext e))
+    exact ⟨Subtype.val ⁻¹' U, ⟨U, hU, rfl⟩, haU, hbU⟩
+
+  theorem Topology.isHausdorff_subspace {X : Type u} {T : Topology X} (h : T.IsHausdorff)
+      (A : Set X) : (T.subspace A).IsHausdorff := by
+    intro a b hab
+    obtain ⟨U, V, hU, hV, haU, hbV, hUV⟩ := h a.val b.val (fun e => hab (Subtype.ext e))
+    refine ⟨Subtype.val ⁻¹' U, Subtype.val ⁻¹' V, ⟨U, hU, rfl⟩, ⟨V, hV, rfl⟩, haU, hbV, ?_⟩
+    rw [← Set.preimage_inter, hUV, Set.preimage_empty]
+spec: |-
+  example : ∀ {X : Type u} {T : Topology X} (h : T.IsT0) (A : Set X), (T.subspace A).IsT0 := _root_.GeneralTopology.Topology.isT0_subspace
+  example : ∀ {X : Type u} {T : Topology X} (h : T.IsT1) (A : Set X), (T.subspace A).IsT1 := _root_.GeneralTopology.Topology.isT1_subspace
+  example : ∀ {X : Type u} {T : Topology X} (h : T.IsHausdorff)
+      (A : Set X), (T.subspace A).IsHausdorff := _root_.GeneralTopology.Topology.isHausdorff_subspace
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A where
+    IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U
+    univ := ⟨Set.univ, T.univ, rfl⟩
+    inter := by
+      rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
+      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
+    sUnion := by
+      intro F h
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      apply Set.Subset.antisymm
+      · rintro x ⟨V, hVF, hxV⟩
+        obtain ⟨U, hU, rfl⟩ := h V hVF
+        exact ⟨U, ⟨hU, hVF⟩, hxV⟩
+      · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
+        exact ⟨_, hUF, hxU⟩
+
+  def Topology.IsT0 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y →
+      (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)
+
+  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
+
+  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.isT0_subspace`, `Topology.isT1_subspace` and `Topology.isHausdorff_subspace`. In each, `Subtype.ext` turns an equality of the underlying points back into an equality of the points of `A`; the trace of an open `U` is open by `⟨U, hU, rfl⟩`, and `Set.preimage_inter` with `Set.preimage_empty` closes the last one.
+stub_names:
+- Topology.isT0_subspace
+- Topology.isT1_subspace
+- Topology.isHausdorff_subspace
+namespace: GeneralTopology
+seq: 153
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Separation.lean
+  line: 376
+  closure_rounds: 1
+  check_kind: theorem

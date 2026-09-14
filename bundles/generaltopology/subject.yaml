@@ -19,6 +19,8 @@ description: |-
 
   **Quotients and Sums** builds the constructions the last section's are dual to. Reverse the arrow of the induced topology: given a map out of a space, call a set open below when its preimage is open above, and the result is the finest topology that map allows. Gluing points together by an equivalence relation is that construction along the map carrying a point to its class, and laying two spaces side by side is it along the two injections at once. A map out of either is then no harder to test than a map out of what it was built from: a map out of a quotient is a map that does not distinguish related points, and a map out of a sum is a pair of maps. The section ends by collapsing a subset of a space to a single point, and showing that the point a closed subset becomes is a closed point of what is left.
 
+  **Separation Axioms** asks the first question one asks of a space: how well its open sets tell its points apart. Three conditions of increasing strength say that one of two distinct points has an open set the other misses, that each of them does, and that the two sets may be chosen disjoint — the last being the Hausdorff condition. Every metric space satisfies it, while the example spaces of the earlier sections fail the three at every level, which is what shows no two of them to be the same condition. Each has a second form written with closures: a space is T₁ exactly when its points are closed sets, T₀ exactly when the closure of a point determines the point, and Hausdorff exactly when the diagonal is closed in the square of the space. All three pass to a subspace, to a product and across a homeomorphism. Above them stand two more, separating a point from a closed set and then two closed sets from each other; a discrete space satisfies both, and every metric space is regular.
+
   Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
@@ -787,13 +789,53 @@ concepts:
   title: The Sum of Two Spaces
   position: 38
 - slug: quotient_examples
-  description: 'The first identification worth making: take a subset, declare all of its points equal, and leave everything else alone. The space that results has one new point where the subset was. What that point inherits from the subset is the question the construction is for, and the answer for a closed subset is the last thing this subject proves.'
+  description: 'The first identification worth making: take a subset, declare all of its points equal, and leave everything else alone. The space that results has one new point where the subset was. What that point inherits from the subset is the question the construction is for, and for a closed subset the answer is that the point is closed too.'
   kind: theorem
-  goal: true
+  goal: false
   section: Quotients and Sums
   section_order: 7
   title: Collapsing a Subset
   position: 39
+- slug: separation_axioms
+  description: 'A topology need not tell its points apart: the codiscrete one cannot distinguish any two of them. The separation axioms say how well a given topology can, each asking for open sets around distinct points and each stronger than the one before. They are the first thing asked of a space once it exists, and most of what follows assumes one of them.'
+  kind: definition
+  goal: false
+  section: Separation Axioms
+  section_order: 8
+  title: The First Three Separation Axioms
+  position: 40
+- slug: separation_examples
+  description: An axiom earns its place by what it admits and what it rules out. Every metric space satisfies all three of these, and the example spaces of the earlier sections sit at every level of the hierarchy — which is what shows that no two of the three conditions are the same condition.
+  kind: theorem
+  goal: false
+  section: Separation Axioms
+  section_order: 8
+  title: Spaces That Separate, and Spaces That Do Not
+  position: 41
+- slug: separation_closures
+  description: Each of the three axioms is a demand for open sets around points, and each has an equivalent form stated with the closure instead. The translations are what make the axioms usable, since they replace a search for open sets by an equation between sets — and the Hausdorff one is where the product topology earns its place.
+  kind: theorem
+  goal: false
+  section: Separation Axioms
+  section_order: 8
+  title: Separation Read Through Closures
+  position: 42
+- slug: separation_hereditary
+  description: 'A property is worth naming when the constructions of the subject preserve it. The three axioms pass to a subspace, to a product of two spaces, and across a homeomorphism — the last because they are stated in open sets alone, which a homeomorphism matches one for one. A quotient is the exception: gluing points together can destroy any of the three.'
+  kind: theorem
+  goal: false
+  section: Separation Axioms
+  section_order: 8
+  title: Which Constructions Keep the Axioms
+  position: 43
+- slug: regular_normal
+  description: Above Hausdorff the axioms stop separating points from points. They separate a point from a closed set, and then two closed sets from one another, which is what the deeper theorems of the subject need. Each is stated on top of T₁, and that is what keeps the hierarchy a chain.
+  kind: definition
+  goal: true
+  section: Separation Axioms
+  section_order: 8
+  title: Regular and Normal Spaces
+  position: 44
 edges:
 - - closed_families
   - closure
@@ -813,6 +855,10 @@ edges:
   - interior_boundary
 - - closure_points
   - dense_sets
+- - closure_points
+  - separation_closures
+- - cofinite_topology
+  - separation_examples
 - - continuity_examples
   - subspace_maps
 - - continuous_maps
@@ -833,6 +879,8 @@ edges:
   - continuity_examples
 - - extreme_topologies
   - quotient_space
+- - extreme_topologies
+  - separation_examples
 - - extreme_topologies
   - topological_invariants
 - - final_topology
@@ -859,6 +907,8 @@ edges:
   - metric_equivalence
 - - metric_topology
   - quotient_examples
+- - metric_topology
+  - separation_examples
 - - neighbourhoods
   - closure_points
 - - neighbourhoods
@@ -885,24 +935,42 @@ edges:
   - metric_topology
 - - plane_norms
   - metric_equivalence
+- - product_maps
+  - separation_hereditary
 - - product_topology
   - plane_is_product
 - - product_topology
   - product_maps
+- - product_topology
+  - separation_closures
 - - quotient_space
   - quotient_examples
 - - real_line
   - epsilon_delta
 - - real_line
   - open_ball
+- - separation_axioms
+  - separation_closures
+- - separation_axioms
+  - separation_examples
+- - separation_axioms
+  - separation_hereditary
+- - separation_closures
+  - regular_normal
+- - separation_examples
+  - regular_normal
 - - sierpinski_space
   - continuity_examples
+- - sierpinski_space
+  - separation_examples
 - - sierpinski_space
   - topological_invariants
 - - subspace_topology
   - continuity_examples
 - - subspace_topology
   - induced_topology
+- - subspace_topology
+  - separation_hereditary
 - - topological_space
   - closed_sets
 - - topological_space
@@ -918,6 +986,8 @@ edges:
 - - topological_space
   - product_topology
 - - topological_space
+  - separation_axioms
+- - topological_space
   - sierpinski_space
 - - topological_space
   - subspace_topology
@@ -927,7 +997,7 @@ provenance:
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: 318b783352d0e4c0a4fc181288b37d8a61d544ef
+  commit: 542accd4b5a80e69900d3db82711f2228deb63b6
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

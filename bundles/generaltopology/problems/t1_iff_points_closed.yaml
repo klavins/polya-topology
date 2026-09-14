@@ -1,0 +1,80 @@
+slug: t1_iff_points_closed
+kind: theorem
+title: T₁ Means Every Point is Closed
+statement: |-
+  The axiom T₁ has a one-word form: the points of the space are closed sets.
+
+  If the points are closed then, given `x ≠ y`, the set `{y}ᶜ` is open, it contains `x`, and it leaves `y` out — which is the axiom.
+
+  Conversely, suppose the axiom holds, and look at `{x}ᶜ`. Each of its points `y` is distinct from `x`, so the axiom supplies an open set holding `y` and missing `x`; an open set missing `x` lies inside `{x}ᶜ`. So `{x}ᶜ` is a neighbourhood of each of its own points, and is therefore open.
+concepts:
+- separation_closures
+stub: |-
+  theorem Topology.isT1_iff_isClosed_singleton {X : Type u} (T : Topology X) :
+      T.IsT1 ↔ ∀ x : X, T.IsClosed {x} := sorry
+reference: |-
+  theorem Topology.isT1_iff_isClosed_singleton {X : Type u} (T : Topology X) :
+      T.IsT1 ↔ ∀ x : X, T.IsClosed {x} := by
+    constructor
+    · intro h x
+      show T.IsOpen _
+      rw [Topology.isOpen_iff_nbhd]
+      intro y hy
+      obtain ⟨U, hU, hyU, hxU⟩ := h y x hy
+      exact ⟨U, hU, hyU, fun z hz he => hxU (by rw [← show z = x from he]; exact hz)⟩
+    · intro h x y hxy
+      exact ⟨{y}ᶜ, h y, hxy, fun hn => hn rfl⟩
+spec: 'example : ∀ {X : Type u} (T : Topology X), T.IsT1 ↔ ∀ x : X, T.IsClosed {x} := _root_.GeneralTopology.Topology.isT1_iff_isClosed_singleton'
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
+    constructor
+    · intro hU x hx
+      exact T.nbhd_of_isOpen hU hx
+    · intro h
+      rw [T.union_of_opens_inside U h]
+      exact T.sUnion (fun V hV => hV.1)
+
+  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `Topology.isT1_iff_isClosed_singleton`. Forwards, restate the closedness with `show` and turn it into a statement at each point with `Topology.isOpen_iff_nbhd`. A membership `y ∈ {x}` is the equation `y = x`, so a point of `{x}ᶜ` arrives with exactly the hypothesis `y ≠ x` the axiom wants.
+stub_names:
+- Topology.isT1_iff_isClosed_singleton
+namespace: GeneralTopology
+seq: 150
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Separation.lean
+  line: 275
+  closure_rounds: 1
+  check_kind: theorem

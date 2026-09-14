@@ -459,9 +459,8 @@ theorem Topology.continuous_sum_iff {X : Type u} {Y : Type v} {Z : Type w} (T : 
 @concept quotient_examples
 @title Collapsing a Subset
 @kind theorem
-@goal
 
-The first identification worth making: take a subset, declare all of its points equal, and leave everything else alone. The space that results has one new point where the subset was. What that point inherits from the subset is the question the construction is for, and the answer for a closed subset is the last thing this subject proves.
+The first identification worth making: take a subset, declare all of its points equal, and leave everything else alone. The space that results has one new point where the subset was. What that point inherits from the subset is the question the construction is for, and for a closed subset the answer is that the point is closed too.
 -/
 
 /-!

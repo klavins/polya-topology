@@ -1,0 +1,66 @@
+slug: define_separation_axioms
+kind: example
+title: The Axioms T₀, T₁ and Hausdorff
+statement: |-
+  Let `x` and `y` be distinct points of a space. Three conditions, in increasing strength, ask the open sets to notice the difference.
+
+  T₀ asks that one of the two points have an open set around it leaving the other out. Which of the two is not said, so the condition is a disjunction.
+
+  T₁ asks it of both points at once: each has an open set around it that the other escapes.
+
+  T₂, or *Hausdorff*, asks more. Each point has an open set around it and the two sets are disjoint, so the points are not merely distinguished but held apart.
+concepts:
+- separation_axioms
+stub: |-
+  def Topology.IsT0 {X : Type u} (T : Topology X) : Prop := sorry
+
+  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop := sorry
+
+  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop := sorry
+reference: |-
+  def Topology.IsT0 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y →
+      (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)
+
+  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
+
+  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
+spec: |-
+  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsT0 T ↔ (∀ x y : X, x ≠ y →
+      (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)) := by unfold _root_.GeneralTopology.Topology.IsT0; first | exact Iff.rfl | grind
+  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsT1 T ↔ (∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) := by unfold _root_.GeneralTopology.Topology.IsT1; first | exact Iff.rfl | grind
+  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsHausdorff T ↔ (∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅) := by unfold _root_.GeneralTopology.Topology.IsHausdorff; first | exact Iff.rfl | grind
+  example (X : Type) (T : Topology X) :
+      (T.IsT0 ↔ ∀ x y : X, x ≠ y →
+          (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V))
+        ∧ (T.IsT1 ↔ ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U)
+        ∧ (T.IsHausdorff ↔ ∀ x y : X, x ≠ y →
+          ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅) :=
+    ⟨Iff.rfl, Iff.rfl, Iff.rfl⟩
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Topology.IsT0`, `Topology.IsT1` and `Topology.IsHausdorff`, each quantified over `x y : X` with `x ≠ y`. Write T₁ as `∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U`; T₀ as that disjunct or the same with the two points exchanged; and Hausdorff as `∃ U V` with the five conditions `T.IsOpen U`, `T.IsOpen V`, `x ∈ U`, `y ∈ V`, `U ∩ V = ∅`, in that order.'
+stub_names:
+- Topology.IsT0
+- Topology.IsT1
+- Topology.IsHausdorff
+namespace: GeneralTopology
+seq: 142
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Separation.lean
+  line: 22
+  closure_rounds: 1
+  check_kind: mixed

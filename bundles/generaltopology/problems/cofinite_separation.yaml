@@ -1,0 +1,90 @@
+slug: cofinite_separation
+kind: example
+title: The Cofinite Topology is T₁ and Not Hausdorff
+statement: |-
+  One level higher, the gap between T₁ and Hausdorff opens.
+
+  The cofinite topology is T₁ on any set. The complement of a single point is open, since its own complement is that one point and a point is a finite set, and it contains every other point of the space.
+
+  On an infinite set it is not Hausdorff, because its open sets are too large to avoid one another. If two of them were disjoint and nonempty, their complements would have finite size and would cover everything between them — so the whole set would be finite.
+concepts:
+- separation_examples
+stub: |-
+  theorem cofinite_isT1 {X : Type u} : (cofinite X).IsT1 := sorry
+
+  theorem cofinite_not_isHausdorff : ¬ (cofinite ℕ).IsHausdorff := sorry
+reference: |-
+  theorem cofinite_isT1 {X : Type u} : (cofinite X).IsT1 := by
+    intro x y hxy
+    refine ⟨{y}ᶜ, Or.inr ?_, hxy, ?_⟩
+    · rw [compl_compl]
+      exact Set.finite_singleton y
+    · intro h
+      exact h rfl
+
+  theorem cofinite_not_isHausdorff : ¬ (cofinite ℕ).IsHausdorff := by
+    intro h
+    obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := h 0 1 (by norm_num)
+    have hUc : Uᶜ.Finite := hU.resolve_left (fun he => by rw [he] at hxU; exact hxU)
+    have hVc : Vᶜ.Finite := hV.resolve_left (fun he => by rw [he] at hyV; exact hyV)
+    have e : (Set.univ : Set ℕ) = Uᶜ ∪ Vᶜ := by
+      rw [← Set.compl_inter, hUV, Set.compl_empty]
+    exact Set.infinite_univ (by rw [e]; exact hUc.union hVc)
+spec: |-
+  example : ∀ {X : Type u}, (cofinite X).IsT1 := _root_.GeneralTopology.cofinite_isT1
+  example : ¬ (cofinite ℕ).IsHausdorff := _root_.GeneralTopology.cofinite_not_isHausdorff
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  theorem cofinite_inter {X : Type u} {U V : Set X} (hU : U = ∅ ∨ Uᶜ.Finite)
+      (hV : V = ∅ ∨ Vᶜ.Finite) : U ∩ V = ∅ ∨ (U ∩ V)ᶜ.Finite := by
+    rcases hU with rfl | hu
+    · left; exact Set.empty_inter V
+    · rcases hV with rfl | hv
+      · left; exact Set.inter_empty U
+      · right; rw [Set.compl_inter]; exact hu.union hv
+
+  theorem cofinite_sUnion {X : Type u} {F : Set (Set X)}
+      (h : ∀ U ∈ F, U = ∅ ∨ Uᶜ.Finite) : ⋃₀ F = ∅ ∨ (⋃₀ F)ᶜ.Finite := by
+    by_cases he : ∃ U ∈ F, U ≠ ∅
+    · obtain ⟨U, hUF, hne⟩ := he
+      refine Or.inr (((h U hUF).resolve_left hne).subset ?_)
+      exact Set.compl_subset_compl.mpr (Set.subset_sUnion_of_mem hUF)
+    · refine Or.inl (Set.sUnion_eq_empty.mpr ?_)
+      intro U hUF
+      by_contra hne
+      exact he ⟨U, hUF, hne⟩
+
+  def cofinite (X : Type u) : Topology X where
+    IsOpen := fun U => U = ∅ ∨ Uᶜ.Finite
+    univ := Or.inr (by rw [Set.compl_univ]; exact Set.finite_empty)
+    inter := cofinite_inter
+    sUnion := cofinite_sUnion
+
+  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
+
+  def Topology.IsHausdorff {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ y ∈ V ∧ U ∩ V = ∅
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `cofinite_isT1` for any `X`, and `cofinite_not_isHausdorff` for `ℕ`. In the first, `compl_compl` and `Set.finite_singleton` show `{y}ᶜ` open. In the second, `Or.resolve_left` turns each open set's disjunction into the finiteness of its complement, `Set.compl_inter` rewrites `Set.univ` as the union of the two complements, and `Set.infinite_univ` refutes its finiteness.
+stub_names:
+- cofinite_isT1
+- cofinite_not_isHausdorff
+namespace: GeneralTopology
+seq: 148
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Separation.lean
+  line: 192
+  closure_rounds: 1
+  check_kind: theorem

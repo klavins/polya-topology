@@ -1,0 +1,63 @@
+slug: define_regular_normal
+kind: example
+title: The Definitions of Regular and Normal
+statement: |-
+  The Hausdorff condition separates two points. Ask the same of a point and a closed set, and then of two closed sets, and two further axioms appear.
+
+  A space is *regular*, or T₃, when it is T₁ and every point outside a closed set has disjoint open sets separating it from that set. It is *normal*, or T₄, when it is T₁ and any two disjoint closed sets have disjoint open sets separating them.
+
+  Each carries T₁ as a conjunct, and without it the hierarchy would break: it is T₁ that makes a single point a closed set, and so makes the Hausdorff condition a case of regularity.
+concepts:
+- regular_normal
+stub: |-
+  def Topology.IsRegular {X : Type u} (T : Topology X) : Prop := sorry
+
+  def Topology.IsNormal {X : Type u} (T : Topology X) : Prop := sorry
+reference: |-
+  def Topology.IsRegular {X : Type u} (T : Topology X) : Prop :=
+    T.IsT1 ∧ ∀ (x : X) (C : Set X), T.IsClosed C → x ∉ C →
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ C ⊆ V ∧ U ∩ V = ∅
+
+  def Topology.IsNormal {X : Type u} (T : Topology X) : Prop :=
+    T.IsT1 ∧ ∀ C D : Set X, T.IsClosed C → T.IsClosed D → C ∩ D = ∅ →
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ C ⊆ U ∧ D ⊆ V ∧ U ∩ V = ∅
+spec: |-
+  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsRegular T ↔ (T.IsT1 ∧ ∀ (x : X) (C : Set X), T.IsClosed C → x ∉ C →
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ C ⊆ V ∧ U ∩ V = ∅) := by unfold _root_.GeneralTopology.Topology.IsRegular; first | exact Iff.rfl | grind
+  example {X : Type u} (T : Topology X) : _root_.GeneralTopology.Topology.IsNormal T ↔ (T.IsT1 ∧ ∀ C D : Set X, T.IsClosed C → T.IsClosed D → C ∩ D = ∅ →
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ C ⊆ U ∧ D ⊆ V ∧ U ∩ V = ∅) := by unfold _root_.GeneralTopology.Topology.IsNormal; first | exact Iff.rfl | grind
+  example (X : Type) (T : Topology X) :
+      (T.IsRegular ↔ T.IsT1 ∧ ∀ (x : X) (C : Set X), T.IsClosed C → x ∉ C →
+          ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ x ∈ U ∧ C ⊆ V ∧ U ∩ V = ∅)
+        ∧ (T.IsNormal ↔ T.IsT1 ∧ ∀ C D : Set X, T.IsClosed C → T.IsClosed D → C ∩ D = ∅ →
+          ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ C ⊆ U ∧ D ⊆ V ∧ U ∩ V = ∅) :=
+    ⟨Iff.rfl, Iff.rfl⟩
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Topology.IsRegular` and `Topology.IsNormal`, each a conjunction whose first half is `T.IsT1`. The second half of the first quantifies over `x : X` and `C : Set X` with `T.IsClosed C` and `x ∉ C`, and asks for `U` and `V` with `T.IsOpen U`, `T.IsOpen V`, `x ∈ U`, `C ⊆ V`, `U ∩ V = ∅`, in that order. The second quantifies over `C D : Set X`, both closed, with `C ∩ D = ∅`, and asks for `C ⊆ U` and `D ⊆ V` in the corresponding places.'
+stub_names:
+- Topology.IsRegular
+- Topology.IsNormal
+namespace: GeneralTopology
+seq: 156
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Separation.lean
+  line: 467
+  closure_rounds: 1
+  check_kind: mixed

@@ -50,6 +50,12 @@ piece of Lean (`Setoid` and `Quotient`) rather than a piece of topology, and a c
 is four problems whatever the mathematics around it costs. Count such a concept against the
 budget like any other. **Five concepts and sixteen to eighteen problems** still stands.
 
+§9 came in at 5 concepts, 18 problems and 584 lines, with the longest proof at fourteen. Two of
+its eighteen problems exist only to keep a proof under fifteen lines — a positive distance between
+distinct points, and the two facts about the closure of a single point — which is the cost the
+line limit charges, and it is paid in problems, not in prose. Budget one such helper per hard
+statement rather than hoping the proof will fit.
+
 ## The sections
 
 - [x] **1. Metric Spaces** — `MetricSpaces.lean` · 7 concepts, 31 problems
@@ -340,9 +346,7 @@ budget like any other. **Five concepts and sixteen to eighteen problems** still 
     a later section that needs one should count it against the same budget rather than treating it
     as free.
 
----
-
-- [ ] **9. Separation Axioms** — `Separation.lean` · 5 concepts, ~15 problems
+- [x] **9. Separation Axioms** — `Separation.lean` · 5 concepts, 18 problems
 
   How well a topology tells points apart — the first thing asked of a space once it exists.
   Builds on §4 (closures), §7 (subspaces and products) and §3 (the examples that fail).
@@ -386,6 +390,67 @@ budget like any other. **Five concepts and sixteen to eighteen problems** still 
   general not T_n — which is why `separation_hereditary` is stated for subspaces and products and
   not for quotients; say so in prose rather than proving it, since the counterexample is
   `ℝ/ℚ` and that wants the Archimedean argument for its own sake.
+
+  As built, and what it settled:
+
+  - The **`@goal` moved** from §8's `quotient_examples` to `regular_normal`.
+  - **The names are `Topology.IsT0`, `Topology.IsT1`, `Topology.IsHausdorff`, `Topology.IsRegular`
+    and `Topology.IsNormal`** — the numbers where mathematics has no other name for the condition,
+    the words where it has. **T₃ and T₄ carry `T.IsT1` as a conjunct**, which is the source's
+    convention and is what makes the hierarchy a chain: without it a regular space need not be
+    Hausdorff, and `Topology.isHausdorff_of_isRegular` could not be stated. A later section that
+    wants the weaker, T₁-free "regular" should say so in its own name rather than change this one.
+  - **The five definitions are checked by `Iff.rfl`**, so — as §7 found for `Topology.prod` — the
+    order of the conjuncts is part of the answer, and each description names the order. Compiled
+    against the variants a student will actually write (`¬ (y ∈ U)` for `y ∉ U`, `∀ (x : X) (y : X)`
+    for `∀ x y : X`, renamed bound sets) the spec accepts them all, and it still rejects a
+    definition missing a conjunct.
+  - **Three of the section's flags were wrong about the route, in the same direction.** The
+    diagonal statement wanted neither `Topology.continuous_prod_mk` nor the slices: it is
+    `Topology.prod`'s own definition read twice, because a box around a point off the diagonal
+    *is* the separating pair. The subspace statements wanted neither
+    `Topology.continuous_into_subspace` nor `Topology.isClosed_subspace_iff`: the trace of an
+    open set is open by `⟨U, hU, rfl⟩`, and that is five lines for each of the three axioms.
+    And "points are closed" did not want `T.isClosed_iff_closure_eq` at a singleton; it is
+    `Topology.isOpen_iff_nbhd` on `{x}ᶜ`, which is where the axiom's hypothesis already lives.
+    The pattern, for the sections below: reach for a construction's **definition** before its
+    universal property when what is being proved is a statement about its open sets.
+  - **`Topology.mem_closure_singleton` and `Topology.closure_singleton_subset_iff` were not in
+    the plan and are in the section.** They say that `x ∈ T.closure {y}` is "every open set
+    containing `x` contains `y`", and that the same condition compares the two closures — the
+    specialisation order, without the name. The T₀ characterisation is four lines on top of them
+    and would not have fit in fifteen without them. §11's `sequential_closure` and §13's
+    recognition arguments should look here first.
+  - **`Metric.dist_pos` is new**, and it is the first line of every separation argument in a
+    metric space. It was split out because `Metric.isHausdorff` runs to twelve lines with it and
+    past fifteen without.
+  - **A metric space is regular without the distance from a point to a set.** The flag budgeted a
+    concept for `sInf`; what the proof needs is only the union of the balls of radius `ε / 2` about
+    the points of the closed set, which is open by `Metric.isOpenSet_sUnion` and covers the set by
+    `Metric.mem_ball_self`. Fourteen lines, no infimum, nothing `noncomputable`. **Normality is
+    still not free**, though: two closed sets need a radius chosen at each point of each of them
+    and the two compared, and that is where the infimum comes back — so "every metric space is
+    normal" remains a section's decision, not a corollary of this one.
+  - **The line with two origins was not needed.** `separation_examples` came to five problems
+    without it — the metric, the codiscrete, the Sierpiński and the cofinite spaces already
+    separate the three conditions pairwise — so §8's construction is still unspent and §10 or a
+    later section may have it.
+  - **`Homeomorphic.isHausdorff` is the shape to copy.** Transporting an axiom is `obtain ⟨e⟩`,
+    the two sets pulled back along `e.invFun` (open by `e.continuous_invFun`), and `e.right_inv`
+    to see that the two pulled-back points are still distinct. It needs neither
+    `Homeomorphism.isOpen_iff` nor `.preimage_preimage`, which the flag named; a property stated
+    with *points* as well as open sets moves along the map, not along the open-set equivalence.
+    §10's connectedness and §12's compactness are stated without points and should use the flag's
+    pair instead.
+  - **No new import, and no deprecated name.** The fence is the same ten modules
+    §7 left. One correction to add to the deprecation list below: **`push_neg` is deprecated in
+    this toolchain** and prints the replacement it wants, so a proof that negates a hypothesis
+    writes `push Not at h`. `t0_iff_closures` is the only proof here that needs it.
+  - **Eighteen problems, 5 concepts, 584 lines**, with the longest proof at fourteen
+    (`Topology.isT0_iff_closure_injective`, which was over before its two helpers were split out,
+    and `Metric.isRegular`). The band holds.
+
+---
 
 - [ ] **10. Connectedness** — `Connectedness.lean` · 5 concepts, ~14 problems
 
@@ -434,7 +499,9 @@ budget like any other. **Five concepts and sixteen to eighteen problems** still 
     space; a discrete metric space is complete.
 
   Flags: `sequential_closure` is §4's `Metric.mem_closure_iff` turned into a sequence and back,
-  so the section inherits the ball form and owes only the sequence. The reverse halves of
+  so the section inherits the ball form and owes only the sequence. "Limits are unique exactly
+  when the space is Hausdorff" is stated at §9's `Topology.IsHausdorff`, and the metric half is
+  `Metric.isHausdorff` with `Metric.dist_pos`; none of the three is to be restated. The reverse halves of
   `sequential_closure` and `sequential_continuity` pick a point from
   each ball of radius `1/(n+1)`, so they use `choose` and the Archimedean property, which §4 put
   in the fence for good. Both are fine
@@ -479,7 +546,12 @@ budget like any other. **Five concepts and sixteen to eighteen problems** still 
   - `heine_borel` — on the line, and on the plane with the supremum metric, compact means closed
     and bounded.
 
-  Flags: `compact_to_hausdorff`'s second half — a continuous bijection between them is a
+  Flags: the vocabulary is §9's and is not to be rebuilt — `Topology.IsHausdorff` and
+  `Topology.IsNormal` (which carries `T.IsT1` as its first conjunct, so `compact_normal` owes that
+  conjunct too), `Topology.isT1_iff_isClosed_singleton` for "a point is a closed set", and
+  `Topology.isHausdorff_of_isClosed_diagonal` where a diagonal argument is shorter than a pair of
+  points.
+  `compact_to_hausdorff`'s second half — a continuous bijection between them is a
   homeomorphism — is the closed-map form of §6's `Homeomorphism.ofOpenMap`, which §6 deliberately
   did not build: it is that definition with `Set.preimage_compl` in the middle, and it belongs
   here, where the hypothesis that makes the map closed lives. Present the bijection as §6 does,
@@ -535,7 +607,9 @@ is the one thing that is not. Neither §5 nor §6 needed an addition; §7 added
 ten modules `polya extract` reports. §8 added nothing either, which is the more surprising of the
 two: `Setoid`, `Quotient` with its four operations, `Sum` with `Sum.elim` and `Sum.inl_injective`,
 and `Set.preimage_image_eq` beside `Set.preimage_inr_image_inl` are all reachable under what §7
-left, so `Mathlib.Data.Sum.Basic` was tested, found clean, and not needed. Test any further import
+left, so `Mathlib.Data.Sum.Basic` was tested, found clean, and not needed. §9 added nothing
+either, so the fence has stood still for three sections: `Set.infinite_univ`,
+`Set.finite_singleton` and `Subtype.ext` are all under what §7 left. Test any further import
 before adding it; the command is in `STYLE.md`, and the message to grep for is
 `unknownIdentifier`, which Lean capitalizes.
 
@@ -543,7 +617,9 @@ before adding it; the command is in `STYLE.md`, and the message to grep for is
 its replacement. Warnings are errors under publish, so import
 `Mathlib.Algebra.Order.Archimedean.Real.Basic` instead. Two more names that look innocent are
 deprecated the same way: `Set.diff_eq_empty` and `Set.diff_self`, whose replacements are
-`Set.sdiff_eq_empty` and `Set.sdiff_self`.
+`Set.sdiff_eq_empty` and `Set.sdiff_self`. A **tactic** is deprecated the same way and
+costs a publish as surely as a name does: `push_neg` prints a warning naming `push Not`, so a
+proof that needs to negate a hypothesis writes `push Not at h` (§9's `t0_iff_closures`).
 
 **The fence is the subject's, not the section's.** `polya extract` accumulates the imports of
 every section file into one list and compiles *every* problem against all of it, so an import
@@ -608,6 +684,17 @@ one — never a redefinition.
   `Topology.isOpenMap_inr`, `Topology.continuous_sum_elim`, `Topology.continuous_sum_iff`
 - `collapse`, `collapse_preimage_class`, `unitInterval`, `unitInterval_closed`,
   `collapse_point_isClosed`, `line_collapse_interval`
+- `Topology.IsT0`, `Topology.IsT1`, `Topology.IsHausdorff`, `Topology.IsRegular`,
+  `Topology.IsNormal`, `Topology.isT0_of_isT1`, `Topology.isT1_of_isHausdorff`,
+  `Topology.isRegular_of_isNormal`, `Topology.isHausdorff_of_isRegular`
+- `Metric.dist_pos`, `Metric.isHausdorff`, `Metric.isRegular`, `codiscrete_not_isT0`,
+  `sierpinski_isT0`, `sierpinski_not_isT1`, `cofinite_isT1`, `cofinite_not_isHausdorff`,
+  `discrete_isNormal`
+- `Topology.mem_closure_singleton`, `Topology.closure_singleton_subset_iff`,
+  `Topology.isT1_iff_isClosed_singleton`, `Topology.isT0_iff_closure_injective`, `diagonal`,
+  `Topology.isClosed_diagonal_of_isHausdorff`, `Topology.isHausdorff_of_isClosed_diagonal`
+- `Topology.isT0_subspace`, `Topology.isT1_subspace`, `Topology.isHausdorff_subspace`,
+  `Topology.isHausdorff_prod`, `Homeomorphic.isHausdorff`
 
 Two in particular: §7's `Topology.induced` is the shape `Topology.subspace` already had
 (`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it and
@@ -641,7 +728,10 @@ later section stalls this way, that is the first place to look.
 §8 wrote its citations in full from the start — `Topology.continuous_coinduced T (Quotient.mk s)`
 in `Topology.continuous_mk`, `Topology.empty T'` in `Topology.isOpenMap_inl`,
 `Metric.mem_ball line` in `unitInterval_closed` — and nothing stalled. The rule costs nothing when
-it is followed first; follow it in every section from here.
+it is followed first; follow it in every section from here. §9 did the same throughout —
+`(Topology.mem_closure_iff T).mp`, `Metric.isOpenSet_ball M x _`, `rw [Metric.mem_ball M]` — and
+nothing stalled there either. Structure *fields* stay in dot form (`M.dist`, `M.triangle`,
+`M.symm`, `T.IsOpen`, `e.continuous_invFun`), since they arrive with the structure.
 
 ### Shapes that cost more than they look
 
@@ -666,6 +756,12 @@ it is followed first; follow it in every section from here.
 - **Choice and computability.** `Classical.choice` is on the check's axiom allowlist, so `choose`
   and proof by contradiction are available, and a `noncomputable def` — which an infimum over a
   set of reals forces — passes the extractor's command allowlist.
+- **A definition beats its universal property, for a statement about open sets.** §9 planned three
+  proofs around `Topology.continuous_prod_mk`, `Topology.continuous_into_subspace` and
+  `Topology.isClosed_subspace_iff`, and all three came out shorter by reading `Topology.prod` and
+  `Topology.subspace` directly — a box *is* a separating pair, and the trace of an open set is
+  open by `⟨U, hU, rfl⟩`. The universal property is the tool when a **map** is being built or
+  tested; the definition is the tool when an **open set** is being produced.
 
 ### The expensive proofs
 

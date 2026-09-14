@@ -1,0 +1,56 @@
+slug: discrete_normal
+kind: theorem
+title: A Discrete Space is Normal
+statement: |-
+  Where every subset is open there is nothing to arrange. Two disjoint closed sets are already two disjoint open sets, and each separates the other; the T₁ half is as cheap, since the complement of a point is open like everything else.
+
+  So the discrete topology satisfies all five axioms, and the codiscrete one fails the first. The two extremes bound the hierarchy as they bound everything else built from open sets.
+concepts:
+- regular_normal
+stub: 'theorem discrete_isNormal (X : Type u) : (discrete X).IsNormal := sorry'
+reference: |-
+  theorem discrete_isNormal (X : Type u) : (discrete X).IsNormal := by
+    constructor
+    · intro x y hxy
+      exact ⟨{y}ᶜ, trivial, hxy, fun hn => hn rfl⟩
+    · intro C D _ _ hCD
+      exact ⟨C, D, trivial, trivial, subset_rfl, subset_rfl, hCD⟩
+spec: 'example : ∀ (X : Type u), (discrete X).IsNormal := _root_.GeneralTopology.discrete_isNormal'
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsClosed {X : Type u} (T : Topology X) (C : Set X) : Prop := T.IsOpen Cᶜ
+
+  def discrete (X : Type u) : Topology X where
+    IsOpen := fun _ => True
+    univ := trivial
+    inter := fun _ _ => trivial
+    sUnion := fun _ => trivial
+
+  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
+
+  def Topology.IsNormal {X : Type u} (T : Topology X) : Prop :=
+    T.IsT1 ∧ ∀ C D : Set X, T.IsClosed C → T.IsClosed D → C ∩ D = ∅ →
+      ∃ U V, T.IsOpen U ∧ T.IsOpen V ∧ C ⊆ U ∧ D ⊆ V ∧ U ∩ V = ∅
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `(discrete X).IsNormal`. For the T₁ half offer `{y}ᶜ`; for the second half offer the two closed sets unchanged, with `subset_rfl` for the two containments and the hypothesis for the disjointness. Openness in the discrete topology is `trivial`.
+stub_names:
+- discrete_isNormal
+namespace: GeneralTopology
+seq: 158
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Separation.lean
+  line: 536
+  closure_rounds: 1
+  check_kind: theorem

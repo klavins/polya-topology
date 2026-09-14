@@ -1,0 +1,71 @@
+slug: sierpinski_separation
+kind: example
+title: The Sierpiński Space is T₀ and Not T₁
+statement: |-
+  The two-point space with one open point sits exactly between the first two axioms, which is what makes it the standard counterexample.
+
+  It is T₀. The set `{true}` is open, it contains `true`, and it leaves `false` out — so whichever way round two distinct points of `Bool` arrive, one of the two disjuncts is satisfied by that one set.
+
+  It is not T₁. The open sets were defined so that any one containing `false` contains `true` as well, so no open set separates `false` from `true` at all, and the other disjunct is the only one available.
+concepts:
+- separation_examples
+stub: |-
+  theorem sierpinski_isT0 : sierpinski.IsT0 := sorry
+
+  theorem sierpinski_not_isT1 : ¬ sierpinski.IsT1 := sorry
+reference: |-
+  theorem sierpinski_isT0 : sierpinski.IsT0 := by
+    intro x y hxy
+    cases x <;> cases y
+    · exact absurd rfl hxy
+    · exact Or.inr ⟨{true}, fun _ => rfl, rfl, by simp⟩
+    · exact Or.inl ⟨{true}, fun _ => rfl, rfl, by simp⟩
+    · exact absurd rfl hxy
+
+  theorem sierpinski_not_isT1 : ¬ sierpinski.IsT1 := by
+    intro h
+    obtain ⟨U, hU, hfU, htU⟩ := h false true (by simp)
+    exact htU (hU hfU)
+spec: |-
+  example : sierpinski.IsT0 := _root_.GeneralTopology.sierpinski_isT0
+  example : ¬ sierpinski.IsT1 := _root_.GeneralTopology.sierpinski_not_isT1
+preamble: |
+  universe u v
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def sierpinski : Topology Bool where
+    IsOpen := fun U => false ∈ U → true ∈ U
+    univ := fun _ => trivial
+    inter := fun hU hV h => ⟨hU h.1, hV h.2⟩
+    sUnion := by
+      intro F h hf
+      obtain ⟨U, hUF, hU⟩ := hf
+      exact ⟨U, hUF, h U hUF hU⟩
+
+  def Topology.IsT0 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y →
+      (∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U) ∨ (∃ V, T.IsOpen V ∧ y ∈ V ∧ x ∉ V)
+
+  def Topology.IsT1 {X : Type u} (T : Topology X) : Prop :=
+    ∀ x y : X, x ≠ y → ∃ U, T.IsOpen U ∧ x ∈ U ∧ y ∉ U
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `sierpinski_isT0` and `sierpinski_not_isT1`. For the first, `cases x <;> cases y` leaves four goals, two of which `x ≠ y` refutes; the openness of `{true}` is an implication whose hypothesis is not needed. For the second, apply the assumption at `false` and `true` and then apply the openness of the set it returns.
+stub_names:
+- sierpinski_isT0
+- sierpinski_not_isT1
+namespace: GeneralTopology
+seq: 147
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Separation.lean
+  line: 162
+  closure_rounds: 1
+  check_kind: theorem

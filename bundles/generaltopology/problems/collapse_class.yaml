@@ -47,6 +47,6 @@ provenance:
   license: CC-BY-SA-4.0
   source: extract@9c4b8d6
   file: PolyaTopology/GeneralTopology/Quotients.lean
-  line: 499
+  line: 498
   closure_rounds: 1
   check_kind: theorem
