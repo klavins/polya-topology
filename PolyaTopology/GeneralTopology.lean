@@ -4,6 +4,7 @@ import PolyaTopology.GeneralTopology.BasicExamples
 import PolyaTopology.GeneralTopology.Closure
 import PolyaTopology.GeneralTopology.Continuity
 import PolyaTopology.GeneralTopology.Homeomorphisms
+import PolyaTopology.GeneralTopology.Products
 
 /-! @subject generaltopology
 @title General Topology
@@ -24,6 +25,8 @@ Topology is the study of nearness without measurement: of which points lie close
 **Continuous Functions** says which maps a topology admits. We give the ε-δ definition first, for metric spaces, and then the definition that needs no distances: a map is continuous when the preimage of every open set is open. The two agree wherever both can be read, which is the theorem that licenses the abstract one. Continuity then has a closed-set form, a closure form and a pointwise form, and the section ends by testing the definition on the example spaces — where the two-point space turns out to record an open subset exactly, so that the maps into it are the open sets of the space they come from.
 
 **Homeomorphisms** asks when two spaces are the same space. A map that is continuous, invertible, and whose inverse is continuous carries the open sets of one onto the open sets of the other, and nothing a topology can see then tells the two apart. Such a map is both an open map and a closed map, and a continuous bijection is one exactly when it is open — which a continuous bijection need not be. The section ends by putting the notion to work in both directions: the plane measured by the taxicab length and the plane measured by the supremum length are the same space, though the lengths differ at almost every pair of points, while the three topologies a two-point set carries are shown to be three different spaces.
+
+**Subspaces and Products** makes new spaces out of old, and asks of each what maps it admits. The topology a subset inherits is the one that makes a map into the subset no harder to test than a map into the whole space around it; the same construction along any map at all gives the coarsest topology making that map continuous, and the subspace is one case of it. The product of two spaces calls a set open when every point of it has a box around it inside, the two projections out of it are continuous and — unusually — open, and a map into it is a pair of maps, continuous exactly when both of them are. The section ends where the subject began: the plane under the supremum distance is the product of two copies of the line, because a supremum ball is a square, and the taxicab plane is one too, since the last section made it the same space.
 
 Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 -/

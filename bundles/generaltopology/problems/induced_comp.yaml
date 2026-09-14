@@ -1,0 +1,72 @@
+slug: induced_comp
+kind: theorem
+title: Inducing Twice
+statement: |-
+  A subspace of a subspace is a subspace of the space they both sit in, and the general statement is about maps: inducing along `f` and then along `g` is inducing along `f ∘ g`.
+
+  Each side calls a set open when it is a preimage of an open set of `Z` — on the left along `g` and then along `f`, on the right along the composite at once. That preimages compose is the whole of the proof.
+concepts:
+- induced_topology
+stub: |-
+  theorem Topology.induced_induced {X : Type u} {Y : Type v} {Z : Type w} (T : Topology Z)
+      (f : Y → Z) (g : X → Y) : (T.induced f).induced g = T.induced (f ∘ g) := sorry
+reference: |-
+  theorem Topology.induced_induced {X : Type u} {Y : Type v} {Z : Type w} (T : Topology Z)
+      (f : Y → Z) (g : X → Y) : (T.induced f).induced g = T.induced (f ∘ g) := by
+    apply Topology.eq_of_isOpen_iff
+    intro V
+    constructor
+    · rintro ⟨W, ⟨U, hU, rfl⟩, rfl⟩
+      exact ⟨U, hU, Set.preimage_comp.symm⟩
+    · rintro ⟨U, hU, rfl⟩
+      exact ⟨f ⁻¹' U, ⟨U, hU, rfl⟩, Set.preimage_comp⟩
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} (T : Topology Z)
+      (f : Y → Z) (g : X → Y), (T.induced f).induced g = T.induced (f ∘ g) := _root_.GeneralTopology.Topology.induced_induced
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) : Topology X where
+    IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = f ⁻¹' U
+    univ := ⟨Set.univ, T.univ, rfl⟩
+    inter := by
+      rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
+      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
+    sUnion := by
+      intro F h
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (f ⁻¹' U : Set X) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      apply Set.Subset.antisymm
+      · rintro x ⟨V, hVF, hxV⟩
+        obtain ⟨U, hU, rfl⟩ := h V hVF
+        exact ⟨U, ⟨hU, hVF⟩, hxV⟩
+      · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
+        exact ⟨_, hUF, hxU⟩
+
+  theorem Topology.eq_of_isOpen_iff {X : Type u} {T T' : Topology X}
+      (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U) : T = T' := by
+    obtain ⟨o, hu, hi, hs⟩ := T
+    obtain ⟨o', hu', hi', hs'⟩ := T'
+    have e : o = o' := funext (fun U => propext (h U))
+    subst e
+    rfl
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove `(T.induced f).induced g = T.induced (f ∘ g)`. The previous problem reduces it to an equivalence at each set; `Set.preimage_comp` closes one direction and its symmetric form the other.
+stub_names:
+- Topology.induced_induced
+namespace: GeneralTopology
+seq: 111
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Products.lean
+  line: 180
+  closure_rounds: 1
+  check_kind: theorem

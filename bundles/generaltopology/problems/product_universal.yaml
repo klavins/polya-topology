@@ -1,0 +1,141 @@
+slug: product_universal
+kind: example
+title: A Map Into a Product is a Pair of Maps
+statement: |-
+  To give a map from `Z` into `X × Y` is to give a map into `X` and a map into `Y`, since a point of the product is a pair. The topology is chosen so that the same holds of continuity.
+
+  One direction is composition with the projections. For the other, let `W` be open in the product and let `z` be a point whose image lies in `W`. A box `U ×ˢ V` around that image lies inside `W`, and `f ⁻¹' U ∩ g ⁻¹' V` is then an open set around `z` inside the preimage of `W`. So the preimage is a neighbourhood of each of its points.
+concepts:
+- product_maps
+stub: |-
+  theorem Topology.continuous_prod_mk {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} (S : Topology Z) {f : Z → X} {g : Z → Y} (hf : S.Continuous T f)
+      (hg : S.Continuous T' g) : S.Continuous (T.prod T') (fun z => (f z, g z)) := sorry
+
+  theorem Topology.continuous_prod_iff {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      (T' : Topology Y) (S : Topology Z) (h : Z → X × Y) :
+      S.Continuous (T.prod T') h ↔
+        S.Continuous T (fun z => (h z).1) ∧ S.Continuous T' (fun z => (h z).2) := sorry
+reference: |-
+  theorem Topology.continuous_prod_mk {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} (S : Topology Z) {f : Z → X} {g : Z → Y} (hf : S.Continuous T f)
+      (hg : S.Continuous T' g) : S.Continuous (T.prod T') (fun z => (f z, g z)) := by
+    intro W hW
+    rw [Topology.isOpen_iff_nbhd]
+    intro z hz
+    obtain ⟨U, V, hU, hV, hzUV, hsub⟩ := hW (f z, g z) hz
+    refine ⟨f ⁻¹' U ∩ g ⁻¹' V, S.inter (hf U hU) (hg V hV), ⟨hzUV.1, hzUV.2⟩, ?_⟩
+    intro w hw
+    exact hsub ⟨hw.1, hw.2⟩
+
+  theorem Topology.continuous_prod_iff {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      (T' : Topology Y) (S : Topology Z) (h : Z → X × Y) :
+      S.Continuous (T.prod T') h ↔
+        S.Continuous T (fun z => (h z).1) ∧ S.Continuous T' (fun z => (h z).2) := by
+    constructor
+    · intro hh
+      exact ⟨Topology.continuous_comp S hh (Topology.continuous_fst T T'),
+        Topology.continuous_comp S hh (Topology.continuous_snd T T')⟩
+    · rintro ⟨hf, hg⟩
+      exact Topology.continuous_prod_mk S hf hg
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} {T : Topology X}
+      {T' : Topology Y} (S : Topology Z) {f : Z → X} {g : Z → Y} (hf : S.Continuous T f)
+      (hg : S.Continuous T' g), S.Continuous (T.prod T') (fun z => (f z, g z)) := _root_.GeneralTopology.Topology.continuous_prod_mk
+  example : ∀ {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      (T' : Topology Y) (S : Topology Z) (h : Z → X × Y), S.Continuous (T.prod T') h ↔
+        S.Continuous T (fun z => (h z).1) ∧ S.Continuous T' (fun z => (h z).2) := _root_.GeneralTopology.Topology.continuous_prod_iff
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.IsNbhd {X : Type u} (T : Topology X) (x : X) (N : Set X) : Prop :=
+    ∃ U, T.IsOpen U ∧ x ∈ U ∧ U ⊆ N
+
+  theorem Topology.nbhd_of_isOpen {X : Type u} (T : Topology X) {U : Set X}
+      (hU : T.IsOpen U) {x : X} (hx : x ∈ U) : T.IsNbhd x U :=
+    ⟨U, hU, hx, subset_rfl⟩
+
+  theorem Topology.union_of_opens_inside {X : Type u} (T : Topology X) (U : Set X)
+      (h : ∀ x ∈ U, T.IsNbhd x U) : U = ⋃₀ {V | T.IsOpen V ∧ V ⊆ U} := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      obtain ⟨V, hV, hxV, hVU⟩ := h x hx
+      exact ⟨V, ⟨hV, hVU⟩, hxV⟩
+    · rintro x ⟨V, ⟨_, hVU⟩, hxV⟩
+      exact hVU hxV
+
+  theorem Topology.isOpen_iff_nbhd {X : Type u} (T : Topology X) (U : Set X) :
+      T.IsOpen U ↔ ∀ x ∈ U, T.IsNbhd x U := by
+    constructor
+    · intro hU x hx
+      exact T.nbhd_of_isOpen hU hx
+    · intro h
+      rw [T.union_of_opens_inside U h]
+      exact T.sUnion (fun V hV => hV.1)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  theorem Topology.continuous_comp {X : Type u} {Y : Type v} {Z : Type w} (T : Topology X)
+      {T' : Topology Y} {T'' : Topology Z} {f : X → Y} {g : Y → Z}
+      (hf : T.Continuous T' f) (hg : T'.Continuous T'' g) : T.Continuous T'' (g ∘ f) := by
+    intro U hU
+    rw [Set.preimage_comp]
+    exact hf _ (hg U hU)
+
+  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X × Y) where
+    IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
+    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    inter := by
+      rintro W W' hW hW' p hp
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
+      obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
+      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+        ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
+      rintro q ⟨hq1, hq2⟩
+      exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
+    sUnion := by
+      rintro F h p ⟨W, hWF, hpW⟩
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
+      exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
+
+  theorem Topology.isOpen_prod_box {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      {U : Set X} {V : Set Y} (hU : T.IsOpen U) (hV : T'.IsOpen V) :
+      (T.prod T').IsOpen (U ×ˢ V) :=
+    fun _ hp => ⟨U, V, hU, hV, hp, subset_rfl⟩
+
+  theorem Topology.continuous_fst {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      (T.prod T').Continuous T Prod.fst := by
+    intro U hU
+    rw [← Set.prod_univ]
+    exact Topology.isOpen_prod_box T T' hU T'.univ
+
+  theorem Topology.continuous_snd {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      (T.prod T').Continuous T' Prod.snd := by
+    intro V hV
+    rw [← Set.univ_prod]
+    exact Topology.isOpen_prod_box T T' T.univ hV
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Prove that `fun z => (f z, g z)` is continuous when `f` and `g` are, and then that a map `h : Z → X × Y` is continuous exactly when its two components are. For the second, compose with the projections in one direction; in the other, `h` and the pair of its components are the same map, so the first applies as it stands.'
+stub_names:
+- Topology.continuous_prod_mk
+- Topology.continuous_prod_iff
+namespace: GeneralTopology
+seq: 117
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Products.lean
+  line: 352
+  closure_rounds: 1
+  check_kind: theorem

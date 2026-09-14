@@ -1,0 +1,77 @@
+slug: define_induced
+kind: example
+title: The Topology Induced by a Map
+statement: |-
+  Let `f` carry a set `X` to a space `Y`. Call a subset of `X` open when it is the preimage of an open set of `Y`. This is a topology, and the three conditions hold because preimages commute with the three operations: the preimage of the whole space is the whole space, the preimage of an intersection is the intersection of the preimages, and the preimage of a union is the union of the preimages.
+
+  The subspace topology is this construction with `f` the inclusion. The two are then not merely equivalent but the same term, so `rfl` proves it.
+concepts:
+- induced_topology
+stub: |-
+  def Topology.induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) : Topology X := sorry
+
+  theorem Topology.subspace_eq_induced {X : Type u} (T : Topology X) (A : Set X) :
+      T.subspace A = T.induced (Subtype.val : A → X) := sorry
+reference: |-
+  def Topology.induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) : Topology X where
+    IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = f ⁻¹' U
+    univ := ⟨Set.univ, T.univ, rfl⟩
+    inter := by
+      rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
+      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
+    sUnion := by
+      intro F h
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (f ⁻¹' U : Set X) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      apply Set.Subset.antisymm
+      · rintro x ⟨V, hVF, hxV⟩
+        obtain ⟨U, hU, rfl⟩ := h V hVF
+        exact ⟨U, ⟨hU, hVF⟩, hxV⟩
+      · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
+        exact ⟨_, hUF, hxU⟩
+
+  theorem Topology.subspace_eq_induced {X : Type u} (T : Topology X) (A : Set X) :
+      T.subspace A = T.induced (Subtype.val : A → X) := rfl
+spec: |-
+  example : ∀ {X : Type u} (T : Topology X) (A : Set X), T.subspace A = T.induced (Subtype.val : A → X) := _root_.GeneralTopology.Topology.subspace_eq_induced
+  example (X Y : Type) (T : Topology Y) (f : X → Y) (V : Set X) :
+      (T.induced f).IsOpen V ↔ ∃ U, T.IsOpen U ∧ V = f ⁻¹' U := Iff.rfl
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A where
+    IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U
+    univ := ⟨Set.univ, T.univ, rfl⟩
+    inter := by
+      rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
+      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
+    sUnion := by
+      intro F h
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      apply Set.Subset.antisymm
+      · rintro x ⟨V, hVF, hxV⟩
+        obtain ⟨U, hU, rfl⟩ := h V hVF
+        exact ⟨U, ⟨hU, hVF⟩, hxV⟩
+      · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
+        exact ⟨_, hUF, hxU⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Topology.induced`, the topology on `X` whose open sets are the preimages under `f` of the open sets of `T`, and show that `T.subspace A` is `T.induced Subtype.val`. Follow the fields of `Topology.subspace`: the last offers the union of those open sets of `Y` whose preimage belongs to the given collection.'
+stub_names:
+- Topology.induced
+- Topology.subspace_eq_induced
+namespace: GeneralTopology
+seq: 108
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Products.lean
+  line: 98
+  closure_rounds: 1
+  check_kind: mixed

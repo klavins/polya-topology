@@ -1,0 +1,72 @@
+slug: induced_continuous
+kind: example
+title: The Coarsest Topology Making a Map Continuous
+statement: |-
+  The induced topology was built to make `f` continuous, and it does, with nothing to check: the preimage of an open set is a preimage of an open set.
+
+  It is the smallest topology that does. If `S` is any topology on `X` for which `f` is continuous, then `S` calls open everything the induced topology calls open, since each of those is the preimage of an open set. So the induced topology puts on `X` exactly the open sets that `f` forces, and no others.
+concepts:
+- induced_topology
+stub: |-
+  theorem Topology.continuous_induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) :
+      (T.induced f).Continuous T f := sorry
+
+  theorem Topology.induced_coarsest {X : Type u} {Y : Type v} {T : Topology Y} {S : Topology X}
+      {f : X → Y} (hf : S.Continuous T f) {V : Set X} (hV : (T.induced f).IsOpen V) : S.IsOpen V := sorry
+reference: |-
+  theorem Topology.continuous_induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) :
+      (T.induced f).Continuous T f :=
+    fun U hU => ⟨U, hU, rfl⟩
+
+  theorem Topology.induced_coarsest {X : Type u} {Y : Type v} {T : Topology Y} {S : Topology X}
+      {f : X → Y} (hf : S.Continuous T f) {V : Set X} (hV : (T.induced f).IsOpen V) : S.IsOpen V := by
+    obtain ⟨U, hU, rfl⟩ := hV
+    exact hf U hU
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y), (T.induced f).Continuous T f := _root_.GeneralTopology.Topology.continuous_induced
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology Y} {S : Topology X}
+      {f : X → Y} (hf : S.Continuous T f) {V : Set X} (hV : (T.induced f).IsOpen V), S.IsOpen V := _root_.GeneralTopology.Topology.induced_coarsest
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  def Topology.induced {X : Type u} {Y : Type v} (T : Topology Y) (f : X → Y) : Topology X where
+    IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = f ⁻¹' U
+    univ := ⟨Set.univ, T.univ, rfl⟩
+    inter := by
+      rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
+      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
+    sUnion := by
+      intro F h
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (f ⁻¹' U : Set X) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      apply Set.Subset.antisymm
+      · rintro x ⟨V, hVF, hxV⟩
+        obtain ⟨U, hU, rfl⟩ := h V hVF
+        exact ⟨U, ⟨hU, hVF⟩, hxV⟩
+      · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
+        exact ⟨_, hUF, hxU⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `f` is continuous from `T.induced f` to `T`, and that any topology `S` making `f` continuous calls open every set that `T.induced f` calls open. Each is one line once the open set has been taken apart.
+stub_names:
+- Topology.continuous_induced
+- Topology.induced_coarsest
+namespace: GeneralTopology
+seq: 109
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Products.lean
+  line: 136
+  closure_rounds: 1
+  check_kind: theorem

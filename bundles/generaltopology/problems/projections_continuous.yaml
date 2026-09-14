@@ -1,0 +1,80 @@
+slug: projections_continuous
+kind: example
+title: The Projections Are Continuous
+statement: |-
+  `Prod.fst` sends a pair to its first coordinate and `Prod.snd` to its second. The preimage of a subset `U` of `X` under the first is the slab `U ×ˢ Set.univ`, a box one of whose sides is the whole of `Y`; the preimage of a subset `V` of `Y` under the second is `Set.univ ×ˢ V`. Both are boxes with open sides, hence open, so both projections are continuous.
+
+  That a preimage is that box is `Set.prod_univ`, or `Set.univ_prod`, read backwards.
+concepts:
+- product_maps
+stub: |-
+  theorem Topology.continuous_fst {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      (T.prod T').Continuous T Prod.fst := sorry
+
+  theorem Topology.continuous_snd {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      (T.prod T').Continuous T' Prod.snd := sorry
+reference: |-
+  theorem Topology.continuous_fst {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      (T.prod T').Continuous T Prod.fst := by
+    intro U hU
+    rw [← Set.prod_univ]
+    exact Topology.isOpen_prod_box T T' hU T'.univ
+
+  theorem Topology.continuous_snd {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      (T.prod T').Continuous T' Prod.snd := by
+    intro V hV
+    rw [← Set.univ_prod]
+    exact Topology.isOpen_prod_box T T' T.univ hV
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), (T.prod T').Continuous T Prod.fst := _root_.GeneralTopology.Topology.continuous_fst
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y), (T.prod T').Continuous T' Prod.snd := _root_.GeneralTopology.Topology.continuous_snd
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X × Y) where
+    IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
+    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    inter := by
+      rintro W W' hW hW' p hp
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
+      obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
+      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+        ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
+      rintro q ⟨hq1, hq2⟩
+      exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
+    sUnion := by
+      rintro F h p ⟨W, hWF, hpW⟩
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
+      exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
+
+  theorem Topology.isOpen_prod_box {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      {U : Set X} {V : Set Y} (hU : T.IsOpen U) (hV : T'.IsOpen V) :
+      (T.prod T').IsOpen (U ×ˢ V) :=
+    fun _ hp => ⟨U, V, hU, hV, hp, subset_rfl⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that `Prod.fst` and `Prod.snd` are continuous from `T.prod T'`. Rewrite the preimage as a box with `← Set.prod_univ` or `← Set.univ_prod`, and apply the previous problem, with `T'.univ` or `T.univ` for the side that is everything.
+stub_names:
+- Topology.continuous_fst
+- Topology.continuous_snd
+namespace: GeneralTopology
+seq: 115
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Products.lean
+  line: 294
+  closure_rounds: 1
+  check_kind: theorem

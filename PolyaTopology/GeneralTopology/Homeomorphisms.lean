@@ -439,7 +439,6 @@ theorem plane_homeomorphic :
 @concept topological_invariants
 @title Telling Two Spaces Apart
 @kind theorem
-@goal
 
 To show that two spaces are the same one exhibits a homeomorphism. To show that they are not, one needs a property that homeomorphic spaces must share, and then finds it on one side and not on the other. Two such properties settle the three topologies a two-point set carries, and with them the subject can say that spaces differ, and not only that they agree.
 -/

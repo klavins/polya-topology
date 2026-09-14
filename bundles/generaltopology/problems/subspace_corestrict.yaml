@@ -1,0 +1,66 @@
+slug: subspace_corestrict
+kind: theorem
+title: Restricting the Target
+statement: |-
+  A map may happen to take all of its values in a subset of its target, and it ought then to count as a map into that subset. Written in Lean the two are not the same map: a point of `A` is a point of `Y` carrying a proof that it lies in `A`, so the second map is `fun x => (⟨f x, h x⟩ : A)`, which pairs each value with that proof.
+
+  Continuity survives the change, for the reason the last problem gave. An open set of `A` is the trace of an open `U`, and the points whose image lands in the trace are exactly the points whose image lands in `U`.
+concepts:
+- subspace_maps
+stub: |-
+  theorem Topology.continuous_toSubspace {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A) :
+      T.Continuous (T'.subspace A) (fun x => (⟨f x, h x⟩ : A)) := sorry
+reference: |-
+  theorem Topology.continuous_toSubspace {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A) :
+      T.Continuous (T'.subspace A) (fun x => (⟨f x, h x⟩ : A)) := by
+    intro V hV
+    obtain ⟨U, hU, rfl⟩ := hV
+    exact hf U hU
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} {T : Topology X}
+      {T' : Topology Y} {f : X → Y} (hf : T.Continuous T' f) (A : Set Y) (h : ∀ x, f x ∈ A), T.Continuous (T'.subspace A) (fun x => (⟨f x, h x⟩ : A)) := _root_.GeneralTopology.Topology.continuous_toSubspace
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.subspace {X : Type u} (T : Topology X) (A : Set X) : Topology A where
+    IsOpen := fun V => ∃ U, T.IsOpen U ∧ V = Subtype.val ⁻¹' U
+    univ := ⟨Set.univ, T.univ, rfl⟩
+    inter := by
+      rintro V W ⟨U, hU, rfl⟩ ⟨U', hU', rfl⟩
+      exact ⟨U ∩ U', T.inter hU hU', rfl⟩
+    sUnion := by
+      intro F h
+      refine ⟨⋃₀ {U | T.IsOpen U ∧ (Subtype.val ⁻¹' U : Set A) ∈ F}, T.sUnion (fun U hU => hU.1), ?_⟩
+      apply Set.Subset.antisymm
+      · rintro x ⟨V, hVF, hxV⟩
+        obtain ⟨U, hU, rfl⟩ := h V hVF
+        exact ⟨U, ⟨hU, hVF⟩, hxV⟩
+      · rintro x ⟨U, ⟨hU, hUF⟩, hxU⟩
+        exact ⟨_, hUF, hxU⟩
+
+  def Topology.Continuous {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      (f : X → Y) : Prop :=
+    ∀ U, T'.IsOpen U → T.IsOpen (f ⁻¹' U)
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Show that `fun x => (⟨f x, h x⟩ : A)` is continuous into `T''.subspace A` when `f` is continuous and every `f x` lies in `A`. Take the open set apart with `obtain ⟨U, hU, rfl⟩`; what is left is the hypothesis at `U`, with no rewriting needed.'
+stub_names:
+- Topology.continuous_toSubspace
+namespace: GeneralTopology
+seq: 106
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Products.lean
+  line: 46
+  closure_rounds: 1
+  check_kind: theorem

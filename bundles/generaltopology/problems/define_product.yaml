@@ -1,0 +1,56 @@
+slug: define_product
+kind: definition
+title: The Product of Two Spaces
+statement: |-
+  Let `T` be a topology on `X` and `T'` one on `Y`. A *box* is a set `U ×ˢ V` with `U` a subset of `X` and `V` a subset of `Y`; a pair belongs to it when its two coordinates belong to the two sides, which is what `p ∈ U ×ˢ V` unfolds to.
+
+  Call a subset `W` of `X × Y` open when every point of it has an open box around it inside `W`. This is the definition of an open set of a metric space with a box in place of a ball, and the three conditions come out as they did there: the whole space is a box, two boxes meet in a box, and a box inside one member of a union is inside the union.
+concepts:
+- product_topology
+stub: |-
+  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X × Y) := sorry
+reference: |-
+  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X × Y) where
+    IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
+    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    inter := by
+      rintro W W' hW hW' p hp
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
+      obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
+      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+        ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
+      rintro q ⟨hq1, hq2⟩
+      exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
+    sUnion := by
+      rintro F h p ⟨W, hWF, hpW⟩
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
+      exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
+spec: |-
+  example (X Y : Type) (T : Topology X) (T' : Topology Y) (W : Set (X × Y)) :
+      (T.prod T').IsOpen W ↔
+        ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W := Iff.rfl
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: 'Define `Topology.prod`, the product topology on `X × Y`. Its `IsOpen W` says that for every `p ∈ W` there are `U` and `V` with four properties in this order: `U` is open, `V` is open, `p ∈ U ×ˢ V`, and `U ×ˢ V ⊆ W`. For the intersection field the box wanted is the two boxes intersected a side at a time, `U ∩ U''` against `V ∩ V''`.'
+stub_names:
+- Topology.prod
+namespace: GeneralTopology
+seq: 112
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Products.lean
+  line: 210
+  closure_rounds: 1
+  check_kind: definition

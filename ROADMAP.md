@@ -37,6 +37,12 @@ longest declaration — a six-field structure instance — at thirteen. Four con
 problems is the other end of the range from §4's five and eighteen: a section is sized by its
 problems, not by its concepts, and a concept that carries five of them is not too big.
 
+§7 came in at 5 concepts, 17 problems and 513 lines, with the longest proof at ten and the
+longest single field of a structure — the intersection condition of the product topology — at
+nine. Five sections running have landed between 16 and 18 problems, so the range at the top of
+this note can be narrowed: **five concepts and sixteen to eighteen problems** is what a section
+is, and the two that fell outside it (§1's 31, §3's 9) are the first section and the shortest.
+
 ## The sections
 
 - [x] **1. Metric Spaces** — `MetricSpaces.lean` · 7 concepts, 31 problems
@@ -167,7 +173,7 @@ problems, not by its concepts, and a concept that carries five of them is not to
     `compact_to_hausdorff` wants the closed-map form; it is the same proof with `Set.preimage_compl`
     in the middle, and it belongs there, where the hypothesis that supplies a closed map is.
 
-- [ ] **7. Subspaces and Products** — `Products.lean` · 5 concepts, ~16 problems
+- [x] **7. Subspaces and Products** — `Products.lean` · 5 concepts, 17 problems
 
   The first constructions that make new spaces from old. Builds on §3's subspace and §5.
 
@@ -204,6 +210,51 @@ problems, not by its concepts, and a concept that carries five of them is not to
   product is continuous exactly when both components are" — is stated with the maps themselves, in
   §6's manner: never `Function.Bijective`, never an inverse chosen out of surjectivity.
 
+  As built, and what it settled:
+
+  - The **`@goal` moved** from §6's `topological_invariants` to `plane_is_product`.
+  - **The fence grew for the first time since §4**, by `Mathlib.Data.Set.Prod` (tested against the
+    five forbidden names first, as the flag asked). It widens the whole subject, so `×ˢ`,
+    `Set.prod_univ`, `Set.univ_prod` and `Set.mem_prod` are now in scope for §1 as well.
+  - **`Topology.eq_of_isOpen_iff` was not in the plan and is in the section.** Lean generates no
+    `ext` lemma for `Topology` — the structure carries no `@[ext]` — so an equality of topologies
+    could not be proved at all until one existed, and `induced_induced` wanted one. It is six
+    lines: `obtain` both structures apart, `funext` and `propext` the two families of open sets,
+    `subst`, `rfl`, the last step being definitional proof irrelevance on the three conditions.
+    This is the tool for every later claim that two topologies are *equal* rather than
+    homeomorphic; §8's quotient of a discrete space is the next one.
+  - **The basis is a theorem, not a definition.** The flag offered `Topology.IsBasis` as a cheap
+    property. What is built instead is the concrete statement — an open set of a product is the
+    union of the open boxes inside it (`Topology.prod_eq_sUnion_boxes`) — which is the content
+    without the vocabulary, and nothing in the section wanted the abstraction. Define `IsBasis`
+    only when some section finds two users for it.
+  - **"A subspace of a subspace" is `induced_induced`.** `(T.induced f).induced g` is
+    `T.induced (f ∘ g)`, and that is the whole of it. Stated instead for a `B : Set A` against
+    `Subtype.val '' B` it would have needed a homeomorphism between two subtypes and taught
+    nothing; §9's hereditary axioms and §12's subset-versus-subspace should read it this way too.
+  - **`Homeomorphism.ofOpenMap` was not wanted.** The two topologies on the plane turn out to have
+    the *same* open sets, so the homeomorphism is the identity and its two continuities are the
+    two directions of one equivalence — §6's `Metric.Equivalent.toHomeomorphism` exactly. A
+    construction that does not move the points never needs an open-map argument.
+  - **The projections are open by the neighbourhood criterion.** The source proves it from the
+    basis, by images preserving unions. `Topology.isOpen_iff_nbhd` does it in six lines with no
+    basis at all, and it is the tool for every "this image is open" proof here. §12's tube lemma
+    should reach for it before reaching for boxes.
+  - `Topology.continuous_toSubspace` — a continuous map all of whose values lie in `A` is
+    continuous into `T'.subspace A`, written `fun x => (⟨f x, h x⟩ : A)` — was not in the plan and
+    is in the section. §10's connected subsets and §12's compact subsets both want it; neither
+    should restate it. `Topology.continuous_mk_left` and `.continuous_mk_right`, the slices, are
+    there for §9's diagonal and §12's tube lemma on the same terms.
+  - **A `where`-bodied definition's spec is `Iff.rfl`, so the order of its conjuncts is part of the
+    answer.** `Topology.prod`'s description names the four in order for that reason. A student who
+    writes `∀ p, p ∈ W → …` for `∀ p ∈ W, …` still passes — that was compiled against the spec —
+    but one who reorders the conjuncts does not, and no tactic fixes that without weakening the
+    check. Every later `where`-bodied definition should name its order the same way.
+  - **`plane_is_product` was cheap**, which is the third time a flagged capstone has been. A
+    supremum ball *is* a box by `max_lt_iff` and one `show`, and the rest is the two directions of
+    an open-set comparison. Read the remaining estimates under **The expensive proofs** with that
+    and §5's bridge in mind.
+
 - [ ] **8. Quotients and Sums** — `Quotients.lean` · 4 concepts, ~12 problems
 
   The constructions dual to the last section's. Builds on §7.
@@ -219,7 +270,14 @@ problems, not by its concepts, and a concept that carries five of them is not to
   - `quotient_examples` — collapsing a subset to a point, and the quotient of the line by a closed
     interval.
 
-  Flags: this is the section with the most Lean friction and the thinnest examples inside the
+  Flags: `final_topology` is `Topology.induced` with the arrow reversed, and it should be written
+  to match it field for field — the open sets are `{V | T.IsOpen (f ⁻¹' V)}` rather than an
+  existential, which makes its three conditions shorter than the induced one's, not longer. Its
+  "a map out of it is continuous exactly when the composite is" is §7's
+  `Topology.continuous_into_subspace` read backwards, and `Topology.eq_of_isOpen_iff` is what
+  proves a quotient of a discrete space discrete. Carry two universes from the start, as §7 did;
+  no clash appeared there even where a concrete example sat at `Type 0`.
+  Beyond that, this is the section with the most Lean friction and the thinnest examples inside the
   fence — the source's quotients of interest (the circle, the cylinder, the Möbius strip, the
   torus) are all beyond it. Keep every statement about a quotient phrased through `Quot.mk` and
   `Quot.lift` rather than by choosing representatives. Nothing after this section depends on it,
@@ -241,7 +299,13 @@ problems, not by its concepts, and a concept that carries five of them is not to
   - `regular_normal` — the two stronger axioms stated, with the easy cases: a discrete space is
     normal, and a metric space is regular.
 
-  Flags: each axiom is a topological invariant, and §6 built the machine for saying so —
+  Flags: the diagonal-closed statement is `Topology.prod T T` and §7 has everything it needs —
+  `Topology.continuous_mk_left` and `.continuous_mk_right` for the slices,
+  `Topology.continuous_prod_mk` for the diagonal map itself, and `Topology.isOpen_prod_box` for
+  the separating box. A subspace of a T_n space is T_n through
+  `Topology.continuous_into_subspace` and `Topology.isClosed_subspace_iff`; do not reopen the
+  subspace topology to prove anything about its closed sets.
+  Each axiom is also a topological invariant, and §6 built the machine for saying so —
   `Homeomorphism.isOpen_iff` with `Homeomorphism.preimage_preimage` beside it. If a problem here
   wants "a space homeomorphic to a Hausdorff space is Hausdorff", it is those two and a transport
   of points, in the shape of `Homeomorphic.isCodiscrete`; do not restate them.
@@ -343,8 +407,9 @@ problems, not by its concepts, and a concept that carries five of them is not to
   here, where the hypothesis that makes the map closed lives. Present the bijection as §6 does,
   by the map that undoes it.
   `heine_borel` is `interval_compact` plus `compact_basics` plus `compact_metric`, so it
-  is cheap *if* §12 landed. The plane case needs §7's identification of the supremum metric with
-  the product.
+  is cheap *if* §12 landed. The plane case is paid for: §7's `plane_homeomorphic_product` and
+  `taxicab_homeomorphic_product` identify both planes with `line.toTopology.prod line.toTopology`,
+  and `ball_supNorm_eq_box` turns a supremum ball into a box wherever the argument wants one.
 
 ## What is deliberately left out
 
@@ -381,8 +446,9 @@ Mathlib `v4.31.0`, on 2026-09-13:
 
 So the fence is roomier than it looks: the least-upper-bound property, the Archimedean property,
 intervals, finite sets, products of sets and Zorn's lemma are all available, and the square root
-is the one thing that is not. Neither §5 nor §6 needed an addition, and the fence has not moved
-since §4. Test any further import before adding it; the command is in
+is the one thing that is not. Neither §5 nor §6 needed an addition; §7 added
+`Mathlib.Data.Set.Prod`, which is the only movement since §4, and the subject's fence is now the
+ten modules `polya extract` reports. Test any further import before adding it; the command is in
 `STYLE.md`, and the message to grep for is `unknownIdentifier`, which Lean capitalizes.
 
 `Mathlib.Data.Real.Archimedean` is **deprecated** in this toolchain and emits a warning naming
@@ -434,11 +500,21 @@ one — never a redefinition.
   `sierpinski_not_discrete`, `sierpinski_not_codiscrete`
 - `Metric.Equivalent`, `Metric.isOpenSet_of_ball_subset`, `Metric.Equivalent.isOpenSet_iff`,
   `Metric.Equivalent.toHomeomorphism`, `taxicab_equivalent_supNorm`, `plane_homeomorphic`
+- `Topology.continuous_into_subspace`, `Topology.continuous_toSubspace`,
+  `Topology.isClosed_subspace_iff`
+- `Topology.induced`, `Topology.subspace_eq_induced`, `Topology.continuous_induced`,
+  `Topology.induced_coarsest`, `Topology.eq_of_isOpen_iff`, `Topology.induced_induced`
+- `Topology.prod`, `Topology.isOpen_prod_box`, `Topology.prod_eq_sUnion_boxes`,
+  `Topology.continuous_fst`, `Topology.continuous_snd`, `Topology.isOpenMap_fst`,
+  `Topology.isOpenMap_snd`, `Topology.continuous_prod_mk`, `Topology.continuous_prod_iff`,
+  `Topology.continuous_mk_left`, `Topology.continuous_mk_right`
+- `ball_supNorm_eq_box`, `isOpen_prod_of_isOpenSet_supNorm`, `isOpenSet_supNorm_of_isOpen_prod`,
+  `supNorm_prod_homeomorphism`, `plane_homeomorphic_product`, `taxicab_homeomorphic_product`
 
-Two in particular: §7's `induced_topology` is the shape `Topology.subspace` already has
-(`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it, proved by `rfl`;
-and §4's `interior_boundary` must build on §2's `union_of_opens_inside`, which is the statement
-that an open set is its own interior.
+Two in particular: §7's `Topology.induced` is the shape `Topology.subspace` already had
+(`∃ U, T.IsOpen U ∧ V = f ⁻¹' U`), so the subspace topology is a *case* of it and
+`Topology.subspace_eq_induced` is `rfl`; and §4's `interior_boundary` builds on §2's
+`union_of_opens_inside`, which is the statement that an open set is its own interior.
 
 ### What the closure can see
 
@@ -488,6 +564,7 @@ shrinking sequence of balls; and, far above the rest, §12's compactness of a cl
 
 §5's bridge between ε-δ and open sets was on this list and is struck from it: built, it is ten
 lines and wanted no helper, because §1's balls and §2's `Metric.toTopology` had already made the
-two sides the same data. Take the remaining three as estimates of the same kind — a proof looks
-expensive until the definitions line up, and the way to find out is to write the statement and
-see what the earlier sections hand over.
+two sides the same data. §7's identification of the plane with a product was billed as a capstone
+and came out at three short problems, for the same reason. Take the remaining three as estimates
+of the same kind — a proof looks expensive until the definitions line up, and the way to find out
+is to write the statement and see what the earlier sections hand over.

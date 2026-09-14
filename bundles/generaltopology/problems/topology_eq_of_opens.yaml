@@ -1,0 +1,46 @@
+slug: topology_eq_of_opens
+kind: theorem
+title: Topologies Agreeing on Open Sets Are Equal
+statement: |-
+  A topology carries three proofs beside its family of open sets, and proofs are not data: two proofs of one proposition are equal. So two topologies on a set are equal as soon as they call the same subsets open, and there is never anything else to compare.
+
+  Taking a structure apart with `obtain` leaves its four fields as separate hypotheses. Once the two families of open sets are shown equal, substituting one for the other makes the remaining fields proofs of the very same statements, and the two structures are then the same term.
+concepts:
+- induced_topology
+stub: |-
+  theorem Topology.eq_of_isOpen_iff {X : Type u} {T T' : Topology X}
+      (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U) : T = T' := sorry
+reference: |-
+  theorem Topology.eq_of_isOpen_iff {X : Type u} {T T' : Topology X}
+      (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U) : T = T' := by
+    obtain ⟨o, hu, hi, hs⟩ := T
+    obtain ⟨o', hu', hi', hs'⟩ := T'
+    have e : o = o' := funext (fun U => propext (h U))
+    subst e
+    rfl
+spec: |-
+  example : ∀ {X : Type u} {T T' : Topology X}
+      (h : ∀ U, T.IsOpen U ↔ T'.IsOpen U), T = T' := _root_.GeneralTopology.Topology.eq_of_isOpen_iff
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  end GeneralTopology
+  open GeneralTopology
+description: Prove that `T = T'` whenever `T.IsOpen U ↔ T'.IsOpen U` for every `U`. Take both topologies apart with `obtain ⟨o, hu, hi, hs⟩ := T`, prove the two families equal with `funext` and `propext`, substitute with `subst`, and close with `rfl`.
+stub_names:
+- Topology.eq_of_isOpen_iff
+namespace: GeneralTopology
+seq: 110
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Products.lean
+  line: 160
+  closure_rounds: 1
+  check_kind: theorem

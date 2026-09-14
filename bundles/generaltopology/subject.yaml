@@ -15,6 +15,8 @@ description: |-
 
   **Homeomorphisms** asks when two spaces are the same space. A map that is continuous, invertible, and whose inverse is continuous carries the open sets of one onto the open sets of the other, and nothing a topology can see then tells the two apart. Such a map is both an open map and a closed map, and a continuous bijection is one exactly when it is open — which a continuous bijection need not be. The section ends by putting the notion to work in both directions: the plane measured by the taxicab length and the plane measured by the supremum length are the same space, though the lengths differ at almost every pair of points, while the three topologies a two-point set carries are shown to be three different spaces.
 
+  **Subspaces and Products** makes new spaces out of old, and asks of each what maps it admits. The topology a subset inherits is the one that makes a map into the subset no harder to test than a map into the whole space around it; the same construction along any map at all gives the coarsest topology making that map continuous, and the subspace is one case of it. The product of two spaces calls a set open when every point of it has a box around it inside, the two projections out of it are continuous and — unusually — open, and a map into it is a pair of maps, continuous exactly when both of them are. The section ends where the subject began: the plane under the supremum distance is the product of two copies of the line, because a supremum ball is a square, and the taxicab plane is one too, since the last section made it the same space.
+
   Mathlib's own metric spaces and topological spaces are not imported, and no problem may appeal to them. Everything is built from the real numbers, sets, and the language of real vector spaces, so that a student who finishes has the apparatus rather than a borrowed name for it. One consequence is visible in the choice of examples: the Euclidean length of a vector in the plane requires a square root, which is beyond what this fence holds, so the plane is measured here by two lengths that need no roots at all.
 visibility: public
 authors:
@@ -465,6 +467,7 @@ environment:
   - Mathlib.Data.Set.Lattice
   - Mathlib.Data.Set.Finite.Basic
   - Mathlib.Algebra.Order.Archimedean.Real.Basic
+  - Mathlib.Data.Set.Prod
   project: mathlib
   toolchain: leanprover/lean4:v4.31.0
   mathlib_rev: v4.31.0
@@ -704,11 +707,51 @@ concepts:
 - slug: topological_invariants
   description: To show that two spaces are the same one exhibits a homeomorphism. To show that they are not, one needs a property that homeomorphic spaces must share, and then finds it on one side and not on the other. Two such properties settle the three topologies a two-point set carries, and with them the subject can say that spaces differ, and not only that they agree.
   kind: theorem
-  goal: true
+  goal: false
   section: Homeomorphisms
   section_order: 5
   title: Telling Two Spaces Apart
   position: 29
+- slug: subspace_maps
+  description: 'A subset of a space carries the topology cut out of the ambient open sets. What that buys is a test for maps: a map into the subset is continuous exactly when the same map read into the whole space is, so a subspace is never examined directly. Its closed sets are cut out the same way.'
+  kind: theorem
+  goal: false
+  section: Subspaces and Products
+  section_order: 6
+  title: Maps and a Subspace
+  position: 30
+- slug: induced_topology
+  description: The subspace topology pulls the open sets of a space back along an inclusion. Nothing in that used the map to be an inclusion, and the same construction along an arbitrary map is the coarsest topology making that map continuous. Naming it makes the subspace one case rather than a separate definition, and it is the shape every later construction of a space from a map takes.
+  kind: definition
+  goal: false
+  section: Subspaces and Products
+  section_order: 6
+  title: The Induced Topology
+  position: 31
+- slug: product_topology
+  description: 'Two spaces have a product set, and it should be a space. A point of it is a pair, and the room around a pair is a pair of rooms: a set is open when each of its points has an open box around it inside. This is the first construction of a space from two others, and what the subject later says about separation, compactness and the plane is said in it.'
+  kind: definition
+  goal: false
+  section: Subspaces and Products
+  section_order: 6
+  title: The Product Topology
+  position: 32
+- slug: product_maps
+  description: The projections out of a product are continuous, and they are open maps as well, which continuous maps rarely are. In the other direction a map into a product is a pair of maps, one into each factor, and it is continuous exactly when both of them are. With that, the product never has to be examined through its definition again.
+  kind: theorem
+  goal: false
+  section: Subspaces and Products
+  section_order: 6
+  title: Maps and a Product
+  position: 33
+- slug: plane_is_product
+  description: The plane was built as a set with a distance, the line as a set with a distance, and the two have had no formal relation. The supremum distance is the larger of the two coordinate distances, so a ball of it is a square — a box of two intervals. The plane is therefore the product of two lines, which is where the metric half of the subject meets the topological one.
+  kind: theorem
+  goal: true
+  section: Subspaces and Products
+  section_order: 6
+  title: The Plane as a Product
+  position: 34
 edges:
 - - closed_families
   - closure
@@ -716,6 +759,8 @@ edges:
   - closed_families
 - - closed_sets
   - open_closed_maps
+- - closed_sets
+  - subspace_maps
 - - closure
   - closure_points
 - - closure
@@ -724,6 +769,8 @@ edges:
   - interior_boundary
 - - closure_points
   - dense_sets
+- - continuity_examples
+  - subspace_maps
 - - continuous_maps
   - continuity_bridge
 - - continuous_maps
@@ -732,6 +779,8 @@ edges:
   - continuity_examples
 - - continuous_maps
   - homeomorphism
+- - continuous_maps
+  - induced_topology
 - - epsilon_delta
   - continuity_bridge
 - - extreme_topologies
@@ -744,6 +793,8 @@ edges:
   - open_closed_maps
 - - homeomorphism
   - topological_invariants
+- - metric_equivalence
+  - plane_is_product
 - - metric_space
   - real_line
 - - metric_topology
@@ -758,6 +809,8 @@ edges:
   - continuity_closed
 - - neighbourhoods
   - interior_boundary
+- - neighbourhoods
+  - product_maps
 - - norm_metric
   - plane_norms
 - - normed_space
@@ -768,10 +821,16 @@ edges:
   - norm_metric
 - - open_ball
   - open_sets
+- - open_closed_maps
+  - product_maps
 - - open_sets
   - metric_topology
 - - plane_norms
   - metric_equivalence
+- - product_topology
+  - plane_is_product
+- - product_topology
+  - product_maps
 - - real_line
   - epsilon_delta
 - - real_line
@@ -782,6 +841,8 @@ edges:
   - topological_invariants
 - - subspace_topology
   - continuity_examples
+- - subspace_topology
+  - induced_topology
 - - topological_space
   - closed_sets
 - - topological_space
@@ -795,6 +856,8 @@ edges:
 - - topological_space
   - neighbourhoods
 - - topological_space
+  - product_topology
+- - topological_space
   - sierpinski_space
 - - topological_space
   - subspace_topology
@@ -804,7 +867,7 @@ provenance:
   license: CC-BY-SA-4.0
   repo: klavins/polya-topology
   url: https://github.com/klavins/polya-topology
-  commit: d390626c6e6fb4d8003dd9d9116e5f4578c1b01f
+  commit: 0278afbb79722c743b7328f685f358500132e7fb
   about:
     title: Polya Topology
     description: 'A collection of Polya subjects on topology, built from the ground up: metric spaces first, then the open sets they generate, and then the spaces that have open sets without having distances. Nothing is borrowed from Mathlib''s own topology, which is never imported; a student defines the apparatus and proves its properties. The outline follows Urs Schreiber''s Introduction to Topology on the nLab (https://ncatlab.org/nlab/show/Introduction+to+Topology), which supplies the selection and order of the results and is gratefully acknowledged; the prose, the Lean, and the problems are written here. The subjects carry the Creative Commons Attribution-ShareAlike 4.0 license, so that what is built on them stays as free as what it was built from.'

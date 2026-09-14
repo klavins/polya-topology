@@ -1,0 +1,66 @@
+slug: product_boxes_union
+kind: theorem
+title: Every Open Set is a Union of Boxes
+statement: |-
+  Open boxes are to a product what open balls are to a metric. Not every open set is one, but every open set is a union of them, and that is what it means to say the boxes are a basis for the topology.
+
+  Collect the open boxes lying inside a set `W` that is open in the product. Each of them is inside `W`, so their union is; and every point of `W` has one of them around it, so the union reaches every point of `W`. The collection is described by a property rather than listed, as a collection of sets always is here.
+concepts:
+- product_topology
+stub: |-
+  theorem Topology.prod_eq_sUnion_boxes {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      {W : Set (X × Y)} (hW : (T.prod T').IsOpen W) :
+      W = ⋃₀ {B | B ⊆ W ∧ ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ B = U ×ˢ V} := sorry
+reference: |-
+  theorem Topology.prod_eq_sUnion_boxes {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      {W : Set (X × Y)} (hW : (T.prod T').IsOpen W) :
+      W = ⋃₀ {B | B ⊆ W ∧ ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ B = U ×ˢ V} := by
+    apply Set.Subset.antisymm
+    · intro p hp
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp
+      exact ⟨U ×ˢ V, ⟨hsub, U, V, hU, hV, rfl⟩, hpUV⟩
+    · rintro p ⟨B, ⟨hBW, _⟩, hpB⟩
+      exact hBW hpB
+spec: |-
+  example : ∀ {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y)
+      {W : Set (X × Y)} (hW : (T.prod T').IsOpen W), W = ⋃₀ {B | B ⊆ W ∧ ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ B = U ×ˢ V} := _root_.GeneralTopology.Topology.prod_eq_sUnion_boxes
+preamble: |
+  universe u v w
+  namespace GeneralTopology
+  structure Topology (X : Type u) where
+    IsOpen : Set X → Prop
+    univ : IsOpen Set.univ
+    inter : ∀ {U V}, IsOpen U → IsOpen V → IsOpen (U ∩ V)
+    sUnion : ∀ {F : Set (Set X)}, (∀ U ∈ F, IsOpen U) → IsOpen (⋃₀ F)
+
+  def Topology.prod {X : Type u} {Y : Type v} (T : Topology X) (T' : Topology Y) :
+      Topology (X × Y) where
+    IsOpen := fun W => ∀ p ∈ W, ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ p ∈ U ×ˢ V ∧ U ×ˢ V ⊆ W
+    univ := fun _ _ => ⟨Set.univ, Set.univ, T.univ, T'.univ, ⟨trivial, trivial⟩, fun _ _ => trivial⟩
+    inter := by
+      rintro W W' hW hW' p hp
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := hW p hp.1
+      obtain ⟨U', V', hU', hV', hpUV', hsub'⟩ := hW' p hp.2
+      refine ⟨U ∩ U', V ∩ V', T.inter hU hU', T'.inter hV hV',
+        ⟨⟨hpUV.1, hpUV'.1⟩, ⟨hpUV.2, hpUV'.2⟩⟩, ?_⟩
+      rintro q ⟨hq1, hq2⟩
+      exact ⟨hsub ⟨hq1.1, hq2.1⟩, hsub' ⟨hq1.2, hq2.2⟩⟩
+    sUnion := by
+      rintro F h p ⟨W, hWF, hpW⟩
+      obtain ⟨U, V, hU, hV, hpUV, hsub⟩ := h W hWF p hpW
+      exact ⟨U, V, hU, hV, hpUV, fun q hq => ⟨W, hWF, hsub hq⟩⟩
+
+  end GeneralTopology
+  open GeneralTopology
+description: Show that an open `W` of `T.prod T'` equals `⋃₀ {B | B ⊆ W ∧ ∃ U V, T.IsOpen U ∧ T'.IsOpen V ∧ B = U ×ˢ V}`. `Set.Subset.antisymm` splits it in two; one direction offers the box the definition supplies at the point, and the other applies the containment the member carries.
+stub_names:
+- Topology.prod_eq_sUnion_boxes
+namespace: GeneralTopology
+seq: 114
+provenance:
+  license: CC-BY-SA-4.0
+  source: extract@9c4b8d6
+  file: PolyaTopology/GeneralTopology/Products.lean
+  line: 264
+  closure_rounds: 1
+  check_kind: theorem
